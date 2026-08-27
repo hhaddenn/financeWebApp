@@ -5,7 +5,7 @@ from .models import Account, Category, Subcategory, Transaction
 
 # Register your models here.
 class TransactionAdmin(admin.ModelAdmin):
-   list_filter = ('account', 'transaction_type', 'subcategory')
+   list_filter = ('account', 'transaction_type', 'date', 'subcategory')
    list_display = ('name', 'transaction_type', 'amount')
 
 class AccountAdmin(admin.ModelAdmin):
