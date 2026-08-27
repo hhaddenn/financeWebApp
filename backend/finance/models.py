@@ -41,12 +41,16 @@ class Transaction(models.Model):
     description = models.CharField(max_length=100, blank=True)
     transaction_type = models.CharField(max_length=10, choices=TransactionType.choices)
     amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
         validators=[MinValueValidator(0, "Value must positive")]
     )
     amount_to_receive = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
         validators=[MinValueValidator(0, "Value must positive")]
     )
-    date = models.DateTimeField()
+    date = models.DateTimeField(auto_now_add=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE)
 
