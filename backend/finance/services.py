@@ -1,6 +1,5 @@
-from django.db import transaction as db_transaction
 
-from .models import Transaction, TransactionType
+from .models import TransactionType
 
 
 def apply_transaction(transaction):
