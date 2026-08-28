@@ -1,6 +1,44 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Account, Category, Subcategory, Transaction, TransactionType
+
+
+# User
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,
+    )
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password")
+
+    def create(self, validated_data):
+        return User.objects.create_user(
+            username=validated_data["username"],
+            email=validated_data["email"],
+            password=validated_data["password"],
+        )
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "username", "email")
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    def validate(self, attrs):
+        self.token = RefreshToken(attrs["refresh"])
+        return attrs
+
+    def save(self, **kwargs):
+        self.token.blacklist()
 
 
 class AccountSerializer(serializers.ModelSerializer):
