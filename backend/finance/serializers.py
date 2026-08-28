@@ -7,6 +7,7 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = "__all__"
+        read_only_fields = ("user",)
 
 
 class CategorySerializer(serializers.ModelSerializer):
