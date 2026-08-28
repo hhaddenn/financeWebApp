@@ -1,17 +1,50 @@
 from django.db import transaction as db_transaction
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .models import Account, Category, Subcategory, Transaction
 from .serializers import (
     AccountSerializer,
     CategorySerializer,
+    LogoutSerializer,
+    RegisterSerializer,
     SubcategorySerializer,
     TransactionSerializer,
+    UserSerializer,
 )
 from .services import apply_transaction, reverse_transaction
 
 # Create your views here.
+
+# Auth
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = (AllowAny,)
+
+class LogoutView(generics.GenericAPIView):
+    serializer_class = LogoutSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {"detail": "Successfully logged out."},
+            status=status.HTTP_205_RESET_CONTENT,
+        )
+
+class MeView(generics.RetrieveAPIView):
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+
+
 
 
 # Categories
