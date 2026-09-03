@@ -19,7 +19,7 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv()  # Load environment variables from .env file
+load_dotenv(BASE_DIR / '.env')  # Load environment variables from .env file
 
 
 # Quick-start development settings - unsuitable for production
