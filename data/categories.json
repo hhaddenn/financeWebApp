@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "name": "Salary",
+    "description": "Monthly salary and employment income",
+    "icon": "💰",
+    "category_type": "income"
+  },
+  {
+    "id": 2,
+    "name": "Investments",
+    "description": "Income from investments",
+    "icon": "📈",
+    "category_type": "income"
+  },
+  {
+    "id": 3,
+    "name": "Food",
+    "description": "Food and dining expenses",
+    "icon": "🍔",
+    "category_type": "expense"
+  },
+  {
+    "id": 4,
+    "name": "Transport",
+    "description": "Transportation expenses",
+    "icon": "🚗",
+    "category_type": "expense"
+  },
+  {
+    "id": 5,
+    "name": "Housing",
+    "description": "Home and accommodation expenses",
+    "icon": "🏠",
+    "category_type": "expense"
+  },
+  {
+    "id": 6,
+    "name": "Entertainment",
+    "description": "Entertainment and leisure",
+    "icon": "🎮",
+    "category_type": "expense"
+  },
+  {
+    "id": 7,
+    "name": "Shopping",
+    "description": "Shopping and personal purchases",
+    "icon": "🛍️",
+    "category_type": "expense"
+  },
+  {
+    "id": 8,
+    "name": "Health",
+    "description": "Health and wellbeing expenses",
+    "icon": "❤️",
+    "category_type": "expense"
+  },
+  {
+    "id": 9,
+    "name": "Transfer",
+    "description": "Transfers between accounts",
+    "icon": "↔️",
+    "category_type": "transfer"
+  }
+]
