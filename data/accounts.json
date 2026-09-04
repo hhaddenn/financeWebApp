@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "name": "Main Checking",
+    "user": 1,
+    "initial_balance": "2500.00",
+    "balance": "4218.50",
+    "icon": "🏦"
+  },
+  {
+    "id": 2,
+    "name": "Savings",
+    "user": 1,
+    "initial_balance": "5000.00",
+    "balance": "7350.00",
+    "icon": "🐷"
+  },
+  {
+    "id": 3,
+    "name": "Cash",
+    "user": 1,
+    "initial_balance": "300.00",
+    "balance": "185.00",
+    "icon": "💵"
+  },
+  {
+    "id": 4,
+    "name": "Credit Card",
+    "user": 1,
+    "initial_balance": "0.00",
+    "balance": "0.00",
+    "icon": "💳"
+  },
+  {
+    "id": 5,
+    "name": "Main Account",
+    "user": 2,
+    "initial_balance": "1800.00",
+    "balance": "2450.00",
+    "icon": "🏦"
+  }
+]
