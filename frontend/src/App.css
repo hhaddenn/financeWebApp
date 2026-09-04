@@ -1,1 +1,121 @@
-/* Nothing needed here for now */
+.page {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 2rem;
+}
+
+/* Page header */
+
+.page-header {
+	margin-bottom: 2rem;
+}
+
+.page-header h1 {
+	margin: 0;
+	font-size: 2rem;
+	font-weight: 700;
+}
+
+.page-header p {
+	margin: 0.5rem 0 0;
+	color: #737373;
+}
+
+/* Account grid */
+
+.account-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 1.25rem;
+}
+
+/* Account card */
+
+.account-card {
+	display: flex;
+	flex-direction: column;
+	min-height: 260px;
+	padding: 1.5rem;
+	background: #ffffff;
+	border: 1px solid #e5e5e5;
+	border-radius: 12px;
+	box-shadow: 0 2px 6px rgb(0 0 0 / 4%);
+}
+
+/* Card header */
+
+.account-card-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.account-card-header h2 {
+	margin: 0;
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+.account-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	flex-shrink: 0;
+	border-radius: 10px;
+	background: #f5f5f5;
+	font-size: 1.5rem;
+}
+
+/* Balance */
+
+.account-balance {
+	margin-top: 2rem;
+}
+
+.account-balance span {
+	display: block;
+	margin-bottom: 0.25rem;
+	color: #737373;
+	font-size: 0.875rem;
+	font-weight: 500;
+}
+
+.account-balance strong {
+	font-size: 1.75rem;
+	font-weight: 700;
+}
+
+/* Card button */
+
+.account-edit {
+	margin-top: auto;
+	padding: 0.65rem 1rem;
+	border: 0;
+	border-radius: 8px;
+	background: #171717;
+	color: white;
+	font-weight: 500;
+	transition: background 150ms ease;
+}
+
+.account-edit:hover {
+	background: #404040;
+}
+
+.account-delete {
+	margin-top: auto;
+	padding: 0.65rem 1rem;
+	border: 0;
+	border-radius: 8px;
+	background: #d10000;
+	color: white;
+	font-weight: 500;
+	transition: background 150ms ease;
+}
+
+.account-delete:hover {
+	background: #ff0000dc;
+}
