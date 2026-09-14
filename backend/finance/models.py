@@ -1,11 +1,13 @@
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 
+
 class User(AbstractUser):
     email = models.EmailField(unique=True)
+
 
 class CategoryType(models.TextChoices):
     INCOME = "income", "Income"
@@ -73,6 +75,10 @@ class TransactionType(models.TextChoices):
 
 class Transaction(models.Model):
     name = models.CharField(max_length=50, blank=True)
+    counterparty = models.CharField(
+        max_length=255,
+        blank=True,
+    )
     description = models.CharField(max_length=100, blank=True)
     transaction_type = models.CharField(max_length=10, choices=TransactionType.choices)
     amount = models.DecimalField(
