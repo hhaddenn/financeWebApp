@@ -123,3 +123,135 @@ class Transaction(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Budget(models.Model):
+    class BudgetType(models.TextChoices):
+        TOTAL = "total", "Total"
+        CATEGORY = "category", "Category"
+        SUBCATEGORY = "subcategory", "Subcategory"
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="budgets",
+    )
+
+    name = models.CharField(max_length=100)
+
+    budget_type = models.CharField(
+        max_length=20,
+        choices=BudgetType.choices,
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="budgets",
+    )
+
+    subcategory = models.ForeignKey(
+        Subcategory,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="budgets",
+    )
+
+
+class RecurrenceFrequency(models.TextChoices):
+    DAILY = "daily", "Daily"
+    WEEKLY = "weekly", "Weekly"
+    MONTHLY = "monthly", "Monthly"
+    YEARLY = "yearly", "Yearly"
+
+
+class RecurringTransaction(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="recurring_transactions",
+    )
+
+    name = models.CharField(max_length=50)
+
+    counterparty = models.CharField(
+        max_length=255,
+        blank=True,
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+
+    transaction_type = models.CharField(
+        max_length=10,
+        choices=TransactionType.choices,
+    )
+
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name="recurring_transactions",
+    )
+
+    subcategory = models.ForeignKey(
+        Subcategory,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="recurring_transactions",
+    )
+
+    frequency = models.CharField(
+        max_length=10,
+        choices=RecurrenceFrequency.choices,
+    )
+
+    # When during the day
+    time = models.TimeField(
+        null=True,
+        blank=True,
+    )
+
+    # Weekly: Monday, Tuesday, etc.
+    day_of_week = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    # Monthly / yearly: 1-31
+    day_of_month = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    # Yearly: 1-12
+    month = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+    )
+
+    # Next occurrence to be processed
+    next_run_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
