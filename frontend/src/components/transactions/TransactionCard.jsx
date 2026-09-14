@@ -16,6 +16,8 @@ export default function TransactionCard({ transaction }) {
       </div>
 
       <div className="account-balance">
+        <span>CounterParty</span>
+        <strong>{transaction.counterparty}</strong>
         <span>Description</span>
         <strong>{transaction.description}</strong>
         <span>Type</span>
