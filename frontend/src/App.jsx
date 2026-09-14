@@ -1,30 +1,40 @@
-import AccountList from "./components/accounts/AccountList";
-import CategoryList from "./components/categories/CategoryList";
-import SubCategoryList from "./components/subcategories/SubCategoryList";
-import TransactionList from "./components/transactions/TransactionList";
-import "./App.css";
+import { useEffect, useState } from 'react';
+import LoginForm from './components/auth/LoginForm';
+import { refreshAccessToken } from './services';
+import './App.css';
 
 function App() {
-  return (
-    <>
-      <section>
-        <h2>Accounts</h2>
-        <AccountList />
-      </section>
-      <section>
-        <h2>Categories</h2>
-        <CategoryList />
-      </section>
-      <section>
-        <h2>Subcategories</h2>
-        <SubCategoryList />
-      </section>
-      <section>
-        <h2>Transactions</h2>
-        <TransactionList />
-      </section>
-    </>
-  );
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+
+	useEffect(() => {
+		const restoreSession = async () => {
+			try {
+				await refreshAccessToken();
+				setIsLoggedIn(true);
+			} catch {
+				setIsLoggedIn(false);
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		restoreSession();
+	}, []);
+
+	if (isLoading) {
+		return <p>Loading...</p>;
+	}
+
+	return (
+		<>
+			{isLoggedIn ? (
+				<p>You are logged in!</p>
+			) : (
+				<LoginForm onLoginSuccess={() => setIsLoggedIn(true)} />
+			)}
+		</>
+	);
 }
 
 export default App;
