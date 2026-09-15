@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import (
@@ -20,6 +21,8 @@ User = get_user_model()
 # ---------------------------------------------------------------------------
 # User
 # ---------------------------------------------------------------------------
+class LoginSerializer(TokenObtainPairSerializer):
+    default_error_messages = {"no_active_account": "Invalid username or password."}
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -32,11 +35,22 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ("username", "email", "password")
 
+    def validate_username(self, value):
+        value = value.strip()
+
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError(
+                "Username already in use.",
+                code="username_taken",
+            )
+
+        return value
+
     def validate_email(self, value):
         value = value.strip().lower()
 
         if User.objects.filter(email__iexact=value).exists():
-            raise serializers.ValidationError("A user with this email already exists.")
+            raise serializers.ValidationError("Email already exists.")
 
         return value
 
