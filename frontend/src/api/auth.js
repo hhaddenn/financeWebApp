@@ -1,27 +1,6 @@
-import axios from 'axios';
+// src/api/auth.js
 
-const api = axios.create({
-	baseURL: 'http://localhost:8000/api',
-	withCredentials: true,
-});
-
-let accessToken = null;
-
-export const setAccessToken = (token) => {
-	accessToken = token;
-};
-
-export const getAccessToken = () => {
-	return accessToken;
-};
-
-api.interceptors.request.use((config) => {
-	if (accessToken) {
-		config.headers.Authorization = `Bearer ${accessToken}`;
-	}
-
-	return config;
-});
+import api, { setAccessToken } from './client';
 
 export const login = async (username, password) => {
 	const response = await api.post('/auth/login/', {
@@ -48,13 +27,10 @@ export const refreshAccessToken = async () => {
 	}
 };
 
-
 export const logout = async () => {
 	try {
 		await api.post('/auth/logout/');
 	} finally {
-		accessToken = null;
+		setAccessToken(null);
 	}
 };
-
-export default api;
