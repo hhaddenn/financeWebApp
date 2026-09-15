@@ -13,6 +13,18 @@ export const login = async (username, password) => {
 	return response.data;
 };
 
+export const register = async (username, email, password) => {
+	const response = await api.post('/auth/register/', {
+		username,
+		email,
+		password,
+	});
+
+	setAccessToken(response.data.access);
+
+	return response.data;
+};
+
 export const refreshAccessToken = async () => {
 	try {
 		const response = await api.post('/auth/refresh/');

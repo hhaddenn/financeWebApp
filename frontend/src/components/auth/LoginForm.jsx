@@ -1,8 +1,10 @@
 import { useActionState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export default function LoginForm() {
 	const { login } = useAuth();
+	const location = useLocation();
 
 	const [state, formAction, isPending] = useActionState(
 		async (previousState, formData) => {
@@ -28,7 +30,13 @@ export default function LoginForm() {
 
 	return (
 		<div className="w-96 mx-auto p-4 bg-white rounded shadow-md">
-			<form action={formAction} className="flex flex-col gap-4">
+			{location.state?.message && (
+				<p className="mb-4 text-green-500 text-center">
+					{location.state.message}
+				</p>
+			)}
+
+			<form action={formAction} className="flex flex-col gap-4 text-left">
 				<div>
 					<label htmlFor="username" className="block text-sm font-medium">
 						Username
@@ -65,6 +73,12 @@ export default function LoginForm() {
 					className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer text-white font-bold py-2 px-4 rounded">
 					{isPending ? 'Loading...' : 'Login'}
 				</button>
+
+				<Link
+					to="/register"
+					className="text-blue-500 hover:text-blue-700 text-sm text-center">
+					Don't have an account?
+				</Link>
 
 				{state?.success && <p className="text-green-500">Login Succeeded!</p>}
 

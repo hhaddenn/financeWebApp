@@ -8,6 +8,7 @@ import {
 import { useAuth } from './context/AuthContext';
 
 import Login from './pages/Login';
+import Register from "./pages/Register";
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -25,6 +26,13 @@ function App() {
 					path="/login"
 					element={
 						isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />
+					}
+				/>
+
+				<Route
+					path="/register"
+					element={
+						isLoggedIn ? <Navigate to="/dashboard" replace /> : <Register />
 					}
 				/>
 
