@@ -1,18 +1,20 @@
+import logging
+
 from django.db import transaction as db_transaction
 from rest_framework import generics, serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
-    TokenRefreshSerializer,
 )
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .models import Account, Category, Subcategory, Transaction
 from .serializers import (
     AccountSerializer,
     CategorySerializer,
-    LogoutSerializer,
     RegisterSerializer,
     SubcategorySerializer,
     TransactionSerializer,
@@ -20,10 +22,10 @@ from .serializers import (
 )
 from .services import apply_transaction, reverse_transaction
 
+logger = logging.getLogger(__name__)
+
 
 # Create your views here.
-class CookieTokenObtainPairSerializer(TokenObtainPairSerializer):
-    pass
 
 
 class CookieTokenObtainPairView(TokenObtainPairView):
@@ -39,7 +41,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 key="refresh_token",
                 value=refresh_token,
                 httponly=True,
-                secure=False,
+                secure=False,  # True in production with HTTPS
                 samesite="Lax",
                 path="/",
             )
@@ -49,37 +51,11 @@ class CookieTokenObtainPairView(TokenObtainPairView):
         return response
 
 
-class CookieTokenRefreshSerializer(TokenRefreshSerializer):
-    def validate(self, attrs):
-        request = self.context["request"]
-
-        print("COOKIES:", request.COOKIES)
-
-        refresh_token = request.COOKIES.get("refresh_token")
-
-        print(
-            "REFRESH TOKEN FOUND:",
-            bool(refresh_token),
-        )
-
-        if not refresh_token:
-            raise serializers.ValidationError(
-                {"refresh": ["Refresh token cookie not found."]}
-            )
-
-        attrs["refresh"] = refresh_token
-
-        return super().validate(attrs)
-
-
 class CookieTokenRefreshView(TokenRefreshView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh_token")
-
-        print("COOKIES:", request.COOKIES)
-        print("REFRESH TOKEN FOUND:", bool(refresh_token))
 
         if not refresh_token:
             return Response(
@@ -87,35 +63,43 @@ class CookieTokenRefreshView(TokenRefreshView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        serializer = TokenRefreshSerializer(
-            data={"refresh": refresh_token},
-            context={"request": request},
-        )
+        serializer = self.get_serializer(data={"refresh": refresh_token})
 
         serializer.is_valid(raise_exception=True)
 
         return Response(serializer.validated_data)
 
 
+class LogoutView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        refresh_token = request.COOKIES.get("refresh_token")
+
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except TokenError:
+                logger.warning("Invalid refresh token during logout", exc_info=True)
+
+        response = Response(
+            {"detail": "Successfully logged out."},
+            status=status.HTTP_205_RESET_CONTENT,
+        )
+
+        response.delete_cookie(
+            "refresh_token",
+            path="/",
+        )
+
+        return response
+
+
 # Auth
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = (AllowAny,)
-
-
-class LogoutView(generics.GenericAPIView):
-    serializer_class = LogoutSerializer
-    permission_classes = (IsAuthenticated,)
-
-    def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(
-            {"detail": "Successfully logged out."},
-            status=status.HTTP_205_RESET_CONTENT,
-        )
 
 
 class MeView(generics.RetrieveAPIView):

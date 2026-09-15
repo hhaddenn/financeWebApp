@@ -1,7 +1,9 @@
 import { useActionState } from 'react';
-import { login } from '../../services';
+import { useAuth } from '../../context/AuthContext';
 
-export default function LoginForm({ onLoginSuccess }) {
+export default function LoginForm() {
+	const { login } = useAuth();
+
 	const [state, formAction, isPending] = useActionState(
 		async (previousState, formData) => {
 			const username = formData.get('username');
@@ -9,8 +11,6 @@ export default function LoginForm({ onLoginSuccess }) {
 
 			try {
 				const result = await login(username, password);
-
-				onLoginSuccess();
 
 				return {
 					success: true,
@@ -66,7 +66,7 @@ export default function LoginForm({ onLoginSuccess }) {
 					{isPending ? 'Loading...' : 'Login'}
 				</button>
 
-				{state?.success && <p className="text-green-500">Login Succeed!</p>}
+				{state?.success && <p className="text-green-500">Login Succeeded!</p>}
 
 				{state?.error && <p className="text-red-500">{state.error}</p>}
 			</form>

@@ -1,39 +1,50 @@
-import { useEffect, useState } from 'react';
-import LoginForm from './components/auth/LoginForm';
-import { refreshAccessToken } from './services';
-import './App.css';
+import {
+	BrowserRouter as Router,
+	Routes,
+	Route,
+	Navigate,
+} from 'react-router-dom';
+
+import { useAuth } from './context/AuthContext';
+
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 function App() {
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
-
-	useEffect(() => {
-		const restoreSession = async () => {
-			try {
-				await refreshAccessToken();
-				setIsLoggedIn(true);
-			} catch {
-				setIsLoggedIn(false);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		restoreSession();
-	}, []);
+	const { isLoggedIn, isLoading } = useAuth();
 
 	if (isLoading) {
 		return <p>Loading...</p>;
 	}
 
 	return (
-		<>
-			{isLoggedIn ? (
-				<p>You are logged in!</p>
-			) : (
-				<LoginForm onLoginSuccess={() => setIsLoggedIn(true)} />
-			)}
-		</>
+		<Router>
+			<Routes>
+				<Route
+					path="/login"
+					element={
+						isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />
+					}
+				/>
+
+				<Route
+					path="/dashboard"
+					element={
+						<ProtectedRoute>
+							<Dashboard />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route
+					path="/"
+					element={
+						<Navigate to={isLoggedIn ? '/dashboard' : '/login'} replace />
+					}
+				/>
+			</Routes>
+		</Router>
 	);
 }
 
