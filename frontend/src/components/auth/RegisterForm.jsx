@@ -30,9 +30,26 @@ export default function RegisterForm() {
 
 				return { success: true };
 			} catch (error) {
+				const data = error.response?.data;
+
+				if (!data) {
+					return {
+						success: false,
+						error: 'Something went wrong. Please try again.',
+					};
+				}
+
+				// DRF validation errors
+				const messages = Object.values(data)
+					.flat()
+					.filter((message) => typeof message === 'string');
+
 				return {
 					success: false,
-					error: error.response?.data?.detail || error.message,
+					error:
+						messages.length > 0
+							? messages.join(' ')
+							: 'Something went wrong. Please try again.',
 				};
 			}
 		},
@@ -110,15 +127,20 @@ export default function RegisterForm() {
 					className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer text-white font-bold py-2 px-4 rounded">
 					{isPending ? 'Loading...' : 'Create Account'}
 				</button>
+
 				<Link
 					to="/login"
 					className="text-blue-500 hover:text-blue-700 text-sm text-center">
 					Already have an account?
 				</Link>
 
-				{state?.success && <p className="text-green-500">Account created!</p>}
+				{state?.success && (
+					<p className="text-green-500 text-center">Account created!</p>
+				)}
 
-				{state?.error && <p className="text-red-500">{state.error}</p>}
+				{state?.error && (
+					<p className="text-red-500 text-center">{state.error}</p>
+				)}
 			</form>
 		</div>
 	);

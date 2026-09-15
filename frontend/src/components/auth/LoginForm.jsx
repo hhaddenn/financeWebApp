@@ -80,9 +80,9 @@ export default function LoginForm() {
 					Don't have an account?
 				</Link>
 
-				{state?.success && <p className="text-green-500">Login Succeeded!</p>}
+				{state?.success && <p className="text-green-500 text-center">Login Succeeded!</p>}
 
-				{state?.error && <p className="text-red-500">{state.error}</p>}
+				{state?.error && <p className="text-red-500 text-center">{state.error}</p>}
 			</form>
 		</div>
 	);

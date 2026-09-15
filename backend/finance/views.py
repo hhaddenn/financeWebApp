@@ -5,9 +5,6 @@ from rest_framework import generics, serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.serializers import (
-    TokenObtainPairSerializer,
-)
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -19,6 +16,7 @@ from .serializers import (
     SubcategorySerializer,
     TransactionSerializer,
     UserSerializer,
+    LoginSerializer,
 )
 from .services import apply_transaction, reverse_transaction
 
@@ -29,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 class CookieTokenObtainPairView(TokenObtainPairView):
-    serializer_class = TokenObtainPairSerializer
+    serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
