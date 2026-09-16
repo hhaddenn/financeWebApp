@@ -8,50 +8,57 @@ import {
 import { useAuth } from './context/AuthContext';
 
 import Login from './pages/Login';
-import Register from "./pages/Register";
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AppLayout from './components/layout/AppLayout';
 
 function App() {
 	const { isLoggedIn, isLoading } = useAuth();
 
 	if (isLoading) {
-		return <p>Loading...</p>;
+		return (
+			<div className="flex min-h-screen items-center justify-center bg-[#eff6ff]">
+				<p>Loading...</p>
+			</div>
+		);
 	}
 
 	return (
 		<Router>
-			<Routes>
-				<Route
-					path="/login"
-					element={
-						isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />
-					}
-				/>
+			<AppLayout>
+				<Routes>
+					<Route
+						path="/login"
+						element={
+							isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login />
+						}
+					/>
 
-				<Route
-					path="/register"
-					element={
-						isLoggedIn ? <Navigate to="/dashboard" replace /> : <Register />
-					}
-				/>
+					<Route
+						path="/register"
+						element={
+							isLoggedIn ? <Navigate to="/dashboard" replace /> : <Register />
+						}
+					/>
 
-				<Route
-					path="/dashboard"
-					element={
-						<ProtectedRoute>
-							<Dashboard />
-						</ProtectedRoute>
-					}
-				/>
+					<Route
+						path="/dashboard"
+						element={
+							<ProtectedRoute>
+								<Dashboard />
+							</ProtectedRoute>
+						}
+					/>
 
-				<Route
-					path="/"
-					element={
-						<Navigate to={isLoggedIn ? '/dashboard' : '/login'} replace />
-					}
-				/>
-			</Routes>
+					<Route
+						path="/"
+						element={
+							<Navigate to={isLoggedIn ? '/dashboard' : '/login'} replace />
+						}
+					/>
+				</Routes>
+			</AppLayout>
 		</Router>
 	);
 }
