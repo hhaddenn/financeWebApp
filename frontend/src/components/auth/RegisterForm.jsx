@@ -1,8 +1,26 @@
 import { useActionState } from 'react';
-import { register } from '../../api/auth';
 import { Link, useNavigate } from 'react-router-dom';
 
-export default function RegisterForm() {
+import { register } from '../../api/auth';
+
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
+import {
+	Field,
+	FieldDescription,
+	FieldGroup,
+	FieldLabel,
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+
+export default function RegisterForm({ className, ...props }) {
 	const navigate = useNavigate();
 
 	const [state, formAction, isPending] = useActionState(
@@ -57,91 +75,108 @@ export default function RegisterForm() {
 	);
 
 	return (
-		<div className="w-96 mx-auto p-4 bg-white rounded shadow-md">
-			<form action={formAction} className="flex flex-col gap-4 text-left">
-				<div>
-					<label htmlFor="username" className="block text-sm font-medium">
-						Username
-					</label>
+		<div
+			className={cn('flex w-full max-w-sm flex-col gap-6', className)}
+			{...props}>
+			<Card className="w-full">
+				<CardHeader className="text-center">
+					<CardTitle className="text-xl">Create your account</CardTitle>
 
-					<input
-						type="text"
-						id="username"
-						name="username"
-						className="block w-full p-2 border border-gray-300 rounded"
-						placeholder="Username"
-						required
-					/>
-				</div>
+					<CardDescription>
+						Enter your details below to create your account
+					</CardDescription>
+				</CardHeader>
 
-				<div>
-					<label htmlFor="email" className="block text-sm font-medium">
-						Email
-					</label>
+				<CardContent>
+					<form action={formAction}>
+						<FieldGroup>
+							{/* Username */}
+							<Field>
+								<FieldLabel htmlFor="username">Username</FieldLabel>
 
-					<input
-						type="email"
-						id="email"
-						name="email"
-						className="block w-full p-2 border border-gray-300 rounded"
-						placeholder="Email"
-						required
-					/>
-				</div>
+								<Input
+									id="username"
+									name="username"
+									type="text"
+									placeholder="Username"
+									required
+									disabled={isPending}
+								/>
+							</Field>
 
-				<div>
-					<label htmlFor="password" className="block text-sm font-medium">
-						Password
-					</label>
+							{/* Email */}
+							<Field>
+								<FieldLabel htmlFor="email">Email</FieldLabel>
 
-					<input
-						type="password"
-						id="password"
-						name="password"
-						className="block w-full p-2 border border-gray-300 rounded"
-						placeholder="Password"
-						required
-					/>
-				</div>
+								<Input
+									id="email"
+									name="email"
+									type="email"
+									placeholder="m@example.com"
+									required
+									disabled={isPending}
+								/>
+							</Field>
 
-				<div>
-					<label
-						htmlFor="confirmPassword"
-						className="block text-sm font-medium">
-						Confirm Password
-					</label>
+							{/* Passwords */}
+							<Field>
+								<Field className="grid grid-cols-2 gap-4">
+									<Field>
+										<FieldLabel htmlFor="password">Password</FieldLabel>
 
-					<input
-						type="password"
-						id="confirmPassword"
-						name="confirmPassword"
-						className="block w-full p-2 border border-gray-300 rounded"
-						placeholder="Confirm Password"
-						required
-					/>
-				</div>
+										<Input
+											id="password"
+											name="password"
+											type="password"
+											required
+											disabled={isPending}
+										/>
+									</Field>
 
-				<button
-					type="submit"
-					disabled={isPending}
-					className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer text-white font-bold py-2 px-4 rounded">
-					{isPending ? 'Loading...' : 'Create Account'}
-				</button>
+									<Field>
+										<FieldLabel htmlFor="confirmPassword">
+											Confirm Password
+										</FieldLabel>
 
-				<Link
-					to="/login"
-					className="text-blue-500 hover:text-blue-700 text-sm text-center">
-					Already have an account?
-				</Link>
+										<Input
+											id="confirmPassword"
+											name="confirmPassword"
+											type="password"
+											required
+											disabled={isPending}
+										/>
+									</Field>
+								</Field>
 
-				{state?.success && (
-					<p className="text-green-500 text-center">Account created!</p>
-				)}
+								<FieldDescription>
+									Must be at least 8 characters long.
+								</FieldDescription>
+							</Field>
 
-				{state?.error && (
-					<p className="text-red-500 text-center">{state.error}</p>
-				)}
-			</form>
+							{/* Error */}
+							{state?.error && (
+								<FieldDescription className="text-center text-red-500">
+									{state.error}
+								</FieldDescription>
+							)}
+
+							{/* Submit */}
+							<Field>
+								<Button type="submit" disabled={isPending}>
+									{isPending ? 'Creating account...' : 'Create Account'}
+								</Button>
+
+								<FieldDescription className="text-center">
+									Already have an account?{' '}
+									<Link to="/login" className="underline underline-offset-4">
+										Sign in
+									</Link>
+								</FieldDescription>
+							</Field>
+						</FieldGroup>
+					</form>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }

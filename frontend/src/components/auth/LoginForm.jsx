@@ -2,7 +2,24 @@ import { useActionState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-export default function LoginForm() {
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
+import {
+	Field,
+	FieldDescription,
+	FieldGroup,
+	FieldLabel,
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+
+export default function LoginForm({ className, ...props }) {
 	const { login } = useAuth();
 	const location = useLocation();
 
@@ -29,61 +46,96 @@ export default function LoginForm() {
 	);
 
 	return (
-		<div className="w-96 mx-auto p-4 bg-white rounded shadow-md">
-			{location.state?.message && (
-				<p className="mb-4 text-green-500 text-center">
-					{location.state.message}
-				</p>
-			)}
+		<div
+			className={cn('flex w-full max-w-sm flex-col gap-6', className)}
+			{...props}>
+			<Card>
+				<CardHeader className="text-center">
+					<CardTitle className="text-xl">Welcome back</CardTitle>
 
-			<form action={formAction} className="flex flex-col gap-4 text-left">
-				<div>
-					<label htmlFor="username" className="block text-sm font-medium">
-						Username
-					</label>
+					<CardDescription>Login to your account</CardDescription>
+				</CardHeader>
 
-					<input
-						type="text"
-						id="username"
-						name="username"
-						className="block w-full p-2 border border-gray-300 rounded"
-						placeholder="Username"
-						required
-					/>
-				</div>
+				<CardContent>
+					<form action={formAction}>
+						<FieldGroup>
+							{/* Registration message */}
+							{location.state?.message && (
+								<div className="rounded-md bg-green-50 px-4 py-3 text-center text-sm text-green-700">
+									{location.state.message}
+								</div>
+							)}
 
-				<div>
-					<label htmlFor="password" className="block text-sm font-medium">
-						Password
-					</label>
+							{/* Username */}
+							<Field>
+								<FieldLabel htmlFor="username">Username</FieldLabel>
 
-					<input
-						type="password"
-						id="password"
-						name="password"
-						className="block w-full p-2 border border-gray-300 rounded"
-						placeholder="Password"
-						required
-					/>
-				</div>
+								<Input
+									id="username"
+									name="username"
+									type="text"
+									placeholder="Username"
+									autoComplete="username"
+									required
+									disabled={isPending}
+								/>
+							</Field>
 
-				<button
-					type="submit"
-					disabled={isPending}
-					className="bg-blue-500 hover:bg-blue-700 hover:cursor-pointer text-white font-bold py-2 px-4 rounded">
-					{isPending ? 'Loading...' : 'Login'}
-				</button>
+							{/* Password */}
+							<Field>
+								<div className="flex items-center">
+									<FieldLabel htmlFor="password">Password</FieldLabel>
 
-				<Link
-					to="/register"
-					className="text-blue-500 hover:text-blue-700 text-sm text-center">
-					Don't have an account?
-				</Link>
+									<Link
+										to="/forgot-password"
+										className="ml-auto text-sm underline-offset-4 hover:underline">
+										Forgot your password?
+									</Link>
+								</div>
 
-				{state?.success && <p className="text-green-500 text-center">Login Succeeded!</p>}
+								<Input
+									id="password"
+									name="password"
+									type="password"
+									placeholder="Password"
+									autoComplete="current-password"
+									required
+									disabled={isPending}
+								/>
+							</Field>
 
-				{state?.error && <p className="text-red-500 text-center">{state.error}</p>}
-			</form>
+							{/* Error */}
+							{state?.error && (
+								<FieldDescription className="text-center text-destructive">
+									{state.error}
+								</FieldDescription>
+							)}
+
+							{/* Submit */}
+							<Field>
+								<Button type="submit" disabled={isPending} className="w-full hover:cursor-pointer">
+									{isPending ? 'Logging in...' : 'Login'}
+								</Button>
+							</Field>
+
+							{/* Success */}
+							{state?.success && (
+								<FieldDescription className="text-center text-green-600">
+									Login succeeded!
+								</FieldDescription>
+							)}
+
+							{/* Register */}
+							<FieldDescription className="text-center">
+								Don&apos;t have an account?{' '}
+								<Link to="/register" className="underline underline-offset-4">
+									Sign up
+								</Link>
+							</FieldDescription>
+						</FieldGroup>
+					</form>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }
