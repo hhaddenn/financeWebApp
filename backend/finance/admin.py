@@ -61,9 +61,7 @@ class AccountAdmin(admin.ModelAdmin):
         "icon",
     )
 
-    list_filter = (
-        "user",
-    )
+    list_filter = ("user",)
 
     search_fields = (
         "name",
@@ -91,9 +89,7 @@ class CategoryAdmin(admin.ModelAdmin):
         "icon",
     )
 
-    list_filter = (
-        "category_type",
-    )
+    list_filter = ("category_type",)
 
     search_fields = (
         "name",
@@ -175,9 +171,7 @@ class TransactionAdmin(admin.ModelAdmin):
 
     date_hierarchy = "date"
 
-    ordering = (
-        "-date",
-    )
+    ordering = ("-date",)
 
     autocomplete_fields = (
         "account",
@@ -218,9 +212,7 @@ class BudgetAdmin(admin.ModelAdmin):
         "subcategory__name",
     )
 
-    ordering = (
-        "-start_date",
-    )
+    ordering = ("-start_date",)
 
     autocomplete_fields = (
         "user",
@@ -263,9 +255,7 @@ class RecurringTransactionAdmin(admin.ModelAdmin):
         "subcategory__name",
     )
 
-    ordering = (
-        "next_run_at",
-    )
+    ordering = ("next_run_at",)
 
     autocomplete_fields = (
         "user",
