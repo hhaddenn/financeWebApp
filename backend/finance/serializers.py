@@ -116,7 +116,21 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = "__all__"
-        read_only_fields = ("user",)
+        read_only_fields = ("user", "balance")
+
+    def create(self, validated_data):
+        validated_data["balance"] = validated_data["initial_balance"]
+        validated_data["user"] = self.context["request"].user
+
+        return Account.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        initial_balance = validated_data.get("initial_balance")
+
+        if initial_balance is not None:
+            validated_data["balance"] = initial_balance
+
+        return super().update(instance, validated_data)
 
 
 # ---------------------------------------------------------------------------
@@ -131,6 +145,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class SubcategorySerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+
     class Meta:
         model = Subcategory
         fields = "__all__"
@@ -142,9 +158,48 @@ class SubcategorySerializer(serializers.ModelSerializer):
 
 
 class TransactionSerializer(serializers.ModelSerializer):
+    account = AccountSerializer(read_only=True)
+    transfer_account = AccountSerializer(read_only=True)
+    subcategory = SubcategorySerializer(read_only=True)
+
+    account_id = serializers.PrimaryKeyRelatedField(
+        source="account",
+        queryset=Account.objects.all(),
+        write_only=True,
+    )
+
+    transfer_account_id = serializers.PrimaryKeyRelatedField(
+        source="transfer_account",
+        queryset=Account.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+
+    subcategory_id = serializers.PrimaryKeyRelatedField(
+        source="subcategory",
+        queryset=Subcategory.objects.all(),
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = Transaction
-        fields = "__all__"
+        fields = [
+            "id",
+            "date",
+            "name",
+            "amount",
+            "transaction_type",
+            "counterparty",
+            "account",
+            "account_id",
+            "transfer_account",
+            "transfer_account_id",
+            "subcategory",
+            "subcategory_id",
+        ]
 
     def validate(self, attrs):
         user = self.context["request"].user
