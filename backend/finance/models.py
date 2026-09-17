@@ -16,7 +16,7 @@ class CategoryType(models.TextChoices):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     description = models.CharField(max_length=100)
     icon = models.CharField(max_length=200)
     category_type = models.CharField(max_length=8, choices=CategoryType.choices)

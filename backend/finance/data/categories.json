@@ -1,0 +1,191 @@
+[
+  {
+    "name": "Housing",
+    "icon": "house",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Rent", "icon": "house" },
+      { "name": "Mortgage", "icon": "building" },
+      { "name": "Property Tax", "icon": "receipt" },
+      { "name": "Home Insurance", "icon": "shield" },
+      { "name": "Maintenance", "icon": "hammer" },
+      { "name": "Utilities", "icon": "zap" }
+    ]
+  },
+  {
+    "name": "Transportation",
+    "icon": "car",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Fuel", "icon": "fuel" },
+      { "name": "Mechanic", "icon": "wrench" },
+      { "name": "Parking", "icon": "square-parking" },
+      { "name": "Tolls", "icon": "waypoints" },
+      { "name": "Insurance", "icon": "shield-check" },
+      { "name": "Public Transport", "icon": "bus" },
+      { "name": "Car Loan", "icon": "badge-euro" }
+    ]
+  },
+  {
+    "name": "Food",
+    "icon": "utensils-crossed",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Groceries", "icon": "shopping-cart" },
+      { "name": "Restaurants", "icon": "utensils" },
+      { "name": "Coffee", "icon": "coffee" },
+      { "name": "Delivery", "icon": "bike" }
+    ]
+  },
+  {
+    "name": "Health",
+    "icon": "heart-pulse",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Doctor", "icon": "stethoscope" },
+      { "name": "Pharmacy", "icon": "pill" },
+      { "name": "Health Insurance", "icon": "shield-plus" },
+      { "name": "Gym", "icon": "dumbbell" }
+    ]
+  },
+  {
+    "name": "Shopping",
+    "icon": "shopping-bag",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Clothes", "icon": "shirt" },
+      { "name": "Electronics", "icon": "smartphone" },
+      { "name": "Furniture", "icon": "sofa" },
+      { "name": "General Shopping", "icon": "shopping-basket" }
+    ]
+  },
+  {
+    "name": "Entertainment",
+    "icon": "gamepad-2",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Movies", "icon": "film" },
+      { "name": "Games", "icon": "gamepad-2" },
+      { "name": "Streaming", "icon": "tv" },
+      { "name": "Books", "icon": "book-open" },
+      { "name": "Music", "icon": "music" }
+    ]
+  },
+  {
+    "name": "Education",
+    "icon": "graduation-cap",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Courses", "icon": "monitor-play" },
+      { "name": "Books", "icon": "book-open" },
+      { "name": "School Fees", "icon": "school" }
+    ]
+  },
+  {
+    "name": "Travel",
+    "icon": "plane",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Flights", "icon": "plane" },
+      { "name": "Hotels", "icon": "hotel" },
+      { "name": "Transport", "icon": "train" },
+      { "name": "Activities", "icon": "map" }
+    ]
+  },
+  {
+    "name": "Family",
+    "icon": "users",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Children", "icon": "baby" },
+      { "name": "Childcare", "icon": "heart-handshake" },
+      { "name": "Gifts", "icon": "gift" }
+    ]
+  },
+  {
+    "name": "Financial",
+    "icon": "landmark",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Bank Fees", "icon": "building-2" },
+      { "name": "Loan Payments", "icon": "badge-euro" },
+      { "name": "Credit Card Fees", "icon": "credit-card" },
+      { "name": "Taxes", "icon": "receipt-text" }
+    ]
+  },
+  {
+    "name": "Pets",
+    "icon": "paw-print",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Food", "icon": "bone" },
+      { "name": "Vet", "icon": "syringe" },
+      { "name": "Accessories", "icon": "paw-print" }
+    ]
+  },
+  {
+    "name": "Miscellaneous",
+    "icon": "circle-help",
+    "category_type": "expense",
+    "subcategories": [
+      { "name": "Other", "icon": "circle-help" }
+    ]
+  },
+
+  {
+    "name": "Salary",
+    "icon": "briefcase",
+    "category_type": "income",
+    "subcategories": [
+      { "name": "Salary", "icon": "wallet" },
+      { "name": "Bonus", "icon": "badge-plus" },
+      { "name": "Overtime", "icon": "clock-3" }
+    ]
+  },
+  {
+    "name": "Investments",
+    "icon": "chart-line",
+    "category_type": "income",
+    "subcategories": [
+      { "name": "Dividends", "icon": "coins" },
+      { "name": "Interest", "icon": "percent" },
+      { "name": "Capital Gains", "icon": "trending-up" }
+    ]
+  },
+  {
+    "name": "Business",
+    "icon": "building",
+    "category_type": "income",
+    "subcategories": [
+      { "name": "Sales", "icon": "shopping-cart" },
+      { "name": "Consulting", "icon": "briefcase-business" },
+      { "name": "Freelance", "icon": "laptop" }
+    ]
+  },
+  {
+    "name": "Gifts",
+    "icon": "gift",
+    "category_type": "income",
+    "subcategories": [
+      { "name": "Cash Gifts", "icon": "gift" },
+      { "name": "Donations Received", "icon": "hand-heart" }
+    ]
+  },
+  {
+    "name": "Refunds",
+    "icon": "rotate-ccw",
+    "category_type": "income",
+    "subcategories": [
+      { "name": "Product Refund", "icon": "package-open" },
+      { "name": "Tax Refund", "icon": "receipt" }
+    ]
+  },
+  {
+    "name": "Other Income",
+    "icon": "circle-plus",
+    "category_type": "income",
+    "subcategories": [
+      { "name": "Other", "icon": "circle-plus" }
+    ]
+  }
+]
