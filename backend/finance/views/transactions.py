@@ -12,14 +12,7 @@ class TransactionsList(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Transaction.objects.filter(
-            account__user=self.request.user
-        ).select_related(
-            "account",
-            "transfer_account",
-            "subcategory",
-            "subcategory__category",
-        )
+        return Transaction.objects.filter(account__user=self.request.user)
 
 
 class TransactionCreate(generics.CreateAPIView):
