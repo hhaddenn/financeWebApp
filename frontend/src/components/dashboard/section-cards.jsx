@@ -6,26 +6,26 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 const cards = [
 	{
-		title: 'Total balance',
-		value: '$12,450.00',
+		title: 'Main account',
+		value: '€12,450.00',
 		change: '+12.5%',
 		positive: true,
 	},
 	{
-		title: 'Income',
-		value: '$8,240.00',
+		title: 'Trade Republic',
+		value: '€8,240.00',
 		change: '+8.2%',
 		positive: true,
 	},
 	{
-		title: 'Expenses',
-		value: '$3,120.00',
+		title: 'Waller',
+		value: '€20.00',
 		change: '-4.1%',
 		positive: false,
 	},
 	{
 		title: 'Savings',
-		value: '$5,120.00',
+		value: '€5,120.00',
 		change: '+18.3%',
 		positive: true,
 	},

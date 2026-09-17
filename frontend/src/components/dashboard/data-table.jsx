@@ -1,68 +1,17 @@
 import * as React from 'react';
-import {
-	closestCenter,
-	DndContext,
-	KeyboardSensor,
-	MouseSensor,
-	TouchSensor,
-	useSensor,
-	useSensors,
-} from '@dnd-kit/core';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import {
-	arrayMove,
-	SortableContext,
-	useSortable,
-	verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import {
-	columnFilteringFeature,
-	columnVisibilityFeature,
-	createColumnHelper,
-	createFilteredRowModel,
-	createPaginatedRowModel,
-	createSortedRowModel,
-	FlexRender,
-	rowPaginationFeature,
-	rowSelectionFeature,
-	rowSortingFeature,
-	tableFeatures,
-	useTable,
-} from '@tanstack/react-table';
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
-import { toast } from 'sonner';
-import { z } from 'zod';
 
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from '@/components/ui/chart';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-	Drawer,
-	DrawerClose,
-	DrawerContent,
-	DrawerDescription,
-	DrawerFooter,
-	DrawerHeader,
-	DrawerTitle,
-	DrawerTrigger,
-} from '@/components/ui/drawer';
+
 import {
 	DropdownMenu,
-	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+
 import {
 	Select,
 	SelectContent,
@@ -71,7 +20,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+
 import {
 	Table,
 	TableBody,
@@ -80,752 +29,495 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-	GripVerticalIcon,
-	CircleCheckIcon,
-	LoaderIcon,
-	EllipsisVerticalIcon,
-	Columns3Icon,
-	ChevronDownIcon,
-	PlusIcon,
-	ChevronsLeftIcon,
-	ChevronLeftIcon,
-	ChevronRightIcon,
-	ChevronsRightIcon,
-	TrendingUpIcon,
-} from 'lucide-react';
 
-// New in v9: declare the features this table uses — anything you don't
-// register is tree-shaken out of the bundle.
-const features = tableFeatures({
-	columnFilteringFeature,
-	columnVisibilityFeature,
-	rowPaginationFeature,
-	rowSelectionFeature,
-	rowSortingFeature,
-	filteredRowModel: createFilteredRowModel(),
-	paginatedRowModel: createPaginatedRowModel(),
-	sortedRowModel: createSortedRowModel(),
-});
+import { EllipsisVerticalIcon } from 'lucide-react';
 
-const columnHelper = createColumnHelper();
-
-export const schema = z.object({
-	id: z.number(),
-	header: z.string(),
-	type: z.string(),
-	status: z.string(),
-	target: z.string(),
-	limit: z.string(),
-	reviewer: z.string(),
-});
-
-// Create a separate component for the drag handle
-function DragHandle({ id }) {
-	const { attributes, listeners } = useSortable({
-		id,
-	});
-	return (
-		<Button
-			{...attributes}
-			{...listeners}
-			variant="ghost"
-			size="icon"
-			className="size-7 text-muted-foreground hover:bg-transparent">
-			<GripVerticalIcon className="size-3 text-muted-foreground" />
-			<span className="sr-only">Drag to reorder</span>
-		</Button>
-	);
-}
-const columns = columnHelper.columns([
-	columnHelper.display({
-		id: 'drag',
-		header: () => null,
-		cell: ({ row }) => <DragHandle id={row.original.id} />,
-	}),
-	columnHelper.display({
-		id: 'select',
-		header: ({ table }) => (
-			<div className="flex items-center justify-center">
-				<Checkbox
-					checked={table.getIsAllPageRowsSelected()}
-					indeterminate={
-						table.getIsSomePageRowsSelected() &&
-						!table.getIsAllPageRowsSelected()
-					}
-					onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-					aria-label="Select all"
-				/>
-			</div>
-		),
-		cell: ({ row }) => (
-			<div className="flex items-center justify-center">
-				<Checkbox
-					checked={row.getIsSelected()}
-					onCheckedChange={(value) => row.toggleSelected(!!value)}
-					aria-label="Select row"
-				/>
-			</div>
-		),
-		enableSorting: false,
-		enableHiding: false,
-	}),
-	columnHelper.accessor('header', {
-		header: 'Header',
-		cell: ({ row }) => {
-			return <TableCellViewer item={row.original} />;
+const dummyData = [
+	{
+		id: 1,
+		name: 'Salary',
+		counterparty: 'Company XYZ',
+		description: 'Monthly salary',
+		transaction_type: 'income',
+		amount: '2450.00',
+		amount_to_receive: '2450.00',
+		date: '2026-09-01',
+		account: {
+			id: 1,
+			name: 'Main Account',
 		},
-		enableHiding: false,
-	}),
-	columnHelper.accessor('type', {
-		header: 'Section Type',
-		cell: ({ row }) => (
-			<div className="w-32">
-				<Badge variant="outline" className="px-1.5 text-muted-foreground">
-					{row.original.type}
-				</Badge>
-			</div>
-		),
-	}),
-	columnHelper.accessor('status', {
-		header: 'Status',
-		cell: ({ row }) => (
-			<Badge variant="outline" className="px-1.5 text-muted-foreground">
-				{row.original.status === 'Done' ? (
-					<CircleCheckIcon className="fill-green-500 dark:fill-green-400" />
-				) : (
-					<LoaderIcon />
-				)}
-				{row.original.status}
-			</Badge>
-		),
-	}),
-	columnHelper.accessor('target', {
-		header: () => <div className="w-full text-right">Target</div>,
-		cell: ({ row }) => (
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-						loading: `Saving ${row.original.header}`,
-						success: 'Done',
-						error: 'Error',
-					});
-				}}>
-				<Label htmlFor={`${row.original.id}-target`} className="sr-only">
-					Target
-				</Label>
-				<Input
-					className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
-					defaultValue={row.original.target}
-					id={`${row.original.id}-target`}
-				/>
-			</form>
-		),
-	}),
-	columnHelper.accessor('limit', {
-		header: () => <div className="w-full text-right">Limit</div>,
-		cell: ({ row }) => (
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-						loading: `Saving ${row.original.header}`,
-						success: 'Done',
-						error: 'Error',
-					});
-				}}>
-				<Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-					Limit
-				</Label>
-				<Input
-					className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30"
-					defaultValue={row.original.limit}
-					id={`${row.original.id}-limit`}
-				/>
-			</form>
-		),
-	}),
-	columnHelper.accessor('reviewer', {
-		header: 'Reviewer',
-		cell: ({ row }) => {
-			const isAssigned = row.original.reviewer !== 'Assign reviewer';
-			if (isAssigned) {
-				return row.original.reviewer;
-			}
-			return (
-				<>
-					<Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
-						Reviewer
-					</Label>
-					<Select
-						items={[
-							{ label: 'Eddie Lake', value: 'Eddie Lake' },
-							{ label: 'Jamik Tashpulatov', value: 'Jamik Tashpulatov' },
-						]}>
-						<SelectTrigger
-							className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
-							size="sm"
-							id={`${row.original.id}-reviewer`}>
-							<SelectValue placeholder="Assign reviewer" />
-						</SelectTrigger>
-						<SelectContent align="end">
-							<SelectGroup>
-								<SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-								<SelectItem value="Jamik Tashpulatov">
-									Jamik Tashpulatov
-								</SelectItem>
-							</SelectGroup>
-						</SelectContent>
-					</Select>
-				</>
-			);
+		transfer_account: null,
+		subcategory: {
+			id: 1,
+			name: 'Salary',
+			category: {
+				id: 1,
+				name: 'Income',
+			},
 		},
-	}),
-	columnHelper.display({
-		id: 'actions',
-		cell: () => (
-			<DropdownMenu>
-				<DropdownMenuTrigger
-					render={
-						<Button
-							variant="ghost"
-							className="flex size-8 text-muted-foreground data-open:bg-muted"
-							size="icon"
-						/>
-					}>
-					<EllipsisVerticalIcon />
-					<span className="sr-only">Open menu</span>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" className="w-32">
-					<DropdownMenuItem>Edit</DropdownMenuItem>
-					<DropdownMenuItem>Make a copy</DropdownMenuItem>
-					<DropdownMenuItem>Favorite</DropdownMenuItem>
-					<DropdownMenuSeparator />
-					<DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
-		),
-	}),
-]);
-function DraggableRow({ row }) {
-	const { transform, transition, setNodeRef, isDragging } = useSortable({
-		id: row.original.id,
-	});
-	return (
-		<TableRow
-			data-state={row.getIsSelected() && 'selected'}
-			data-dragging={isDragging}
-			ref={setNodeRef}
-			className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-			style={{
-				transform: CSS.Transform.toString(transform),
-				transition: transition,
-			}}>
-			{row.getVisibleCells().map((cell) => (
-				<TableCell key={cell.id}>
-					<FlexRender cell={cell} />
-				</TableCell>
-			))}
-		</TableRow>
-	);
-}
-export function DataTable({ data: initialData }) {
-	const [data, setData] = React.useState(() => initialData ?? []);
-	const [rowSelection, setRowSelection] = React.useState({});
-	const [columnVisibility, setColumnVisibility] = React.useState({});
-	const [columnFilters, setColumnFilters] = React.useState([]);
-	const [sorting, setSorting] = React.useState([]);
-	const [pagination, setPagination] = React.useState({
-		pageIndex: 0,
-		pageSize: 10,
-	});
-	const sortableId = React.useId();
-	const sensors = useSensors(
-		useSensor(MouseSensor, {}),
-		useSensor(TouchSensor, {}),
-		useSensor(KeyboardSensor, {}),
-	);
-	const dataIds = React.useMemo(() => data?.map(({ id }) => id) || [], [data]);
-	const table = useTable({
-		features,
-		data,
-		columns,
-		state: {
-			sorting,
-			columnVisibility,
-			rowSelection,
-			columnFilters,
-			pagination,
+	},
+	{
+		id: 2,
+		name: 'Rent',
+		counterparty: 'Landlord',
+		description: 'Monthly rent',
+		transaction_type: 'expense',
+		amount: '850.00',
+		amount_to_receive: '0',
+		date: '2026-09-02',
+		account: {
+			id: 1,
+			name: 'Main Account',
 		},
-		getRowId: (row) => row.id.toString(),
-		enableRowSelection: true,
-		onRowSelectionChange: setRowSelection,
-		onSortingChange: setSorting,
-		onColumnFiltersChange: setColumnFilters,
-		onColumnVisibilityChange: setColumnVisibility,
-		onPaginationChange: setPagination,
-	});
-	function handleDragEnd(event) {
-		const { active, over } = event;
-		if (active && over && active.id !== over.id) {
-			setData((data) => {
-				const oldIndex = dataIds.indexOf(active.id);
-				const newIndex = dataIds.indexOf(over.id);
-				return arrayMove(data, oldIndex, newIndex);
-			});
+		transfer_account: null,
+		subcategory: {
+			id: 2,
+			name: 'Rent',
+			category: {
+				id: 2,
+				name: 'Housing',
+			},
+		},
+	},
+	{
+		id: 3,
+		name: 'Supermarket',
+		counterparty: 'Continente',
+		description: 'Weekly groceries',
+		transaction_type: 'expense',
+		amount: '74.32',
+		amount_to_receive: '0',
+		date: '2026-09-04',
+		account: {
+			id: 1,
+			name: 'Main Account',
+		},
+		transfer_account: null,
+		subcategory: {
+			id: 3,
+			name: 'Groceries',
+			category: {
+				id: 3,
+				name: 'Food',
+			},
+		},
+	},
+	{
+		id: 4,
+		name: 'Transfer to Savings',
+		counterparty: '',
+		description: 'Monthly savings',
+		transaction_type: 'transfer',
+		amount: '300.00',
+		amount_to_receive: '0',
+		date: '2026-09-05',
+		account: {
+			id: 1,
+			name: 'Main Account',
+		},
+		transfer_account: {
+			id: 2,
+			name: 'Savings Account',
+		},
+		subcategory: null,
+	},
+	{
+		id: 5,
+		name: 'Netflix',
+		counterparty: 'Netflix',
+		description: 'Monthly subscription',
+		transaction_type: 'expense',
+		amount: '13.99',
+		amount_to_receive: '0',
+		date: '2026-09-06',
+		account: {
+			id: 1,
+			name: 'Main Account',
+		},
+		transfer_account: null,
+		subcategory: {
+			id: 4,
+			name: 'Subscriptions',
+			category: {
+				id: 4,
+				name: 'Entertainment',
+			},
+		},
+	},
+	{
+		id: 6,
+		name: 'Restaurant',
+		counterparty: 'Pizzaria Central',
+		description: 'Dinner',
+		transaction_type: 'expense',
+		amount: '32.50',
+		amount_to_receive: '0',
+		date: '2026-09-07',
+		account: {
+			id: 1,
+			name: 'Main Account',
+		},
+		transfer_account: null,
+		subcategory: {
+			id: 5,
+			name: 'Restaurants',
+			category: {
+				id: 3,
+				name: 'Food',
+			},
+		},
+	},
+	{
+		id: 7,
+		name: 'Freelance',
+		counterparty: 'Client ABC',
+		description: 'Freelance project',
+		transaction_type: 'income',
+		amount: '650.00',
+		amount_to_receive: '650.00',
+		date: '2026-09-08',
+		account: {
+			id: 1,
+			name: 'Main Account',
+		},
+		transfer_account: null,
+		subcategory: {
+			id: 6,
+			name: 'Freelance',
+			category: {
+				id: 1,
+				name: 'Income',
+			},
+		},
+	},
+	{
+		id: 8,
+		name: 'Electricity',
+		counterparty: 'EDP',
+		description: 'Electricity bill',
+		transaction_type: 'expense',
+		amount: '48.76',
+		amount_to_receive: '0',
+		date: '2026-09-10',
+		account: {
+			id: 1,
+			name: 'Main Account',
+		},
+		transfer_account: null,
+		subcategory: {
+			id: 7,
+			name: 'Electricity',
+			category: {
+				id: 2,
+				name: 'Housing',
+			},
+		},
+	},
+	{
+		id: 9,
+		name: 'Coffee',
+		counterparty: 'Local Café',
+		description: 'Morning coffee',
+		transaction_type: 'expense',
+		amount: '3.20',
+		amount_to_receive: '0',
+		date: '2026-09-11',
+		account: {
+			id: 1,
+			name: 'Main Account',
+		},
+		transfer_account: null,
+		subcategory: {
+			id: 8,
+			name: 'Coffee',
+			category: {
+				id: 3,
+				name: 'Food',
+			},
+		},
+	},
+	{
+		id: 10,
+		name: 'Internet',
+		counterparty: 'MEO',
+		description: 'Internet bill',
+		transaction_type: 'expense',
+		amount: '39.99',
+		amount_to_receive: '0',
+		date: '2026-09-12',
+		account: {
+			id: 1,
+			name: 'Main Account',
+		},
+		transfer_account: null,
+		subcategory: {
+			id: 9,
+			name: 'Internet',
+			category: {
+				id: 2,
+				name: 'Housing',
+			},
+		},
+	},
+];
+
+export function DataTable() {
+	const [data, setData] = React.useState(dummyData);
+	const [selectedRows, setSelectedRows] = React.useState({});
+	const [period, setPeriod] = React.useState('day');
+
+	const toggleRow = (id) => {
+		setSelectedRows((current) => ({
+			...current,
+			[id]: !current[id],
+		}));
+	};
+
+	const toggleAll = () => {
+		const allSelected = data.every((item) => selectedRows[item.id]);
+
+		if (allSelected) {
+			setSelectedRows({});
+			return;
 		}
-	}
+
+		const next = {};
+
+		data.forEach((item) => {
+			next[item.id] = true;
+		});
+
+		setSelectedRows(next);
+	};
+
+	const allSelected =
+		data.length > 0 && data.every((item) => selectedRows[item.id]);
+
+	const selectedCount = Object.values(selectedRows).filter(Boolean).length;
+
+	const formatDate = (dateString) => {
+		return new Date(`${dateString}T00:00:00`).toLocaleDateString('pt-PT', {
+			day: '2-digit',
+			month: 'short',
+			year: 'numeric',
+		});
+	};
+
+	const formatAmount = (transaction) => {
+		const amount = Number(transaction.amount);
+
+		const prefix = {
+			income: '+',
+			expense: '-',
+			transfer: '',
+		}[transaction.transaction_type];
+
+		return (
+			<span
+				className={`font-medium ${
+					transaction.transaction_type === 'income'
+						? 'text-green-600 dark:text-green-400'
+						: transaction.transaction_type === 'expense'
+							? 'text-red-600 dark:text-red-400'
+							: 'text-foreground'
+				}`}>
+				{prefix}
+				{amount.toLocaleString('pt-PT', {
+					style: 'currency',
+					currency: 'EUR',
+				})}
+			</span>
+		);
+	};
+
 	return (
-		<Tabs
-			defaultValue="outline"
-			className="w-full flex-col justify-start gap-6">
+		<div className="w-full space-y-4">
+			{/* Header */}
 			<div className="flex items-center justify-between px-4 lg:px-6">
-				<Label htmlFor="view-selector" className="sr-only">
-					View
-				</Label>
+				<div>
+					<h2 className="text-lg font-semibold">Transactions</h2>
+					<p className="text-sm text-muted-foreground">
+						View your transactions by day or week.
+					</p>
+				</div>
+
 				<Select
-					defaultValue="outline"
+					value={period}
+					onValueChange={setPeriod}
 					items={[
-						{ label: 'Outline', value: 'outline' },
-						{ label: 'Past Performance', value: 'past-performance' },
-						{ label: 'Key Personnel', value: 'key-personnel' },
-						{ label: 'Focus Documents', value: 'focus-documents' },
+						{ label: 'Day', value: 'day' },
+						{ label: 'Week', value: 'week' },
 					]}>
-					<SelectTrigger
-						className="flex w-fit @4xl/main:hidden"
-						size="sm"
-						id="view-selector">
-						<SelectValue placeholder="Select a view" />
+					<SelectTrigger className="w-24">
+						<SelectValue />
 					</SelectTrigger>
+
 					<SelectContent>
 						<SelectGroup>
-							<SelectItem value="outline">Outline</SelectItem>
-							<SelectItem value="past-performance">Past Performance</SelectItem>
-							<SelectItem value="key-personnel">Key Personnel</SelectItem>
-							<SelectItem value="focus-documents">Focus Documents</SelectItem>
+							<SelectItem value="day">Day</SelectItem>
+							<SelectItem value="week">Week</SelectItem>
 						</SelectGroup>
 					</SelectContent>
 				</Select>
-				<TabsList className="hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:bg-muted-foreground/30 **:data-[slot=badge]:px-1 @4xl/main:flex">
-					<TabsTrigger value="outline">Outline</TabsTrigger>
-					<TabsTrigger value="past-performance">
-						Past Performance <Badge variant="secondary">3</Badge>
-					</TabsTrigger>
-					<TabsTrigger value="key-personnel">
-						Key Personnel <Badge variant="secondary">2</Badge>
-					</TabsTrigger>
-					<TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
-				</TabsList>
-				<div className="flex items-center gap-2">
-					<DropdownMenu>
-						<DropdownMenuTrigger
-							render={<Button variant="outline" size="sm" />}>
-							<Columns3Icon data-icon="inline-start" />
-							Columns
-							<ChevronDownIcon data-icon="inline-end" />
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="w-32">
-							{table
-								.getAllColumns()
-								.filter(
-									(column) =>
-										typeof column.accessorFn !== 'undefined' &&
-										column.getCanHide(),
-								)
-								.map((column) => {
-									return (
-										<DropdownMenuCheckboxItem
-											key={column.id}
-											className="capitalize"
-											checked={column.getIsVisible()}
-											onCheckedChange={(value) =>
-												column.toggleVisibility(!!value)
-											}>
-											{column.id}
-										</DropdownMenuCheckboxItem>
-									);
-								})}
-						</DropdownMenuContent>
-					</DropdownMenu>
-					<Button variant="outline" size="sm">
-						<PlusIcon />
-						<span className="hidden lg:inline">Add Section</span>
-					</Button>
+			</div>
+
+			{/* Table */}
+			<div className="overflow-hidden rounded-lg border">
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead className="w-12">
+								<div className="flex items-center justify-center">
+									<Checkbox
+										checked={allSelected}
+										onCheckedChange={toggleAll}
+										aria-label="Select all"
+									/>
+								</div>
+							</TableHead>
+
+							<TableHead>Date</TableHead>
+							<TableHead>Transaction</TableHead>
+							<TableHead>Category</TableHead>
+							<TableHead>Account</TableHead>
+							<TableHead>Type</TableHead>
+							<TableHead className="text-right">Amount</TableHead>
+							<TableHead className="w-12" />
+						</TableRow>
+					</TableHeader>
+
+					<TableBody>
+						{data.map((transaction) => {
+							const subcategory = transaction.subcategory;
+
+							return (
+								<TableRow
+									key={transaction.id}
+									data-state={
+										selectedRows[transaction.id] ? 'selected' : undefined
+									}>
+									{/* Selection */}
+									<TableCell>
+										<div className="flex items-center justify-center">
+											<Checkbox
+												checked={!!selectedRows[transaction.id]}
+												onCheckedChange={() => toggleRow(transaction.id)}
+												aria-label={`Select ${transaction.name}`}
+											/>
+										</div>
+									</TableCell>
+
+									{/* Date */}
+									<TableCell className="whitespace-nowrap">
+										{formatDate(transaction.date)}
+									</TableCell>
+
+									{/* Transaction */}
+									<TableCell>
+										<div className="flex flex-col">
+											<span className="font-medium">
+												{transaction.name || 'Unnamed transaction'}
+											</span>
+
+											{transaction.counterparty && (
+												<span className="text-xs text-muted-foreground">
+													{transaction.counterparty}
+												</span>
+											)}
+										</div>
+									</TableCell>
+
+									{/* Category */}
+									<TableCell>
+										{subcategory ? (
+											<div className="flex flex-col">
+												<span>{subcategory.category.name}</span>
+
+												<span className="text-xs text-muted-foreground">
+													{subcategory.name}
+												</span>
+											</div>
+										) : (
+											<span className="text-muted-foreground">—</span>
+										)}
+									</TableCell>
+
+									{/* Account */}
+									<TableCell>
+										{transaction.transaction_type === 'transfer' ? (
+											<div className="flex flex-col">
+												<span>{transaction.account.name}</span>
+
+												<span className="text-xs text-muted-foreground">
+													→ {transaction.transfer_account?.name}
+												</span>
+											</div>
+										) : (
+											transaction.account?.name || '—'
+										)}
+									</TableCell>
+
+									{/* Type */}
+									<TableCell>
+										<Badge variant="outline">
+											{transaction.transaction_type === 'income'
+												? 'Income'
+												: transaction.transaction_type === 'expense'
+													? 'Expense'
+													: 'Transfer'}
+										</Badge>
+									</TableCell>
+
+									{/* Amount */}
+									<TableCell className="text-right">
+										{formatAmount(transaction)}
+									</TableCell>
+
+									{/* Actions */}
+									<TableCell>
+										<DropdownMenu>
+											<DropdownMenuTrigger
+												render={
+													<Button
+														variant="ghost"
+														className="size-8 text-muted-foreground"
+														size="icon"
+													/>
+												}>
+												<EllipsisVerticalIcon />
+												<span className="sr-only">Open menu</span>
+											</DropdownMenuTrigger>
+
+											<DropdownMenuContent align="end" className="w-32">
+												<DropdownMenuItem>Edit</DropdownMenuItem>
+
+												<DropdownMenuItem>Duplicate</DropdownMenuItem>
+
+												<DropdownMenuSeparator />
+
+												<DropdownMenuItem variant="destructive">
+													Delete
+												</DropdownMenuItem>
+											</DropdownMenuContent>
+										</DropdownMenu>
+									</TableCell>
+								</TableRow>
+							);
+						})}
+					</TableBody>
+				</Table>
+			</div>
+
+			{/* Footer */}
+			<div className="flex items-center justify-between px-4">
+				<div className="text-sm text-muted-foreground">
+					{selectedCount} of {data.length} transaction(s) selected.
+				</div>
+
+				<div className="text-sm font-medium">
+					Showing: <span className="capitalize">{period}</span>
 				</div>
 			</div>
-			<TabsContent
-				value="outline"
-				className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
-				<div className="overflow-hidden rounded-lg border">
-					<DndContext
-						collisionDetection={closestCenter}
-						modifiers={[restrictToVerticalAxis]}
-						onDragEnd={handleDragEnd}
-						sensors={sensors}
-						id={sortableId}>
-						<Table>
-							<TableHeader className="sticky top-0 z-10 bg-muted">
-								{table.getHeaderGroups().map((headerGroup) => (
-									<TableRow key={headerGroup.id}>
-										{headerGroup.headers.map((header) => {
-											return (
-												<TableHead key={header.id} colSpan={header.colSpan}>
-													{header.isPlaceholder ? null : (
-														<FlexRender header={header} />
-													)}
-												</TableHead>
-											);
-										})}
-									</TableRow>
-								))}
-							</TableHeader>
-							<TableBody className="**:data-[slot=table-cell]:first:w-8">
-								{table.getRowModel().rows?.length ? (
-									<SortableContext
-										items={dataIds}
-										strategy={verticalListSortingStrategy}>
-										{table.getRowModel().rows.map((row) => (
-											<DraggableRow key={row.id} row={row} />
-										))}
-									</SortableContext>
-								) : (
-									<TableRow>
-										<TableCell
-											colSpan={columns.length}
-											className="h-24 text-center">
-											No results.
-										</TableCell>
-									</TableRow>
-								)}
-							</TableBody>
-						</Table>
-					</DndContext>
-				</div>
-				<div className="flex items-center justify-between px-4">
-					<div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-						{table.getFilteredSelectedRowModel().rows.length} of{' '}
-						{table.getFilteredRowModel().rows.length} row(s) selected.
-					</div>
-					<div className="flex w-full items-center gap-8 lg:w-fit">
-						<div className="hidden items-center gap-2 lg:flex">
-							<Label htmlFor="rows-per-page" className="text-sm font-medium">
-								Rows per page
-							</Label>
-							<Select
-								value={`${table.state.pagination.pageSize}`}
-								onValueChange={(value) => {
-									table.setPageSize(Number(value));
-								}}
-								items={[10, 20, 30, 40, 50].map((pageSize) => ({
-									label: `${pageSize}`,
-									value: `${pageSize}`,
-								}))}>
-								<SelectTrigger size="sm" className="w-20" id="rows-per-page">
-									<SelectValue placeholder={table.state.pagination.pageSize} />
-								</SelectTrigger>
-								<SelectContent side="top">
-									<SelectGroup>
-										{[10, 20, 30, 40, 50].map((pageSize) => (
-											<SelectItem key={pageSize} value={`${pageSize}`}>
-												{pageSize}
-											</SelectItem>
-										))}
-									</SelectGroup>
-								</SelectContent>
-							</Select>
-						</div>
-						<div className="flex w-fit items-center justify-center text-sm font-medium">
-							Page {table.state.pagination.pageIndex + 1} of{' '}
-							{table.getPageCount()}
-						</div>
-						<div className="ml-auto flex items-center gap-2 lg:ml-0">
-							<Button
-								variant="outline"
-								className="hidden h-8 w-8 p-0 lg:flex"
-								onClick={() => table.setPageIndex(0)}
-								disabled={!table.getCanPreviousPage()}>
-								<span className="sr-only">Go to first page</span>
-								<ChevronsLeftIcon />
-							</Button>
-							<Button
-								variant="outline"
-								className="size-8"
-								size="icon"
-								onClick={() => table.previousPage()}
-								disabled={!table.getCanPreviousPage()}>
-								<span className="sr-only">Go to previous page</span>
-								<ChevronLeftIcon />
-							</Button>
-							<Button
-								variant="outline"
-								className="size-8"
-								size="icon"
-								onClick={() => table.nextPage()}
-								disabled={!table.getCanNextPage()}>
-								<span className="sr-only">Go to next page</span>
-								<ChevronRightIcon />
-							</Button>
-							<Button
-								variant="outline"
-								className="hidden size-8 lg:flex"
-								size="icon"
-								onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-								disabled={!table.getCanNextPage()}>
-								<span className="sr-only">Go to last page</span>
-								<ChevronsRightIcon />
-							</Button>
-						</div>
-					</div>
-				</div>
-			</TabsContent>
-			<TabsContent
-				value="past-performance"
-				className="flex flex-col px-4 lg:px-6">
-				<div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-			</TabsContent>
-			<TabsContent value="key-personnel" className="flex flex-col px-4 lg:px-6">
-				<div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-			</TabsContent>
-			<TabsContent
-				value="focus-documents"
-				className="flex flex-col px-4 lg:px-6">
-				<div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-			</TabsContent>
-		</Tabs>
-	);
-}
-const chartData = [
-	{
-		month: 'January',
-		desktop: 186,
-		mobile: 80,
-	},
-	{
-		month: 'February',
-		desktop: 305,
-		mobile: 200,
-	},
-	{
-		month: 'March',
-		desktop: 237,
-		mobile: 120,
-	},
-	{
-		month: 'April',
-		desktop: 73,
-		mobile: 190,
-	},
-	{
-		month: 'May',
-		desktop: 209,
-		mobile: 130,
-	},
-	{
-		month: 'June',
-		desktop: 214,
-		mobile: 140,
-	},
-];
-const chartConfig = {
-	desktop: {
-		label: 'Desktop',
-		color: 'var(--primary)',
-	},
-
-	mobile: {
-		label: 'Mobile',
-		color: 'var(--primary)',
-	},
-};
-function TableCellViewer({ item }) {
-	const isMobile = useIsMobile();
-	return (
-		<Drawer swipeDirection={isMobile ? 'down' : 'right'}>
-			<DrawerTrigger
-				render={
-					<Button
-						variant="link"
-						className="w-fit px-0 text-left text-foreground"
-					/>
-				}>
-				{item.header}
-			</DrawerTrigger>
-			<DrawerContent>
-				<DrawerHeader className="gap-1">
-					<DrawerTitle>{item.header}</DrawerTitle>
-					<DrawerDescription>
-						Showing total visitors for the last 6 months
-					</DrawerDescription>
-				</DrawerHeader>
-				<div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-					{!isMobile && (
-						<>
-							<ChartContainer config={chartConfig}>
-								<AreaChart
-									accessibilityLayer
-									data={chartData}
-									margin={{
-										left: 0,
-										right: 10,
-									}}>
-									<CartesianGrid vertical={false} />
-									<XAxis
-										dataKey="month"
-										tickLine={false}
-										axisLine={false}
-										tickMargin={8}
-										tickFormatter={(value) => value.slice(0, 3)}
-										hide
-									/>
-									<ChartTooltip
-										cursor={false}
-										content={<ChartTooltipContent indicator="dot" />}
-									/>
-									<Area
-										dataKey="mobile"
-										type="natural"
-										fill="var(--color-mobile)"
-										fillOpacity={0.6}
-										stroke="var(--color-mobile)"
-										stackId="a"
-									/>
-									<Area
-										dataKey="desktop"
-										type="natural"
-										fill="var(--color-desktop)"
-										fillOpacity={0.4}
-										stroke="var(--color-desktop)"
-										stackId="a"
-									/>
-								</AreaChart>
-							</ChartContainer>
-							<Separator />
-							<div className="grid gap-2">
-								<div className="flex gap-2 leading-none font-medium">
-									Trending up by 5.2% this month{' '}
-									<TrendingUpIcon className="size-4" />
-								</div>
-								<div className="text-muted-foreground">
-									Showing total visitors for the last 6 months. This is just
-									some random text to test the layout. It spans multiple lines
-									and should wrap around.
-								</div>
-							</div>
-							<Separator />
-						</>
-					)}
-					<form className="flex flex-col gap-4">
-						<div className="flex flex-col gap-3">
-							<Label htmlFor="header">Header</Label>
-							<Input id="header" defaultValue={item.header} />
-						</div>
-						<div className="grid grid-cols-2 gap-4">
-							<div className="flex flex-col gap-3">
-								<Label htmlFor="type">Type</Label>
-								<Select
-									defaultValue={item.type}
-									items={[
-										{ label: 'Table of Contents', value: 'Table of Contents' },
-										{ label: 'Executive Summary', value: 'Executive Summary' },
-										{
-											label: 'Technical Approach',
-											value: 'Technical Approach',
-										},
-										{ label: 'Design', value: 'Design' },
-										{ label: 'Capabilities', value: 'Capabilities' },
-										{ label: 'Focus Documents', value: 'Focus Documents' },
-										{ label: 'Narrative', value: 'Narrative' },
-										{ label: 'Cover Page', value: 'Cover Page' },
-									]}>
-									<SelectTrigger id="type" className="w-full">
-										<SelectValue placeholder="Select a type" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectGroup>
-											<SelectItem value="Table of Contents">
-												Table of Contents
-											</SelectItem>
-											<SelectItem value="Executive Summary">
-												Executive Summary
-											</SelectItem>
-											<SelectItem value="Technical Approach">
-												Technical Approach
-											</SelectItem>
-											<SelectItem value="Design">Design</SelectItem>
-											<SelectItem value="Capabilities">Capabilities</SelectItem>
-											<SelectItem value="Focus Documents">
-												Focus Documents
-											</SelectItem>
-											<SelectItem value="Narrative">Narrative</SelectItem>
-											<SelectItem value="Cover Page">Cover Page</SelectItem>
-										</SelectGroup>
-									</SelectContent>
-								</Select>
-							</div>
-							<div className="flex flex-col gap-3">
-								<Label htmlFor="status">Status</Label>
-								<Select
-									defaultValue={item.status}
-									items={[
-										{ label: 'Done', value: 'Done' },
-										{ label: 'In Progress', value: 'In Progress' },
-										{ label: 'Not Started', value: 'Not Started' },
-									]}>
-									<SelectTrigger id="status" className="w-full">
-										<SelectValue placeholder="Select a status" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectGroup>
-											<SelectItem value="Done">Done</SelectItem>
-											<SelectItem value="In Progress">In Progress</SelectItem>
-											<SelectItem value="Not Started">Not Started</SelectItem>
-										</SelectGroup>
-									</SelectContent>
-								</Select>
-							</div>
-						</div>
-						<div className="grid grid-cols-2 gap-4">
-							<div className="flex flex-col gap-3">
-								<Label htmlFor="target">Target</Label>
-								<Input id="target" defaultValue={item.target} />
-							</div>
-							<div className="flex flex-col gap-3">
-								<Label htmlFor="limit">Limit</Label>
-								<Input id="limit" defaultValue={item.limit} />
-							</div>
-						</div>
-						<div className="flex flex-col gap-3">
-							<Label htmlFor="reviewer">Reviewer</Label>
-							<Select
-								defaultValue={item.reviewer}
-								items={[
-									{ label: 'Eddie Lake', value: 'Eddie Lake' },
-									{ label: 'Jamik Tashpulatov', value: 'Jamik Tashpulatov' },
-									{ label: 'Emily Whalen', value: 'Emily Whalen' },
-								]}>
-								<SelectTrigger id="reviewer" className="w-full">
-									<SelectValue placeholder="Select a reviewer" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectGroup>
-										<SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-										<SelectItem value="Jamik Tashpulatov">
-											Jamik Tashpulatov
-										</SelectItem>
-										<SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
-									</SelectGroup>
-								</SelectContent>
-							</Select>
-						</div>
-					</form>
-				</div>
-				<DrawerFooter>
-					<Button>Submit</Button>
-					<DrawerClose render={<Button variant="outline" />}>Done</DrawerClose>
-				</DrawerFooter>
-			</DrawerContent>
-		</Drawer>
+		</div>
 	);
 }
