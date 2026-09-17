@@ -21,31 +21,31 @@ import {
 export const description = 'A donut chart with text';
 
 const chartData = [
-	{ browser: 'chrome', visitors: 275, fill: 'var(--color-chrome)' },
-	{ browser: 'safari', visitors: 200, fill: 'var(--color-safari)' },
-	{ browser: 'firefox', visitors: 287, fill: 'var(--color-firefox)' },
-	{ browser: 'edge', visitors: 173, fill: 'var(--color-edge)' },
-	{ browser: 'other', visitors: 190, fill: 'var(--color-other)' },
+	{ category: 'food', expenses: 275, fill: 'var(--color-food)' },
+	{ category: 'car', expenses: 200, fill: 'var(--color-car)' },
+	{ category: 'house', expenses: 287, fill: 'var(--color-house)' },
+	{ category: 'travel', expenses: 173, fill: 'var(--color-travel)' },
+	{ category: 'other', expenses: 190, fill: 'var(--color-other)' },
 ];
 
 const chartConfig = {
-	visitors: {
-		label: 'Visitors',
+	expenses: {
+		label: 'Expenses',
 	},
-	chrome: {
-		label: 'Chrome',
+	food: {
+		label: 'Food',
 		color: 'var(--chart-1)',
 	},
-	safari: {
-		label: 'Safari',
+	car: {
+		label: 'Car',
 		color: 'var(--chart-2)',
 	},
-	firefox: {
-		label: 'Firefox',
+	house: {
+		label: 'House',
 		color: 'var(--chart-3)',
 	},
-	edge: {
-		label: 'Edge',
+	travel: {
+		label: 'Travel',
 		color: 'var(--chart-4)',
 	},
 	other: {
@@ -55,15 +55,15 @@ const chartConfig = {
 };
 
 export function ChartPieDonutText() {
-	const totalVisitors = React.useMemo(() => {
-		return chartData.reduce((acc, curr) => acc + curr.visitors, 0);
+	const totalExpenses = React.useMemo(() => {
+		return chartData.reduce((acc, curr) => acc + curr.expenses, 0);
 	}, []);
 
 	return (
 		<Card className="flex flex-col">
 			<CardHeader className="items-center pb-0">
-				<CardTitle>Pie Chart - Donut with Text</CardTitle>
-				<CardDescription>January - June 2024</CardDescription>
+				<CardTitle>Category expenses</CardTitle>
+				<CardDescription>September 2026</CardDescription>
 			</CardHeader>
 			<CardContent className="flex-1 pb-0">
 				<ChartContainer
@@ -76,8 +76,8 @@ export function ChartPieDonutText() {
 						/>
 						<Pie
 							data={chartData}
-							dataKey="visitors"
-							nameKey="browser"
+							dataKey="expenses"
+							nameKey="category"
 							innerRadius={60}
 							strokeWidth={5}>
 							<Label
@@ -93,13 +93,13 @@ export function ChartPieDonutText() {
 													x={viewBox.cx}
 													y={viewBox.cy}
 													className="fill-foreground text-3xl font-bold">
-													{totalVisitors.toLocaleString()}
+													€{totalExpenses.toLocaleString()}
 												</tspan>
 												<tspan
 													x={viewBox.cx}
 													y={(viewBox.cy || 0) + 24}
 													className="fill-muted-foreground">
-													Visitors
+													Expenses
 												</tspan>
 											</text>
 										);
@@ -110,12 +110,39 @@ export function ChartPieDonutText() {
 					</PieChart>
 				</ChartContainer>
 			</CardContent>
-			<CardFooter className="flex-col gap-2 text-sm">
-				<div className="flex items-center gap-2 leading-none font-medium">
-					Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
+			<CardFooter className="flex flex-col gap-3">
+				<div className="grid w-full grid-cols-2 gap-3">
+					{chartData.map((item) => {
+						const percentage = ((item.expenses / totalExpenses) * 100).toFixed(
+							0,
+						);
+
+						return (
+							<div
+								key={item.category}
+								className="flex items-center justify-between gap-2">
+								<div className="flex items-center gap-2">
+									<div
+										className="h-3 w-3 rounded-sm"
+										style={{
+											backgroundColor: chartConfig[item.category].color,
+										}}
+									/>
+									<span className="text-sm capitalize">
+										{chartConfig[item.category].label}
+									</span>
+								</div>
+
+								<div className="text-sm text-muted-foreground">
+									€{item.expenses} ({percentage}%)
+								</div>
+							</div>
+						);
+					})}
 				</div>
-				<div className="leading-none text-muted-foreground">
-					Showing total visitors for the last 6 months
+
+				<div className="text-xs text-muted-foreground">
+					Showing total spending this month by category
 				</div>
 			</CardFooter>
 		</Card>
