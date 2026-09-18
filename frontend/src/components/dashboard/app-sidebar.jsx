@@ -19,6 +19,8 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { getUser } from '@/api/auth';
+import { useState, useEffect } from 'react';
 
 const data = {
 	navMain: [
@@ -32,20 +34,31 @@ const data = {
 			url: '/transactions',
 			icon: <ArrowLeftRightIcon />,
 		},
-		{
-			title: 'Budgets',
-			url: '/budgets',
-			icon: <WalletIcon />,
-		},
-		{
-			title: 'Settings',
-			url: '/settings',
-			icon: <Settings2Icon />,
-		},
 	],
 };
 
 export function AppSidebar({ ...props }) {
+	const [user, setUser] = useState([]);
+	const [loading, setLoading] = useState(true);
+
+	const loadUser = async () => {
+		try {
+			setLoading(true);
+
+			const data = await getUser();
+
+			setUser(data);
+		} catch (error) {
+			showError(error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		loadUser();
+	}, []);
+
 	return (
 		<Sidebar collapsible="offcanvas" className="bg-background" {...props}>
 			<SidebarHeader className="bg-background p-4">
@@ -90,8 +103,8 @@ export function AppSidebar({ ...props }) {
 				{/* User */}
 				<NavUser
 					user={{
-						name: 'Username',
-						email: 'usermail@mail.com',
+						name: user.username,
+						email: user.email,
 						avatar: '',
 					}}
 				/>
