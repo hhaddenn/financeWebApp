@@ -80,10 +80,12 @@ export function TransactionDialog({
 	 * Load categories and subcategories.
 	 */
 	useEffect(() => {
+		if (!open) return;
+
 		const loadData = async () => {
 			try {
 				const [categoriesData, subcategoriesData] = await Promise.all([
-					getCategories(),
+					getCategories(type),
 					getSubcategories(),
 				]);
 
@@ -95,7 +97,7 @@ export function TransactionDialog({
 		};
 
 		loadData();
-	}, []);
+	}, [open, type]);
 
 	/*
 	 * Reload accounts every time the dialog opens.
@@ -348,41 +350,95 @@ export function TransactionDialog({
 								: 'Fill in the details for the new transaction.'}
 						</DialogDescription>
 					</DialogHeader>
-
-					<div className="grid gap-5 py-6">
-						{/* ACCOUNT */}
-
+					{/** ACCOUNT */}
+					<div className="grid gap-2">
+						<Label>Account</Label>
+						<Popover open={accountOpen} onOpenChange={setAccountOpen}>
+							<PopoverTrigger
+								render={
+									<Button
+										type="button"
+										variant="outline"
+										className="justify-start font-normal">
+										{selectedAccount ? (
+											<>
+												<CategoryIcon
+													name={selectedAccount.icon}
+													className="mr-2 size-4"
+												/>
+												{selectedAccount.name}
+											</>
+										) : (
+											<span className="text-muted-foreground">
+												Select an account
+											</span>
+										)}
+									</Button>
+								}
+							/>
+							<PopoverContent className="w-64 p-2" align="start">
+								<div className="grid gap-1">
+									{accounts.map((account) => (
+										<Button
+											key={account.id}
+											type="button"
+											variant="ghost"
+											className="w-full justify-start"
+											onClick={() => {
+												setForm((current) => ({
+													...current,
+													account_id: String(account.id),
+													transfer_account_id:
+														String(account.id) ===
+														String(current.transfer_account_id)
+															? ''
+															: current.transfer_account_id,
+												}));
+												setAccountOpen(false);
+											}}>
+											<CategoryIcon
+												name={account.icon}
+												className="mr-3 size-5"
+											/>
+											<span className="flex-1 text-left">{account.name}</span>
+										</Button>
+									))}
+								</div>
+							</PopoverContent>
+						</Popover>
+					</div>
+					{/** TRANSFER DESTINATION */}
+					{type === 'transfer' && (
 						<div className="grid gap-2">
-							<Label>Account</Label>
-
-							<Popover open={accountOpen} onOpenChange={setAccountOpen}>
+							<Label>Account to Transfer</Label>
+							<Popover
+								open={transferAccountOpen}
+								onOpenChange={setTransferAccountOpen}>
 								<PopoverTrigger
 									render={
 										<Button
 											type="button"
 											variant="outline"
 											className="justify-start font-normal">
-											{selectedAccount ? (
+											{selectedTransferAccount ? (
 												<>
 													<CategoryIcon
-														name={selectedAccount.icon}
+														name={selectedTransferAccount.icon}
 														className="mr-2 size-4"
 													/>
-
-													{selectedAccount.name}
+													{selectedTransferAccount.name}
 												</>
 											) : (
 												<span className="text-muted-foreground">
-													Select an account
+													Select destination account
 												</span>
 											)}
 										</Button>
 									}
 								/>
-
 								<PopoverContent className="w-64 p-2" align="start">
 									<div className="grid gap-1">
-										{accounts.map((account) => (
+										{availableTransferAccounts.map((account) => (
 											<Button
 												key={account.id}
 												type="button"
@@ -391,22 +447,14 @@ export function TransactionDialog({
 												onClick={() => {
 													setForm((current) => ({
 														...current,
-														account_id: String(account.id),
-
-														transfer_account_id:
-															String(account.id) ===
-															String(current.transfer_account_id)
-																? ''
-																: current.transfer_account_id,
+														transfer_account_id: String(account.id),
 													}));
-
-													setAccountOpen(false);
+													setTransferAccountOpen(false);
 												}}>
 												<CategoryIcon
 													name={account.icon}
 													className="mr-3 size-5"
 												/>
-
 												<span className="flex-1 text-left">{account.name}</span>
 											</Button>
 										))}
@@ -414,341 +462,227 @@ export function TransactionDialog({
 								</PopoverContent>
 							</Popover>
 						</div>
-
-						{/* NAME */}
-
+					)}
+					{/** NAME */}
+					<div className="grid gap-2">
+						<Label htmlFor="transaction-name">Name</Label>
+						<Input
+							id="transaction-name"
+							placeholder={
+								type === 'transfer'
+									? 'Ex: Transfer to savings'
+									: type === 'income'
+										? 'Ex: Money lent'
+										: 'Ex: Fill car tank'
+							}
+							value={form.name}
+							onChange={(event) =>
+								setForm((current) => ({ ...current, name: event.target.value }))
+							}
+							required
+						/>
+					</div>
+					{/** AMOUNT */}
+					<div className="grid gap-2">
+						<Label htmlFor="amount">Amount</Label>
+						<Input
+							id="amount"
+							type="number"
+							step="0.01"
+							min="0"
+							value={form.amount}
+							onChange={(event) =>
+								setForm((current) => ({
+									...current,
+									amount: event.target.value,
+								}))
+							}
+							required
+						/>
+					</div>
+					{/** EXPENSE AMOUNT TO RECEIVE */}
+					{type === 'expense' && (
 						<div className="grid gap-2">
-							<Label htmlFor="transaction-name">Name</Label>
-
+							<Label htmlFor="amount-to-receive">Amount to Receive</Label>
 							<Input
-								id="transaction-name"
-								placeholder={
-									type === 'transfer'
-										? 'Ex: Transfer to savings'
-										: type === 'income'
-											? 'Ex: Money lent'
-											: 'Ex: Fill car tank'
-								}
-								value={form.name}
-								onChange={(event) =>
-									setForm((current) => ({
-										...current,
-										name: event.target.value,
-									}))
-								}
-								required
-							/>
-						</div>
-
-						{/* AMOUNT */}
-
-						<div className="grid gap-2">
-							<Label htmlFor="amount">Amount</Label>
-
-							<Input
-								id="amount"
+								id="amount-to-receive"
 								type="number"
 								step="0.01"
 								min="0"
-								value={form.amount}
+								value={form.amount_to_receive}
 								onChange={(event) =>
 									setForm((current) => ({
 										...current,
-										amount: event.target.value,
+										amount_to_receive: event.target.value,
 									}))
 								}
 								required
 							/>
 						</div>
-
-						{/* EXPENSE AMOUNT TO RECEIVE */}
-
-						{type === 'expense' && (
-							<div className="grid gap-2">
-								<Label htmlFor="amount-to-receive">Amount to Receive</Label>
-
-								<Input
-									id="amount-to-receive"
-									type="number"
-									step="0.01"
-									min="0"
-									value={form.amount_to_receive}
-									onChange={(event) =>
+					)}
+					{/** DATE */}
+					<div className="grid gap-2">
+						<Label htmlFor="transaction-date">Date</Label>
+						<Popover>
+							<PopoverTrigger
+								render={
+									<Button
+										type="button"
+										variant="outline"
+										id="transaction-date"
+										className="justify-start font-normal">
+										{selectedDate ? format(selectedDate, 'PPP') : 'Pick a date'}
+									</Button>
+								}
+							/>
+							<PopoverContent className="w-auto p-0" align="start">
+								<Calendar
+									mode="single"
+									selected={selectedDate}
+									onSelect={(date) => {
+										if (!date) return;
 										setForm((current) => ({
 											...current,
-											amount_to_receive: event.target.value,
-										}))
-									}
-									required
+											date: format(date, 'yyyy-MM-dd'),
+										}));
+									}}
+									defaultMonth={selectedDate}
 								/>
-							</div>
-						)}
-
-						{/* TRANSFER DESTINATION */}
-
-						{type === 'transfer' && (
-							<>
-								<div className="grid gap-2">
-									<Label>Account to Transfer</Label>
-
-									<Popover
-										open={transferAccountOpen}
-										onOpenChange={setTransferAccountOpen}>
-										<PopoverTrigger
-											render={
-												<Button
-													type="button"
-													variant="outline"
-													className="justify-start font-normal">
-													{selectedTransferAccount ? (
-														<>
-															<CategoryIcon
-																name={selectedTransferAccount.icon}
-																className="mr-2 size-4"
-															/>
-
-															{selectedTransferAccount.name}
-														</>
-													) : (
-														<span className="text-muted-foreground">
-															Select destination account
-														</span>
-													)}
-												</Button>
-											}
-										/>
-
-										<PopoverContent className="w-64 p-2" align="start">
-											<div className="grid gap-1">
-												{availableTransferAccounts.map((account) => (
-													<Button
-														key={account.id}
-														type="button"
-														variant="ghost"
-														className="w-full justify-start"
-														onClick={() => {
-															setForm((current) => ({
-																...current,
-																transfer_account_id: String(account.id),
-															}));
-
-															setTransferAccountOpen(false);
-														}}>
-														<CategoryIcon
-															name={account.icon}
-															className="mr-3 size-5"
-														/>
-
-														<span className="flex-1 text-left">
-															{account.name}
-														</span>
-													</Button>
-												))}
-											</div>
-										</PopoverContent>
-									</Popover>
-								</div>
-
-								{/* READ ONLY SUBCATEGORY */}
-
-								<div className="grid gap-2">
-									<Label>Subcategory</Label>
-
-									<div className="flex h-10 items-center rounded-md border bg-muted/50 px-3 text-sm">
-										<CategoryIcon
-											name={internalTransferSubcategory?.icon}
-											className="mr-2 size-4"
-										/>
-
-										<span>
-											{internalTransferSubcategory?.name || 'Internal Transfer'}
-										</span>
-
-										<span className="ml-auto text-xs text-muted-foreground">
-											Read only
-										</span>
-									</div>
-								</div>
-							</>
-						)}
-
-						{/* DATE */}
-
+							</PopoverContent>
+						</Popover>
+					</div>
+					{/** TRANSFER READ ONLY SUBCATEGORY */}
+					{type === 'transfer' && (
 						<div className="grid gap-2">
-							<Label htmlFor="transaction-date">Date</Label>
-
-							<Popover>
+							<Label>Subcategory</Label>
+							<div className="flex h-10 items-center rounded-md border bg-muted/50 px-3 text-sm">
+								<CategoryIcon
+									name={internalTransferSubcategory?.icon}
+									className="mr-2 size-4"
+								/>
+								<span>
+									{internalTransferSubcategory?.name || 'Internal Transfer'}
+								</span>
+							</div>
+						</div>
+					)}
+					{/** CATEGORY */}
+					{type !== 'transfer' && (
+						<div className="grid gap-2">
+							<Label>Category</Label>
+							<Popover
+								open={categoryOpen}
+								onOpenChange={(isOpen) => {
+									setCategoryOpen(isOpen);
+									if (!isOpen) {
+										resetCategoryMenu();
+									}
+								}}>
 								<PopoverTrigger
 									render={
 										<Button
 											type="button"
 											variant="outline"
-											id="transaction-date"
 											className="justify-start font-normal">
-											{selectedDate
-												? format(selectedDate, 'PPP')
-												: 'Pick a date'}
-										</Button>
-									}
-								/>
-
-								<PopoverContent className="w-auto p-0" align="start">
-									<Calendar
-										mode="single"
-										selected={selectedDate}
-										onSelect={(date) => {
-											if (!date) return;
-
-											setForm((current) => ({
-												...current,
-												date: format(date, 'yyyy-MM-dd'),
-											}));
-										}}
-										defaultMonth={selectedDate}
-									/>
-								</PopoverContent>
-							</Popover>
-						</div>
-
-						{/* CATEGORY */}
-
-						{type !== 'transfer' && (
-							<div className="grid gap-2">
-								<Label>Category</Label>
-
-								<Popover
-									open={categoryOpen}
-									onOpenChange={(isOpen) => {
-										setCategoryOpen(isOpen);
-
-										if (!isOpen) {
-											resetCategoryMenu();
-										}
-									}}>
-									<PopoverTrigger
-										render={
-											<Button
-												type="button"
-												variant="outline"
-												className="justify-start font-normal">
-												{selectedSubcategory ? (
-													<>
-														<CategoryIcon
-															name={selectedCategory?.icon}
-															className="mr-2 size-4"
-														/>
-
-														{selectedCategory?.name}
-
-														<span className="mx-2 text-muted-foreground">
-															/
-														</span>
-
-														<CategoryIcon
-															name={selectedSubcategory.icon}
-															className="mr-2 size-4"
-														/>
-
-														{selectedSubcategory.name}
-													</>
-												) : (
-													<span className="text-muted-foreground">
-														Select a category
-													</span>
-												)}
-											</Button>
-										}
-									/>
-
-									<PopoverContent className="w-64 p-2" align="start">
-										{selectedCategoryId === null ? (
-											<div className="grid gap-1">
-												{categories.map((category) => (
-													<Button
-														key={category.id}
-														type="button"
-														variant="ghost"
-														className="w-full justify-start"
-														onClick={() => handleCategorySelect(category)}>
-														<CategoryIcon
-															name={category.icon}
-															className="mr-3 size-5"
-														/>
-
-														<span className="flex-1 text-left">
-															{category.name}
-														</span>
-
-														<span className="text-muted-foreground">›</span>
-													</Button>
-												))}
-											</div>
-										) : (
-											<div className="grid gap-1">
-												<Button
-													type="button"
-													variant="ghost"
-													className="mb-1 justify-start rounded-none border-b"
-													onClick={resetCategoryMenu}>
-													←
+											{selectedSubcategory ? (
+												<>
 													<CategoryIcon
 														name={selectedCategory?.icon}
 														className="mr-2 size-4"
 													/>
 													{selectedCategory?.name}
-												</Button>
-
-												{filteredSubcategories.map((subcategory) => (
-													<Button
-														key={subcategory.id}
-														type="button"
-														variant="ghost"
-														className="w-full justify-start"
-														onClick={() =>
-															handleSubcategorySelect(subcategory)
-														}>
-														<CategoryIcon
-															name={subcategory.icon}
-															className="mr-3 size-5"
-														/>
-
-														{subcategory.name}
-													</Button>
-												))}
-											</div>
-										)}
-									</PopoverContent>
-								</Popover>
-							</div>
-						)}
-
-						{/* COUNTERPARTY */}
-
-						{type !== 'transfer' && (
-							<div className="grid gap-2">
-								<Label htmlFor="counterparty-name">
-									{type === 'income' ? 'From' : 'To'}
-								</Label>
-
-								<Input
-									id="counterparty-name"
-									placeholder={
-										type === 'income'
-											? 'Ex: João (optional)'
-											: 'Ex: Galp (optional)'
-									}
-									value={form.counterparty}
-									onChange={(event) =>
-										setForm((current) => ({
-											...current,
-											counterparty: event.target.value,
-										}))
+													<span className="mx-2 text-muted-foreground"></span>
+													<CategoryIcon
+														name={selectedSubcategory.icon}
+														className="mr-2 size-4"
+													/>
+													{selectedSubcategory.name}
+												</>
+											) : (
+												<span className="text-muted-foreground">
+													Select a category
+												</span>
+											)}
+										</Button>
 									}
 								/>
-							</div>
-						)}
-					</div>
-
+								<PopoverContent className="w-64 p-2" align="start">
+									{selectedCategoryId === null ? (
+										<div className="grid gap-1">
+											{categories.map((category) => (
+												<Button
+													key={category.id}
+													type="button"
+													variant="ghost"
+													className="w-full justify-start"
+													onClick={() => handleCategorySelect(category)}>
+													<CategoryIcon
+														name={category.icon}
+														className="mr-3 size-5"
+													/>
+													<span className="flex-1 text-left">
+														{category.name}
+													</span>
+													<span className="text-muted-foreground"></span>
+												</Button>
+											))}
+										</div>
+									) : (
+										<div className="grid gap-1">
+											<Button
+												type="button"
+												variant="ghost"
+												className="mb-1 justify-start rounded-none border-b"
+												onClick={resetCategoryMenu}>
+												<CategoryIcon
+													name={selectedCategory?.icon}
+													className="mr-2 size-4"
+												/>
+												{selectedCategory?.name}
+											</Button>
+											{filteredSubcategories.map((subcategory) => (
+												<Button
+													key={subcategory.id}
+													type="button"
+													variant="ghost"
+													className="w-full justify-start"
+													onClick={() => handleSubcategorySelect(subcategory)}>
+													<CategoryIcon
+														name={subcategory.icon}
+														className="mr-3 size-5"
+													/>
+													{subcategory.name}
+												</Button>
+											))}
+										</div>
+									)}
+								</PopoverContent>
+							</Popover>
+						</div>
+					)}
+					{/** COUNTERPARTY */}
+					{type !== 'transfer' && (
+						<div className="grid gap-2">
+							<Label htmlFor="counterparty-name">
+								{type === 'income' ? 'From' : 'To'}
+							</Label>
+							<Input
+								id="counterparty-name"
+								placeholder={
+									type === 'income'
+										? 'Ex: João (optional)'
+										: 'Ex: Galp (optional)'
+								}
+								value={form.counterparty}
+								onChange={(event) =>
+									setForm((current) => ({
+										...current,
+										counterparty: event.target.value,
+									}))
+								}
+							/>
+						</div>
+					)}
 					<DialogFooter>
 						<Button
 							type="button"
