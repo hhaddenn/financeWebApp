@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import {
 	Landmark,
 	Wallet,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,8 +26,18 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 } from '@/components/ui/dialog';
+
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 import {
 	DropdownMenu,
@@ -92,6 +104,10 @@ export function SectionCards() {
 	const [dialogOpen, setDialogOpen] = useState(false);
 	const [creating, setCreating] = useState(false);
 	const [editingAccount, setEditingAccount] = useState(null);
+
+	// Delete confirmation
+	const [accountToDelete, setAccountToDelete] = useState(null);
+	const [deleting, setDeleting] = useState(false);
 
 	// Error dialog
 	const [errorDialogOpen, setErrorDialogOpen] = useState(false);
@@ -226,9 +242,31 @@ export function SectionCards() {
 		}
 	};
 
-	const handleDelete = async (account) => {
-		await deleteAccount(account.id);
-		await loadAccounts();
+	// Open delete confirmation
+	const handleDeleteRequest = (account) => {
+		setAccountToDelete(account);
+	};
+
+	// Actually delete account
+	const handleDeleteConfirm = async () => {
+		if (!accountToDelete) {
+			return;
+		}
+
+		try {
+			setDeleting(true);
+
+			await deleteAccount(accountToDelete.id);
+
+			setAccountToDelete(null);
+
+			await loadAccounts();
+			window.location.reload();
+		} catch (error) {
+			showError(error);
+		} finally {
+			setDeleting(false);
+		}
 	};
 
 	if (loading) {
@@ -264,6 +302,7 @@ export function SectionCards() {
 													className="size-8 text-muted-foreground"
 													size="icon">
 													<EllipsisVerticalIcon />
+
 													<span className="sr-only">Open menu</span>
 												</Button>
 											}
@@ -278,7 +317,8 @@ export function SectionCards() {
 
 											<DropdownMenuItem
 												variant="destructive"
-												onClick={() => handleDelete(account)}>
+												disabled={deleting}
+												onClick={() => handleDeleteRequest(account)}>
 												Delete
 											</DropdownMenuItem>
 										</DropdownMenuContent>
@@ -422,6 +462,44 @@ export function SectionCards() {
 					</form>
 				</DialogContent>
 			</Dialog>
+
+			{/* Delete confirmation */}
+			<AlertDialog
+				open={accountToDelete !== null}
+				onOpenChange={(open) => {
+					if (!open && !deleting) {
+						setAccountToDelete(null);
+					}
+				}}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete account?</AlertDialogTitle>
+
+						<AlertDialogDescription>
+							Are you sure you want to delete{' '}
+							<span className="font-medium text-foreground">
+								"{accountToDelete?.name}"
+							</span>
+							?
+							<br />
+							<br />
+							This action cannot be undone.
+							All transactions associated with this account will be deleted.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+
+						<AlertDialogAction
+							variant="destructive"
+							disabled={deleting}
+							onClick={handleDeleteConfirm}>
+							{deleting ? 'Deleting...' : 'Delete'}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
 			{/* Error dialog */}
 			<Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
