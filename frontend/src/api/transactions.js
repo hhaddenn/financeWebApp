@@ -1,7 +1,10 @@
 import api from './client';
 
-export const getTransactions = async () => {
-	const response = await api.get('/transactions/');
+export const getTransactions = async (filters = {}) => {
+	const response = await api.get('/transactions/', {
+		params: filters,
+	});
+
 	return response.data;
 };
 

@@ -5,8 +5,11 @@ from ..serializers import CategorySerializer, SubcategorySerializer
 
 
 class CategoriesList(generics.ListAPIView):
-    queryset = Category.objects.all()
     serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        category_type = self.request.query_params.get("category_type")
+        return Category.objects.filter(category_type=category_type)
 
 
 class SubcategoriesList(generics.ListAPIView):
