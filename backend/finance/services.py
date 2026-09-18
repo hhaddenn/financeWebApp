@@ -7,12 +7,15 @@ def _get_locked_accounts(transaction):
     """
     Lock all accounts affected by this transaction.
 
-    Accounts are locked in ID order so concurrent transfers are less
-    likely to deadlock when they involve the same two accounts.
+    Accounts are locked in ID order so concurrent transfers
+    involving the same accounts are less likely to deadlock.
     """
     account_ids = {transaction.account_id}
 
     if transaction.transaction_type == TransactionType.TRANSFER:
+        if transaction.transfer_account_id is None:
+            raise ValueError("Transfer destination account is required.")
+
         account_ids.add(transaction.transfer_account_id)
 
     account_ids.discard(None)
@@ -55,8 +58,11 @@ def apply_transaction(transaction):
         if account.id == transfer_account.id:
             raise ValueError("Cannot transfer to the same account.")
 
+        # Remove from source
         account.balance -= transaction.amount
-        transfer_account.balance += transaction.amount_to_receive
+
+        # Add the exact same amount to destination
+        transfer_account.balance += transaction.amount
 
         account.save(update_fields=["balance"])
         transfer_account.save(update_fields=["balance"])
@@ -84,8 +90,11 @@ def reverse_transaction(transaction):
         if account.id == transfer_account.id:
             raise ValueError("Cannot transfer to the same account.")
 
+        # Put the amount back into source
         account.balance += transaction.amount
-        transfer_account.balance -= transaction.amount_to_receive
+
+        # Remove the same amount from destination
+        transfer_account.balance -= transaction.amount
 
         account.save(update_fields=["balance"])
         transfer_account.save(update_fields=["balance"])

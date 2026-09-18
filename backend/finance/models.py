@@ -78,6 +78,7 @@ class Transaction(models.Model):
     counterparty = models.CharField(
         max_length=255,
         blank=True,
+        null=True
     )
     description = models.CharField(max_length=100, blank=True)
     transaction_type = models.CharField(max_length=10, choices=TransactionType.choices)
@@ -89,6 +90,7 @@ class Transaction(models.Model):
     amount_to_receive = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        default=0,
         validators=[MinValueValidator(0, "Value must positive")],
     )
     date = models.DateTimeField()
