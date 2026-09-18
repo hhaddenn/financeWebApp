@@ -69,7 +69,9 @@ export function DataTable() {
 				setLoading(true);
 				setError(null);
 
-				const transactions = await getTransactions();
+				const filters = getDateFilters(period);
+
+				const transactions = await getTransactions(filters);
 
 				setData(transactions);
 			} catch (err) {
@@ -81,7 +83,7 @@ export function DataTable() {
 		};
 
 		loadTransactions();
-	}, []);
+	}, [period]);
 
 	const handleEdit = (transaction) => {
 		setEditingTransaction(transaction);
@@ -198,6 +200,44 @@ export function DataTable() {
 		}
 
 		return iconMap[iconName] || iconMap['circle-help'];
+	};
+
+	const getDateFilters = (period) => {
+		const now = new Date();
+
+		const formatDate = (date) => {
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, '0');
+			const day = String(date.getDate()).padStart(2, '0');
+
+			return `${year}-${month}-${day}`;
+		};
+
+		if (period === 'today') {
+			const today = formatDate(now);
+
+			return {
+				start_date: today,
+				end_date: today,
+			};
+		}
+
+		if (period === 'week') {
+			const day = now.getDay();
+
+			// JS: Sunday = 0, Monday = 1, ..., Saturday = 6
+			const monday = new Date(now);
+			const diff = day === 0 ? -6 : 1 - day;
+
+			monday.setDate(now.getDate() + diff);
+
+			return {
+				start_date: formatDate(monday),
+				end_date: formatDate(now),
+			};
+		}
+
+		return {};
 	};
 
 	return (
