@@ -35,15 +35,11 @@ class TransactionDetail(generics.RetrieveUpdateDestroyAPIView):
     @db_transaction.atomic
     def perform_update(self, serializer):
         old_transaction = self.get_object()
-
         reverse_transaction(old_transaction)
-
         new_transaction = serializer.save()
-
         apply_transaction(new_transaction)
 
     @db_transaction.atomic
     def perform_destroy(self, instance):
         reverse_transaction(instance)
-
         instance.delete()

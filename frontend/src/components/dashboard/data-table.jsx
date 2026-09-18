@@ -1,8 +1,20 @@
+'use client';
+
 import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 import {
 	DropdownMenu,
@@ -32,8 +44,10 @@ import {
 
 import { EllipsisVerticalIcon } from 'lucide-react';
 
-import { getTransactions } from '@/api/transactions';
+import { getTransactions, deleteTransaction } from '@/api/transactions';
+
 import { iconMap } from '@/lib/icons';
+import { TransactionDialog } from './transaction-dialog';
 
 export function DataTable() {
 	const [data, setData] = React.useState([]);
@@ -41,6 +55,13 @@ export function DataTable() {
 	const [period, setPeriod] = React.useState('today');
 	const [loading, setLoading] = React.useState(true);
 	const [error, setError] = React.useState(null);
+
+	const [editingTransaction, setEditingTransaction] = React.useState(null);
+
+	const [deleting, setDeleting] = React.useState(false);
+
+	// Transaction selected for deletion
+	const [transactionToDelete, setTransactionToDelete] = React.useState(null);
 
 	React.useEffect(() => {
 		const loadTransactions = async () => {
@@ -61,6 +82,38 @@ export function DataTable() {
 
 		loadTransactions();
 	}, []);
+
+	const handleEdit = (transaction) => {
+		setEditingTransaction(transaction);
+	};
+
+	// Open custom confirmation dialog
+	const handleDeleteRequest = (transaction) => {
+		setTransactionToDelete(transaction);
+	};
+
+	// Actually delete the transaction
+	const handleDeleteConfirm = async () => {
+		if (!transactionToDelete) {
+			return;
+		}
+
+		try {
+			setDeleting(true);
+			setError(null);
+
+			await deleteTransaction(transactionToDelete.id);
+
+			// Reload the whole page so account balances,
+			// dashboard cards and transactions are all updated.
+			window.location.reload();
+		} catch (err) {
+			console.error('Failed to delete transaction:', err);
+
+			setError('Failed to delete transaction.');
+			setDeleting(false);
+		}
+	};
 
 	const toggleRow = (id) => {
 		setSelectedRows((current) => ({
@@ -93,7 +146,9 @@ export function DataTable() {
 	const selectedCount = Object.values(selectedRows).filter(Boolean).length;
 
 	const formatDate = (dateString) => {
-		if (!dateString) return '—';
+		if (!dateString) {
+			return '—';
+		}
 
 		const date = new Date(dateString);
 
@@ -146,198 +201,258 @@ export function DataTable() {
 	};
 
 	return (
-		<div className="w-full space-y-4">
-			{/* Header */}
-			<div className="flex items-center justify-between px-4 lg:px-6">
-				<div>
-					<h2 className="text-lg font-semibold">Transactions</h2>
+		<>
+			<div className="w-full space-y-4">
+				{/* Header */}
+				<div className="flex items-center justify-between px-4 lg:px-6">
+					<div>
+						<h2 className="text-lg font-semibold">Transactions</h2>
 
-					<p className="text-sm text-muted-foreground">
-						View your transactions from today or this week.
-					</p>
+						<p className="text-sm text-muted-foreground">
+							View your transactions from today or this week.
+						</p>
+					</div>
+
+					<Select value={period} onValueChange={setPeriod}>
+						<SelectTrigger className="w-24">
+							<SelectValue />
+						</SelectTrigger>
+
+						<SelectContent>
+							<SelectGroup>
+								<SelectItem value="today">Today</SelectItem>
+
+								<SelectItem value="week">This Week</SelectItem>
+							</SelectGroup>
+						</SelectContent>
+					</Select>
 				</div>
 
-				<Select value={period} onValueChange={setPeriod}>
-					<SelectTrigger className="w-24">
-						<SelectValue />
-					</SelectTrigger>
+				{/* Loading */}
+				{loading && (
+					<div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
+						Loading transactions...
+					</div>
+				)}
 
-					<SelectContent>
-						<SelectGroup>
-							<SelectItem value="today">Today</SelectItem>
-							<SelectItem value="week">This Week</SelectItem>
-						</SelectGroup>
-					</SelectContent>
-				</Select>
-			</div>
+				{/* Error */}
+				{!loading && error && (
+					<div className="rounded-lg border border-destructive/50 p-8 text-center text-sm text-destructive">
+						{error}
+					</div>
+				)}
 
-			{/* Loading */}
-			{loading && (
-				<div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
-					Loading transactions...
-				</div>
-			)}
-
-			{/* Error */}
-			{!loading && error && (
-				<div className="rounded-lg border border-destructive/50 p-8 text-center text-sm text-destructive">
-					{error}
-				</div>
-			)}
-
-			{/* Table */}
-			{!loading && !error && (
-				<div className="overflow-hidden rounded-lg border">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Date</TableHead>
-								<TableHead>Transaction</TableHead>
-								<TableHead>Category</TableHead>
-								<TableHead>Account</TableHead>
-								<TableHead>Type</TableHead>
-								<TableHead className="text-right">Amount</TableHead>
-
-								<TableHead className="w-12" />
-							</TableRow>
-						</TableHeader>
-
-						<TableBody>
-							{data.length === 0 ? (
+				{/* Table */}
+				{!loading && !error && (
+					<div className="overflow-hidden rounded-lg border">
+						<Table>
+							<TableHeader>
 								<TableRow>
-									<TableCell
-										colSpan={8}
-										className="h-24 text-center text-muted-foreground">
-										No transactions found.
-									</TableCell>
+									<TableHead>Date</TableHead>
+									<TableHead>Transaction</TableHead>
+									<TableHead>Category</TableHead>
+									<TableHead>Account</TableHead>
+									<TableHead>Type</TableHead>
+									<TableHead className="text-right">Amount</TableHead>
+									<TableHead className="w-12" />
 								</TableRow>
-							) : (
-								data.map((transaction) => {
-									const subcategory = transaction.subcategory;
-									const CategoryIcon = getCategoryIcon(transaction);
+							</TableHeader>
 
-									return (
-										<TableRow
-											key={transaction.id}
-											data-state={
-												selectedRows[transaction.id] ? 'selected' : undefined
-											}>
-											{/* Date */}
-											<TableCell className="whitespace-nowrap">
-												{formatDate(transaction.date)}
-											</TableCell>
+							<TableBody>
+								{data.length === 0 ? (
+									<TableRow>
+										<TableCell
+											colSpan={7}
+											className="h-24 text-center text-muted-foreground">
+											No transactions found.
+										</TableCell>
+									</TableRow>
+								) : (
+									data.map((transaction) => {
+										const subcategory = transaction.subcategory;
 
-											{/* Transaction */}
-											<TableCell>
-												<div className="flex flex-col">
-													<span className="font-medium">
-														{transaction.name || 'Unnamed transaction'}
-													</span>
+										const CategoryIcon = getCategoryIcon(transaction);
 
-													{transaction.counterparty && (
-														<span className="text-xs text-muted-foreground">
-															{transaction.counterparty}
-														</span>
-													)}
-												</div>
-											</TableCell>
+										return (
+											<TableRow
+												key={transaction.id}
+												data-state={
+													selectedRows[transaction.id] ? 'selected' : undefined
+												}>
+												{/* Date */}
+												<TableCell className="whitespace-nowrap">
+													{formatDate(transaction.date)}
+												</TableCell>
 
-											{/* Category */}
-											<TableCell>
-												{subcategory ? (
-													<div className="flex items-center gap-3">
-														<div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
-															<CategoryIcon className="size-4 text-muted-foreground" />
-														</div>
-
-														<div className="flex flex-col">
-															<span>{subcategory.category.name}</span>
-
-															<span className="text-xs text-muted-foreground">
-																{subcategory.name}
-															</span>
-														</div>
-													</div>
-												) : (
-													<div className="flex items-center gap-3">
-														<div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
-															<CategoryIcon className="size-4 text-muted-foreground" />
-														</div>
-
-														<span className="text-muted-foreground">—</span>
-													</div>
-												)}
-											</TableCell>
-
-											{/* Account */}
-											<TableCell>
-												{transaction.transaction_type === 'transfer' ? (
+												{/* Transaction */}
+												<TableCell>
 													<div className="flex flex-col">
-														<span>{transaction.account?.name}</span>
+														<span className="font-medium">
+															{transaction.name || 'Unnamed transaction'}
+														</span>
 
-														{transaction.transfer_account && (
+														{transaction.counterparty && (
 															<span className="text-xs text-muted-foreground">
-																→ {transaction.transfer_account.name}
+																{transaction.counterparty}
 															</span>
 														)}
 													</div>
-												) : (
-													transaction.account?.name || '—'
-												)}
-											</TableCell>
+												</TableCell>
 
-											{/* Type */}
-											<TableCell>
-												<Badge variant="outline">
-													{transaction.transaction_type === 'income'
-														? 'Income'
-														: transaction.transaction_type === 'expense'
-															? 'Expense'
-															: 'Transfer'}
-												</Badge>
-											</TableCell>
+												{/* Category */}
+												<TableCell>
+													{subcategory ? (
+														<div className="flex items-center gap-3">
+															<div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+																<CategoryIcon className="size-4 text-muted-foreground" />
+															</div>
 
-											{/* Amount */}
-											<TableCell className="text-right">
-												{formatAmount(transaction)}
-											</TableCell>
+															<div className="flex flex-col">
+																<span>{subcategory.category.name}</span>
 
-											{/* Actions */}
-											<TableCell>
-												<DropdownMenu>
-													<DropdownMenuTrigger
-														render={
-															<Button
-																variant="ghost"
-																className="size-8 text-muted-foreground"
-																size="icon">
-																<EllipsisVerticalIcon />
-																<span className="sr-only">Open menu</span>
-															</Button>
-														}
-													/>
+																<span className="text-xs text-muted-foreground">
+																	{subcategory.name}
+																</span>
+															</div>
+														</div>
+													) : (
+														<div className="flex items-center gap-3">
+															<div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+																<CategoryIcon className="size-4 text-muted-foreground" />
+															</div>
 
-													<DropdownMenuContent align="end" className="w-32">
-														<DropdownMenuItem>Edit</DropdownMenuItem>
+															<span className="text-muted-foreground">—</span>
+														</div>
+													)}
+												</TableCell>
 
-														<DropdownMenuItem>Duplicate</DropdownMenuItem>
+												{/* Account */}
+												<TableCell>
+													{transaction.transaction_type === 'transfer' ? (
+														<div className="flex flex-col">
+															<span>{transaction.account?.name}</span>
 
-														<DropdownMenuSeparator />
+															{transaction.transfer_account && (
+																<span className="text-xs text-muted-foreground">
+																	→ {transaction.transfer_account.name}
+																</span>
+															)}
+														</div>
+													) : (
+														transaction.account?.name || '—'
+													)}
+												</TableCell>
 
-														<DropdownMenuItem variant="destructive">
-															Delete
-														</DropdownMenuItem>
-													</DropdownMenuContent>
-												</DropdownMenu>
-											</TableCell>
-										</TableRow>
-									);
-								})
-							)}
-						</TableBody>
-					</Table>
-				</div>
-			)}
-		</div>
+												{/* Type */}
+												<TableCell>
+													<Badge variant="outline">
+														{transaction.transaction_type === 'income'
+															? 'Income'
+															: transaction.transaction_type === 'expense'
+																? 'Expense'
+																: 'Transfer'}
+													</Badge>
+												</TableCell>
+
+												{/* Amount */}
+												<TableCell className="text-right">
+													{formatAmount(transaction)}
+												</TableCell>
+
+												{/* Actions */}
+												<TableCell>
+													<DropdownMenu>
+														<DropdownMenuTrigger
+															render={
+																<Button
+																	variant="ghost"
+																	className="size-8 text-muted-foreground"
+																	size="icon">
+																	<EllipsisVerticalIcon />
+
+																	<span className="sr-only">Open menu</span>
+																</Button>
+															}
+														/>
+
+														<DropdownMenuContent align="end" className="w-32">
+															<DropdownMenuItem
+																onClick={() => handleEdit(transaction)}>
+																Edit
+															</DropdownMenuItem>
+
+															<DropdownMenuSeparator />
+
+															<DropdownMenuItem
+																variant="destructive"
+																disabled={deleting}
+																onClick={() =>
+																	handleDeleteRequest(transaction)
+																}>
+																Delete
+															</DropdownMenuItem>
+														</DropdownMenuContent>
+													</DropdownMenu>
+												</TableCell>
+											</TableRow>
+										);
+									})
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				)}
+			</div>
+
+			{/* Edit dialog */}
+			<TransactionDialog
+				type={editingTransaction?.transaction_type ?? null}
+				transaction={editingTransaction}
+				open={editingTransaction !== null}
+				onOpenChange={(isOpen) => {
+					if (!isOpen) {
+						setEditingTransaction(null);
+					}
+				}}
+				onCreated={() => {
+					window.location.reload();
+				}}
+			/>
+
+			{/* Delete confirmation dialog */}
+			<AlertDialog
+				open={transactionToDelete !== null}
+				onOpenChange={(open) => {
+					if (!open && !deleting) {
+						setTransactionToDelete(null);
+					}
+				}}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete transaction?</AlertDialogTitle>
+
+						<AlertDialogDescription>
+							Are you sure you want to delete{' '}
+							<span className="font-medium text-foreground">
+								"{transactionToDelete?.name || 'this transaction'}"
+							</span>
+							? This action cannot be undone and the account balance will be
+							updated.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+
+					<AlertDialogFooter>
+						<AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+
+						<AlertDialogAction
+							variant="destructive"
+							disabled={deleting}
+							onClick={handleDeleteConfirm}>
+							{deleting ? 'Deleting...' : 'Delete'}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</>
 	);
 }

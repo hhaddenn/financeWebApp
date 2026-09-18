@@ -162,6 +162,19 @@ class TransactionSerializer(serializers.ModelSerializer):
     transfer_account = AccountSerializer(read_only=True)
     subcategory = SubcategorySerializer(read_only=True)
 
+    counterparty = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
+
+    amount_to_receive = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        default=0,
+    )
+
     account_id = serializers.PrimaryKeyRelatedField(
         source="account",
         queryset=Account.objects.all(),
@@ -191,6 +204,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             "date",
             "name",
             "amount",
+            "amount_to_receive",
             "transaction_type",
             "counterparty",
             "account",
@@ -239,7 +253,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             )
 
         # ---------------------------------------------------------------
-        # Transfer validation
+        # Transfer
         # ---------------------------------------------------------------
 
         if transaction_type == TransactionType.TRANSFER:
@@ -255,19 +269,19 @@ class TransactionSerializer(serializers.ModelSerializer):
 
             if transfer_account.user != user:
                 raise serializers.ValidationError(
-                    {"transfer_account": "You do not own this account."}
+                    {"transfer_account": ("You do not own this account.")}
                 )
 
-            if subcategory is not None:
-                raise serializers.ValidationError(
-                    {"subcategory": ("Transfers cannot have a subcategory.")}
-                )
+            attrs.pop("subcategory", None)
+
+            attrs["amount_to_receive"] = 0
+            attrs["counterparty"] = None
 
         # ---------------------------------------------------------------
-        # Non-transfer validation
+        # Income
         # ---------------------------------------------------------------
 
-        else:
+        elif transaction_type == TransactionType.INCOME:
             if transfer_account is not None:
                 raise serializers.ValidationError(
                     {
@@ -277,21 +291,85 @@ class TransactionSerializer(serializers.ModelSerializer):
                     }
                 )
 
+            attrs["amount_to_receive"] = 0
+            attrs["counterparty"] = None
+
+            if subcategory is not None:
+                if subcategory.category.category_type != transaction_type:
+                    raise serializers.ValidationError(
+                        {
+                            "subcategory": (
+                                "The subcategory does not match the transaction type."
+                            )
+                        }
+                    )
+
         # ---------------------------------------------------------------
-        # Subcategory validation
+        # Expense
         # ---------------------------------------------------------------
 
-        if subcategory is not None:
-            if subcategory.category.category_type != transaction_type:
+        elif transaction_type == TransactionType.EXPENSE:
+            if transfer_account is not None:
                 raise serializers.ValidationError(
                     {
-                        "subcategory": (
-                            "The subcategory does not match the transaction type."
+                        "transfer_account": (
+                            "Only transfers can have a destination account."
                         )
                     }
                 )
 
+            if subcategory is not None:
+                if subcategory.category.category_type != transaction_type:
+                    raise serializers.ValidationError(
+                        {
+                            "subcategory": (
+                                "The subcategory does not match the transaction type."
+                            )
+                        }
+                    )
+
         return attrs
+
+    def _get_internal_transfer_subcategory(self):
+        try:
+            return Subcategory.objects.get(name__iexact="Internal Transfer")
+        except Subcategory.DoesNotExist:
+            raise serializers.ValidationError(
+                {"subcategory": ("Internal Transfer subcategory does not exist.")}
+            )
+
+    def create(self, validated_data):
+
+        transaction_type = validated_data.get("transaction_type")
+
+        if transaction_type == TransactionType.TRANSFER:
+            validated_data["subcategory"] = self._get_internal_transfer_subcategory()
+            validated_data["amount_to_receive"] = 0
+            validated_data["counterparty"] = None
+
+        elif transaction_type == TransactionType.INCOME:
+            validated_data["amount_to_receive"] = 0
+            validated_data["counterparty"] = None
+
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+
+        transaction_type = validated_data.get(
+            "transaction_type",
+            instance.transaction_type,
+        )
+
+        if transaction_type == TransactionType.TRANSFER:
+            validated_data["subcategory"] = self._get_internal_transfer_subcategory()
+            validated_data["amount_to_receive"] = 0
+            validated_data["counterparty"] = None
+
+        elif transaction_type == TransactionType.INCOME:
+            validated_data["amount_to_receive"] = 0
+            validated_data["counterparty"] = None
+
+        return super().update(instance, validated_data)
 
 
 # ---------------------------------------------------------------------------
