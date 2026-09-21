@@ -49,4 +49,9 @@ urlpatterns = [
         views.TransactionDetail.as_view(),
         name="transaction-retrieve-update-destroy-view",
     ),
+    path(
+        "feedback/",
+        views.FeedbackView.as_view(),
+        name="feedback-view"
+    )
 ]
