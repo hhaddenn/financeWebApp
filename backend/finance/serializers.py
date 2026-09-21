@@ -213,6 +213,11 @@ class TransactionSerializer(serializers.ModelSerializer):
             "transfer_account_id",
             "subcategory",
             "subcategory_id",
+            "applied",
+            "checked"
+        ]
+        read_only_fields = [
+            "applied",
         ]
 
     def validate(self, attrs):
