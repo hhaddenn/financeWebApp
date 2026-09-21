@@ -224,16 +224,18 @@ export function DataTable() {
 
 		if (period === 'week') {
 			const day = now.getDay();
-
 			// JS: Sunday = 0, Monday = 1, ..., Saturday = 6
+
 			const monday = new Date(now);
 			const diff = day === 0 ? -6 : 1 - day;
-
 			monday.setDate(now.getDate() + diff);
+
+			const sunday = new Date(monday);
+			sunday.setDate(monday.getDate() + 6);
 
 			return {
 				start_date: formatDate(monday),
-				end_date: formatDate(now),
+				end_date: formatDate(sunday),
 			};
 		}
 
@@ -327,9 +329,21 @@ export function DataTable() {
 												{/* Transaction */}
 												<TableCell>
 													<div className="flex flex-col">
-														<span className="font-medium">
-															{transaction.name || 'Unnamed transaction'}
-														</span>
+														<div className="flex items-center gap-2">
+															<span className="font-medium">
+																{transaction.name || 'Unnamed transaction'}
+															</span>
+
+															{transaction.checked ? (
+																transaction.applied ? (
+																	<Badge variant="default">Paid</Badge>
+																) : (
+																	<Badge variant="secondary">Scheduled</Badge>
+																)
+															) : (
+																<Badge variant="secondary">Not paid</Badge>
+															)}
+														</div>
 
 														{transaction.counterparty && (
 															<span className="text-xs text-muted-foreground">
