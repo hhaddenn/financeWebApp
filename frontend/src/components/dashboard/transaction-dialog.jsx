@@ -9,6 +9,8 @@ import {
 	DialogFooter,
 } from '@/components/ui/dialog';
 
+import { Switch } from '@/components/ui/switch';
+
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,6 +76,7 @@ export function TransactionDialog({
 		account_id: '',
 		transfer_account_id: '',
 		subcategory_id: '',
+		checked: true,
 	});
 
 	/*
@@ -131,35 +134,30 @@ export function TransactionDialog({
 		if (!open) return;
 
 		if (transaction) {
+			// We are EDITING
 			setForm({
 				date: transaction.date ? transaction.date.split('T')[0] : '',
-
 				name: transaction.name || '',
-
 				amount:
 					transaction.amount !== null && transaction.amount !== undefined
 						? Number(transaction.amount)
 						: 0,
-
 				amount_to_receive:
 					transaction.amount_to_receive !== null &&
 					transaction.amount_to_receive !== undefined
 						? Number(transaction.amount_to_receive)
 						: 0,
-
 				counterparty: transaction.counterparty || '',
-
 				account_id: transaction.account?.id
 					? String(transaction.account.id)
 					: '',
-
 				transfer_account_id: transaction.transfer_account?.id
 					? String(transaction.transfer_account.id)
 					: '',
-
 				subcategory_id: transaction.subcategory?.id
 					? String(transaction.subcategory.id)
 					: '',
+				checked: transaction.checked ?? true,
 			});
 
 			if (transaction.subcategory?.category?.id) {
@@ -177,6 +175,7 @@ export function TransactionDialog({
 				account_id: '',
 				transfer_account_id: '',
 				subcategory_id: '',
+				checked: true,
 			});
 
 			setSelectedCategoryId(null);
@@ -222,6 +221,7 @@ export function TransactionDialog({
 				amount: Number(form.amount),
 				transaction_type: type,
 				account_id: Number(form.account_id),
+				checked: form.checked,
 			};
 
 			/*
@@ -683,6 +683,22 @@ export function TransactionDialog({
 							/>
 						</div>
 					)}
+
+					<div className="flex items-center justify-between border-t pt-4">
+						<Label htmlFor="transaction-checked">Paid</Label>
+
+						<Switch
+							id="transaction-checked"
+							checked={form.checked}
+							onCheckedChange={(checked) =>
+								setForm((current) => ({
+									...current,
+									checked,
+								}))
+							}
+						/>
+					</div>
+
 					<DialogFooter>
 						<Button
 							type="button"

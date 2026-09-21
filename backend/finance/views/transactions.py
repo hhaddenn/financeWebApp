@@ -1,4 +1,5 @@
 from django.db import transaction as db_transaction
+from django.utils import timezone
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
@@ -9,7 +10,6 @@ from ..services import apply_transaction, reverse_transaction
 
 class TransactionsList(generics.ListAPIView):
     serializer_class = TransactionSerializer
-
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
@@ -50,7 +50,12 @@ class TransactionCreate(generics.CreateAPIView):
     @db_transaction.atomic
     def perform_create(self, serializer):
         transaction = serializer.save()
-        apply_transaction(transaction)
+
+        if transaction.checked and transaction.date <= timezone.localdate():
+            apply_transaction(transaction)
+
+            transaction.applied = True
+            transaction.save(update_fields=["applied"])
 
 
 class TransactionDetail(generics.RetrieveUpdateDestroyAPIView):
@@ -63,11 +68,30 @@ class TransactionDetail(generics.RetrieveUpdateDestroyAPIView):
     @db_transaction.atomic
     def perform_update(self, serializer):
         old_transaction = self.get_object()
-        reverse_transaction(old_transaction)
+
+        # Remove the old financial effect if it was already applied.
+        if old_transaction.applied:
+            reverse_transaction(old_transaction)
+
+        # Save the user's changes, including checked.
         new_transaction = serializer.save()
-        apply_transaction(new_transaction)
+
+        # Apply the new transaction only when:
+        # 1. The user marked it as paid.
+        # 2. Its date has arrived.
+        if new_transaction.checked and new_transaction.date <= timezone.localdate():
+            apply_transaction(new_transaction)
+
+            new_transaction.applied = True
+            new_transaction.save(update_fields=["applied"])
+        else:
+            # The transaction should not affect the balance.
+            new_transaction.applied = False
+            new_transaction.save(update_fields=["applied"])
 
     @db_transaction.atomic
     def perform_destroy(self, instance):
-        reverse_transaction(instance)
+        if instance.applied:
+            reverse_transaction(instance)
+
         instance.delete()
