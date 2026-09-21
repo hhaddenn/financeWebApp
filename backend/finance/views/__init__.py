@@ -22,3 +22,7 @@ from .transactions import (
     TransactionCreate,
     TransactionDetail,
 )
+
+from .feedback import(
+    FeedbackView,
+)
