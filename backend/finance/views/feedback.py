@@ -1,34 +1,61 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
 from django.core.mail import send_mail
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.views import APIView
+
+
+MAX_MESSAGE_LENGTH = 2000
+VALID_FEEDBACK_TYPES = {"bug", "suggestion"}
 
 
 class FeedbackView(APIView):
     permission_classes = (IsAuthenticated,)
+    throttle_classes = (ScopedRateThrottle,)
+    throttle_scope = "feedback"
 
     def post(self, request):
         feedback_type = request.data.get("type")
         message = request.data.get("message")
-        subject = f"New {feedback_type} received"
 
-        user = request.user
+        if not isinstance(feedback_type, str):
+            return Response({"error": "Invalid feedback type"}, status=400)
 
-        email_message = f"""
-            User: {user.username}
-            Email: {user.email}
+        feedback_type = feedback_type.strip().lower()
 
-            Message:
-            {message}
-            """
-        if not feedback_type or not message:
+        if feedback_type not in VALID_FEEDBACK_TYPES:
+            return Response({"error": "Invalid feedback type"}, status=400)
+
+        if not isinstance(message, str):
+            return Response({"error": "Invalid feedback message"}, status=400)
+
+        message = message.strip()
+
+        if not message:
             return Response(
-                {"error": "Type and message are required"},
+                {"error": "Feedback message is required"},
                 status=400,
             )
-        if feedback_type not in ["bug", "suggestion"]:
-            return Response({"error": "Invalid type of feedback"}, status=400)
 
-        send_mail(subject, email_message, user.email, ["hugohadden@proton.me"])
+        if len(message) > MAX_MESSAGE_LENGTH:
+            return Response(
+                {"error": "Feedback message is too long"},
+                status=400,
+            )
+
+        email_message = (
+            f"User: {request.user.username}\n"
+            f"Email: {request.user.email}\n\n"
+            f"Message:\n{message}"
+        )
+
+        send_mail(
+            subject=f"New {feedback_type} received",
+            message=email_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.FEEDBACK_RECIPIENT],
+            fail_silently=False,
+        )
 
         return Response({"message": "Feedback received"})
