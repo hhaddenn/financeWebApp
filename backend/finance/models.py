@@ -20,6 +20,8 @@ class Category(models.Model):
     description = models.CharField(max_length=100)
     icon = models.CharField(max_length=200)
     category_type = models.CharField(max_length=8, choices=CategoryType.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
@@ -31,6 +33,8 @@ class Subcategory(models.Model):
     category = models.ForeignKey(
         Category, on_delete=models.CASCADE, related_name="subcategories"
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = (
@@ -55,6 +59,8 @@ class Account(models.Model):
         decimal_places=2,
     )
     icon = models.CharField(max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = (
@@ -112,6 +118,8 @@ class Transaction(models.Model):
     )
     applied = models.BooleanField(default=False)
     checked = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = (
@@ -168,6 +176,8 @@ class Budget(models.Model):
         blank=True,
         related_name="budgets",
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class RecurrenceFrequency(models.TextChoices):
@@ -292,6 +302,9 @@ class UserSettings(models.Model):
         default="light",
     )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
 class UserCategoryPreference(models.Model):
     user = models.ForeignKey(
@@ -312,6 +325,9 @@ class UserCategoryPreference(models.Model):
     )
 
     hidden = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = (
@@ -336,6 +352,9 @@ class UserSubcategoryPreference(models.Model):
     )
 
     hidden = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         constraints = (
