@@ -208,9 +208,9 @@ const pt = {
 		name: 'Nome',
 		amountToReceive: 'Valor a receber',
 
-		transferNamePlaceholder: 'Ex.: Transferência para poupança',
-		incomeNamePlaceholder: 'Ex.: Dinheiro emprestado',
-		expenseNamePlaceholder: 'Ex.: Encher o depósito',
+		transferNamePlaceholder: 'Ex.: Transferência para poupança (opcional)',
+		incomeNamePlaceholder: 'Ex.: Dinheiro emprestado (opcional)',
+		expenseNamePlaceholder: 'Ex.: Encher o depósito (opcional)',
 
 		pickDate: 'Escolhe uma data',
 
