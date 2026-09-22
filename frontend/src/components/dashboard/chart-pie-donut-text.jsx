@@ -188,7 +188,7 @@ export function ChartPieDonutText() {
 				) : (
 					<ChartContainer
 						config={chartConfig}
-						className="mx-auto aspect-square max-h-62.5">
+						className="mx-auto w-full max-w-70 aspect-square">
 						<PieChart>
 							<ChartTooltip
 								cursor={false}
@@ -212,15 +212,15 @@ export function ChartPieDonutText() {
 													dominantBaseline="middle">
 													<tspan
 														x={viewBox.cx}
-														y={viewBox.cy}
-														className="fill-foreground text-3xl font-bold">
+														y={viewBox.cy - 4}
+														className="fill-foreground text-2xl font-bold">
 														€{formattedTotal}
 													</tspan>
 
 													<tspan
 														x={viewBox.cx}
-														y={(viewBox.cy || 0) + 24}
-														className="fill-muted-foreground">
+														y={(viewBox.cy || 0) + 20}
+														className="fill-muted-foreground text-[11px]">
 														{t('dashboard.expenses')}
 													</tspan>
 												</text>
