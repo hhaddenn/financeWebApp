@@ -1,4 +1,4 @@
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { usePreferences } from '@/context/PreferencesContext';
 
 import { useNavigate } from 'react-router-dom';

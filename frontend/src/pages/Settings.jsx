@@ -4,9 +4,9 @@ import { usePreferences } from '@/context/PreferencesContext';
 
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
-import { AppSidebar } from '@/components/dashboard/app-sidebar';
+import { AppSidebar } from '@/components/navigation/AppSidebar';
 
-import { SiteHeader } from '@/components/dashboard/site-header';
+import { SiteHeader } from '@/components/navigation/SiteHeader';
 
 import { iconMap } from '@/lib/icons';
 

@@ -6,8 +6,8 @@ import {
 	LightbulbIcon,
 } from 'lucide-react';
 
-import { NavMain } from '@/components/dashboard/nav-main';
-import { NavUser } from '@/components/dashboard/nav-user';
+import { NavMain } from '@/components/navigation/NavMain';
+import { NavUser } from '@/components/navigation/NavUser';
 
 import {
 	Sidebar,
@@ -19,7 +19,7 @@ import {
 	SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-import { getUser } from '@/api/auth';
+import { getUser } from '@/features/auth/api';
 
 import { useState, useEffect } from 'react';
 

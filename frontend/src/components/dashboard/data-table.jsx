@@ -47,7 +47,7 @@ import { EllipsisVerticalIcon } from 'lucide-react';
 
 import { getTransactions, deleteTransaction } from '@/api/transactions';
 import { iconMap } from '@/lib/icons';
-import { TransactionDialog } from './transaction-dialog';
+import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { usePreferences } from '@/context/PreferencesContext';
 
 export function DataTable() {

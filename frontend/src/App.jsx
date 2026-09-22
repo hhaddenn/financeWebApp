@@ -5,15 +5,18 @@ import {
 	Navigate,
 } from 'react-router-dom';
 
-import { useAuth } from './context/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Login from '@/features/auth/pages/Login';
+import Register from '@/features/auth/pages/Register';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import Settings from './pages/Settings';
+import VerifyEmail from '@/features/auth/pages/VerifyEmail';
+import ForgotPassword from '@/features/auth/pages/ForgotPassword';
+import ResetPassword from '@/features/auth/pages/ResetPassword';
 
 function App() {
 	const { isLoggedIn, isLoading } = useAuth();
@@ -42,6 +45,13 @@ function App() {
 						element={
 							isLoggedIn ? <Navigate to="/dashboard" replace /> : <Register />
 						}
+					/>
+
+					<Route path="/verify-email/:uid/:token" element={<VerifyEmail />} />
+					<Route path="/forgot-password" element={<ForgotPassword />} />
+					<Route
+						path="/reset-password/:uid/:token"
+						element={<ResetPassword />}
 					/>
 
 					<Route
