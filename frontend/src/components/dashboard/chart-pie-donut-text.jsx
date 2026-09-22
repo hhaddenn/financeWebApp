@@ -22,6 +22,8 @@ import {
 import { getTransactions } from '@/api/transactions';
 import { getCategoryPreferences } from '@/api/settings';
 
+import { usePreferences } from '@/context/PreferencesContext';
+
 const chartConfig = {
 	expenses: {
 		label: 'Expenses',
@@ -29,18 +31,23 @@ const chartConfig = {
 };
 
 export function ChartPieDonutText() {
+	const { language, t, translateCategory } = usePreferences();
+
 	const [transactions, setTransactions] = React.useState([]);
 	const [categoryPreferences, setCategoryPreferences] = React.useState([]);
 	const [loading, setLoading] = React.useState(true);
 
-	// Year and month we want to show.
-	// Janeiro = 0.
+	// Janeiro = 0
 	const selectedYear = 2026;
 	const selectedMonth = 8;
+
+	const locale = language === 'pt' ? 'pt-PT' : 'en-US';
 
 	React.useEffect(() => {
 		const loadData = async () => {
 			try {
+				setLoading(true);
+
 				const [transactionsData, categoryPreferencesData] = await Promise.all([
 					getTransactions(),
 					getCategoryPreferences(),
@@ -61,6 +68,7 @@ export function ChartPieDonutText() {
 	const categoryPreferencesMap = React.useMemo(() => {
 		return categoryPreferences.reduce((map, preference) => {
 			map[preference.category.id] = preference;
+
 			return map;
 		}, {});
 	}, [categoryPreferences]);
@@ -69,14 +77,14 @@ export function ChartPieDonutText() {
 		const categories = {};
 
 		transactions.forEach((transaction) => {
-			// Only expenses
+			// Apenas despesas
 			if (transaction.transaction_type !== 'expense') {
 				return;
 			}
 
 			const date = new Date(transaction.date);
 
-			// Only selected month
+			// Apenas o mês selecionado
 			if (
 				date.getFullYear() !== selectedYear ||
 				date.getMonth() !== selectedMonth
@@ -92,19 +100,25 @@ export function ChartPieDonutText() {
 
 			const preference = categoryPreferencesMap[category.id];
 
-			// Category hidden in settings
+			// Categoria escondida nas definições
 			if (preference?.hidden) {
 				return;
 			}
 
-			const categoryName = category.name;
 			const amount = Number(transaction.amount);
 
 			if (!categories[category.id]) {
 				categories[category.id] = {
 					categoryId: category.id,
-					category: categoryName,
+
+					// Nome original para referência
+					categoryName: category.name,
+
+					// Nome traduzido apenas para apresentação
+					category: translateCategory(category.name),
+
 					expenses: 0,
+
 					fill: preference?.color || '#64748b',
 				};
 			}
@@ -112,35 +126,47 @@ export function ChartPieDonutText() {
 			categories[category.id].expenses += amount;
 		});
 
-		// Order from higher to lower
+		// Maior para menor
 		return Object.values(categories).sort(
 			(itemA, itemB) => itemB.expenses - itemA.expenses,
 		);
-	}, [transactions, categoryPreferencesMap, selectedYear, selectedMonth]);
+	}, [
+		transactions,
+		categoryPreferencesMap,
+		selectedYear,
+		selectedMonth,
+		translateCategory,
+	]);
 
 	const totalExpenses = React.useMemo(() => {
 		return chartData.reduce((total, item) => total + item.expenses, 0);
 	}, [chartData]);
 
 	const monthName = new Date(selectedYear, selectedMonth).toLocaleDateString(
-		'pt-PT',
+		locale,
 		{
 			month: 'long',
 			year: 'numeric',
 		},
 	);
 
+	const formattedTotal = totalExpenses.toLocaleString(locale, {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	});
+
 	if (loading) {
 		return (
 			<Card>
 				<CardHeader>
-					<CardTitle>Category expenses</CardTitle>
+					<CardTitle>{t('dashboard.categoryExpenses')}</CardTitle>
+
 					<CardDescription>{monthName}</CardDescription>
 				</CardHeader>
 
 				<CardContent>
 					<div className="flex h-62.5 items-center justify-center text-sm text-muted-foreground">
-						Loading...
+						{t('common.loading')}
 					</div>
 				</CardContent>
 			</Card>
@@ -150,7 +176,7 @@ export function ChartPieDonutText() {
 	return (
 		<Card className="flex flex-col">
 			<CardHeader className="items-center pb-0">
-				<CardTitle>Category expenses</CardTitle>
+				<CardTitle>{t('dashboard.categoryExpenses')}</CardTitle>
 
 				<CardDescription className="capitalize">{monthName}</CardDescription>
 			</CardHeader>
@@ -158,7 +184,7 @@ export function ChartPieDonutText() {
 			<CardContent className="flex-1 pb-0">
 				{chartData.length === 0 ? (
 					<div className="flex h-62.5 items-center justify-center text-sm text-muted-foreground">
-						No expenses this month.
+						{t('dashboard.noExpensesThisMonth')}
 					</div>
 				) : (
 					<ChartContainer
@@ -189,18 +215,14 @@ export function ChartPieDonutText() {
 														x={viewBox.cx}
 														y={viewBox.cy}
 														className="fill-foreground text-3xl font-bold">
-														€
-														{totalExpenses.toLocaleString('pt-PT', {
-															minimumFractionDigits: 2,
-															maximumFractionDigits: 2,
-														})}
+														€{formattedTotal}
 													</tspan>
 
 													<tspan
 														x={viewBox.cx}
 														y={(viewBox.cy || 0) + 24}
 														className="fill-muted-foreground">
-														Expenses
+														{t('dashboard.expenses')}
 													</tspan>
 												</text>
 											);
@@ -243,7 +265,7 @@ export function ChartPieDonutText() {
 
 									<div className="shrink-0 text-sm text-muted-foreground">
 										€
-										{item.expenses.toLocaleString('pt-PT', {
+										{item.expenses.toLocaleString(locale, {
 											minimumFractionDigits: 2,
 											maximumFractionDigits: 2,
 										})}{' '}
@@ -255,7 +277,7 @@ export function ChartPieDonutText() {
 					</div>
 
 					<div className="text-xs text-muted-foreground">
-						Showing total spending this month by category
+						{t('dashboard.monthlyCategoryTotals')}
 					</div>
 				</CardFooter>
 			)}

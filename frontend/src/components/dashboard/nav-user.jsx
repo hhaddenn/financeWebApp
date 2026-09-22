@@ -1,4 +1,6 @@
 import { useAuth } from '@/context/AuthContext';
+import { usePreferences } from '@/context/PreferencesContext';
+
 import { useNavigate } from 'react-router-dom';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,6 +15,8 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { EllipsisVerticalIcon, LogOutIcon, Settings2Icon } from 'lucide-react';
+
 import {
 	SidebarMenu,
 	SidebarMenuButton,
@@ -20,19 +24,11 @@ import {
 	useSidebar,
 } from '@/components/ui/sidebar';
 
-import {
-	EllipsisVerticalIcon,
-	CircleUserRoundIcon,
-	CreditCardIcon,
-	BellIcon,
-	LogOutIcon,
-	Settings2Icon,
-} from 'lucide-react';
-
 export function NavUser({ user }) {
 	const navigate = useNavigate();
 	const { isMobile } = useSidebar();
 	const { logout } = useAuth();
+	const { t } = usePreferences();
 
 	return (
 		<SidebarMenu>
@@ -93,7 +89,8 @@ export function NavUser({ user }) {
 						<DropdownMenuGroup>
 							<DropdownMenuItem onClick={() => navigate('/settings')}>
 								<Settings2Icon />
-								Settings
+
+								{t('navigation.settings')}
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 
@@ -103,7 +100,8 @@ export function NavUser({ user }) {
 							onClick={logout}
 							className="text-red-600 focus:text-red-600">
 							<LogOutIcon />
-							Log out
+
+							{t('common.logout')}
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

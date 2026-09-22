@@ -8,13 +8,20 @@ import { DataTable } from '@/components/dashboard/data-table';
 import { ChartPieDonutText } from '@/components/dashboard/chart-pie-donut-text';
 import { TransactionActionMenu } from '@/components/dashboard/transaction-action-menu';
 
+import { usePreferences } from '@/context/PreferencesContext';
+
 export default function Dashboard() {
+	const { t } = usePreferences();
+
 	return (
 		<SidebarProvider>
 			<AppSidebar />
 
 			<SidebarInset>
-				<SiteHeader />
+				<SiteHeader
+					title={t('navigation.dashboard')}
+					description={t('dashboard.description')}
+				/>
 
 				<main className="flex-1">
 					<div className="mx-auto w-full max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
@@ -30,7 +37,7 @@ export default function Dashboard() {
 							</div>
 						</div>
 
-						<DataTable/>
+						<DataTable />
 					</div>
 				</main>
 

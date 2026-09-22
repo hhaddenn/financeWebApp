@@ -721,6 +721,8 @@ class UserSettingsSerializer(serializers.ModelSerializer):
         fields = (
             "income_color",
             "expense_color",
+            "language",
+            "theme"
         )
 
 

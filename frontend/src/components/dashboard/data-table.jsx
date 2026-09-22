@@ -47,21 +47,26 @@ import { EllipsisVerticalIcon } from 'lucide-react';
 import { getTransactions, deleteTransaction } from '@/api/transactions';
 
 import { iconMap } from '@/lib/icons';
+
 import { TransactionDialog } from './transaction-dialog';
 
+import { usePreferences } from '@/context/PreferencesContext';
+
 export function DataTable() {
+	const { language, t, translateCategory, translateSubcategory } =
+		usePreferences();
+
 	const [data, setData] = React.useState([]);
-	const [selectedRows, setSelectedRows] = React.useState({});
 	const [period, setPeriod] = React.useState('today');
 	const [loading, setLoading] = React.useState(true);
 	const [error, setError] = React.useState(null);
-
 	const [editingTransaction, setEditingTransaction] = React.useState(null);
-
 	const [deleting, setDeleting] = React.useState(false);
 
 	// Transaction selected for deletion
 	const [transactionToDelete, setTransactionToDelete] = React.useState(null);
+
+	const locale = language === 'pt' ? 'pt-PT' : 'en-US';
 
 	React.useEffect(() => {
 		const loadTransactions = async () => {
@@ -76,14 +81,15 @@ export function DataTable() {
 				setData(transactions);
 			} catch (err) {
 				console.error('Failed to load transactions:', err);
-				setError('Failed to load transactions.');
+
+				setError(t('transactions.loadError'));
 			} finally {
 				setLoading(false);
 			}
 		};
 
 		loadTransactions();
-	}, [period]);
+	}, [period, language]);
 
 	const handleEdit = (transaction) => {
 		setEditingTransaction(transaction);
@@ -112,40 +118,11 @@ export function DataTable() {
 		} catch (err) {
 			console.error('Failed to delete transaction:', err);
 
-			setError('Failed to delete transaction.');
+			setError(t('transactions.deleteError'));
+
 			setDeleting(false);
 		}
 	};
-
-	const toggleRow = (id) => {
-		setSelectedRows((current) => ({
-			...current,
-			[id]: !current[id],
-		}));
-	};
-
-	const toggleAll = () => {
-		const allSelected =
-			data.length > 0 && data.every((item) => selectedRows[item.id]);
-
-		if (allSelected) {
-			setSelectedRows({});
-			return;
-		}
-
-		const next = {};
-
-		data.forEach((item) => {
-			next[item.id] = true;
-		});
-
-		setSelectedRows(next);
-	};
-
-	const allSelected =
-		data.length > 0 && data.every((item) => selectedRows[item.id]);
-
-	const selectedCount = Object.values(selectedRows).filter(Boolean).length;
 
 	const formatDate = (dateString) => {
 		if (!dateString) {
@@ -155,10 +132,10 @@ export function DataTable() {
 		const date = new Date(dateString);
 
 		if (isNaN(date.getTime())) {
-			return 'Invalid Date';
+			return t('common.invalidDate');
 		}
 
-		return date.toLocaleDateString('pt-PT', {
+		return date.toLocaleDateString(locale, {
 			day: '2-digit',
 			month: 'short',
 			year: 'numeric',
@@ -184,7 +161,7 @@ export function DataTable() {
 							: 'text-foreground'
 				}`}>
 				{prefix}
-				{amount.toLocaleString('pt-PT', {
+				{amount.toLocaleString(locale, {
 					style: 'currency',
 					currency: 'EUR',
 				})}
@@ -202,19 +179,21 @@ export function DataTable() {
 		return iconMap[iconName] || iconMap['circle-help'];
 	};
 
-	const getDateFilters = (period) => {
+	const getDateFilters = (selectedPeriod) => {
 		const now = new Date();
 
-		const formatDate = (date) => {
+		const formatFilterDate = (date) => {
 			const year = date.getFullYear();
+
 			const month = String(date.getMonth() + 1).padStart(2, '0');
+
 			const day = String(date.getDate()).padStart(2, '0');
 
 			return `${year}-${month}-${day}`;
 		};
 
-		if (period === 'today') {
-			const today = formatDate(now);
+		if (selectedPeriod === 'today') {
+			const today = formatFilterDate(now);
 
 			return {
 				start_date: today,
@@ -222,20 +201,29 @@ export function DataTable() {
 			};
 		}
 
-		if (period === 'week') {
+		if (selectedPeriod === 'week') {
 			const day = now.getDay();
-			// JS: Sunday = 0, Monday = 1, ..., Saturday = 6
+
+			// JS:
+			// Sunday = 0
+			// Monday = 1
+			// ...
+			// Saturday = 6
 
 			const monday = new Date(now);
+
 			const diff = day === 0 ? -6 : 1 - day;
+
 			monday.setDate(now.getDate() + diff);
 
 			const sunday = new Date(monday);
+
 			sunday.setDate(monday.getDate() + 6);
 
 			return {
-				start_date: formatDate(monday),
-				end_date: formatDate(sunday),
+				start_date: formatFilterDate(monday),
+
+				end_date: formatFilterDate(sunday),
 			};
 		}
 
@@ -248,23 +236,31 @@ export function DataTable() {
 				{/* Header */}
 				<div className="flex items-center justify-between px-4 lg:px-6">
 					<div>
-						<h2 className="text-lg font-semibold">Transactions</h2>
+						<h2 className="text-lg font-semibold">
+							{t('navigation.transactions')}
+						</h2>
 
 						<p className="text-sm text-muted-foreground">
-							View your transactions from today or this week.
+							{t('transactions.description')}
 						</p>
 					</div>
 
 					<Select value={period} onValueChange={setPeriod}>
-						<SelectTrigger className="w-24">
-							<SelectValue />
+						<SelectTrigger className="w-28">
+							<SelectValue>
+								{period === 'today'
+									? t('transactions.today')
+									: t('transactions.thisWeek')}
+							</SelectValue>
 						</SelectTrigger>
 
 						<SelectContent>
 							<SelectGroup>
-								<SelectItem value="today">Today</SelectItem>
+								<SelectItem value="today">{t('transactions.today')}</SelectItem>
 
-								<SelectItem value="week">This Week</SelectItem>
+								<SelectItem value="week">
+									{t('transactions.thisWeek')}
+								</SelectItem>
 							</SelectGroup>
 						</SelectContent>
 					</Select>
@@ -273,7 +269,7 @@ export function DataTable() {
 				{/* Loading */}
 				{loading && (
 					<div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
-						Loading transactions...
+						{t('transactions.loading')}
 					</div>
 				)}
 
@@ -290,12 +286,20 @@ export function DataTable() {
 						<Table>
 							<TableHeader>
 								<TableRow>
-									<TableHead>Date</TableHead>
-									<TableHead>Transaction</TableHead>
-									<TableHead>Category</TableHead>
-									<TableHead>Account</TableHead>
-									<TableHead>Type</TableHead>
-									<TableHead className="text-right">Amount</TableHead>
+									<TableHead>{t('transactions.date')}</TableHead>
+
+									<TableHead>{t('transactions.transaction')}</TableHead>
+
+									<TableHead>{t('transactions.category')}</TableHead>
+
+									<TableHead>{t('transactions.account')}</TableHead>
+
+									<TableHead>{t('transactions.type')}</TableHead>
+
+									<TableHead className="text-right">
+										{t('transactions.amount')}
+									</TableHead>
+
 									<TableHead className="w-12" />
 								</TableRow>
 							</TableHeader>
@@ -306,7 +310,7 @@ export function DataTable() {
 										<TableCell
 											colSpan={7}
 											className="h-24 text-center text-muted-foreground">
-											No transactions found.
+											{t('transactions.empty')}
 										</TableCell>
 									</TableRow>
 								) : (
@@ -316,11 +320,7 @@ export function DataTable() {
 										const CategoryIcon = getCategoryIcon(transaction);
 
 										return (
-											<TableRow
-												key={transaction.id}
-												data-state={
-													selectedRows[transaction.id] ? 'selected' : undefined
-												}>
+											<TableRow key={transaction.id}>
 												{/* Date */}
 												<TableCell className="whitespace-nowrap">
 													{formatDate(transaction.date)}
@@ -331,17 +331,23 @@ export function DataTable() {
 													<div className="flex flex-col">
 														<div className="flex items-center gap-2">
 															<span className="font-medium">
-																{transaction.name || 'Unnamed transaction'}
+																{transaction.name || t('transactions.unnamed')}
 															</span>
 
 															{transaction.checked ? (
 																transaction.applied ? (
-																	<Badge variant="default">Paid</Badge>
+																	<Badge variant="default">
+																		{t('transactions.paid')}
+																	</Badge>
 																) : (
-																	<Badge variant="secondary">Scheduled</Badge>
+																	<Badge variant="secondary">
+																		{t('transactions.scheduled')}
+																	</Badge>
 																)
 															) : (
-																<Badge variant="secondary">Not paid</Badge>
+																<Badge variant="secondary">
+																	{t('transactions.notPaid')}
+																</Badge>
 															)}
 														</div>
 
@@ -362,10 +368,12 @@ export function DataTable() {
 															</div>
 
 															<div className="flex flex-col">
-																<span>{subcategory.category.name}</span>
+																<span>
+																	{translateCategory(subcategory.category.name)}
+																</span>
 
 																<span className="text-xs text-muted-foreground">
-																	{subcategory.name}
+																	{translateSubcategory(subcategory.name)}
 																</span>
 															</div>
 														</div>
@@ -401,10 +409,10 @@ export function DataTable() {
 												<TableCell>
 													<Badge variant="outline">
 														{transaction.transaction_type === 'income'
-															? 'Income'
+															? t('transactions.income')
 															: transaction.transaction_type === 'expense'
-																? 'Expense'
-																: 'Transfer'}
+																? t('transactions.expense')
+																: t('transactions.transfer')}
 													</Badge>
 												</TableCell>
 
@@ -424,7 +432,9 @@ export function DataTable() {
 																	size="icon">
 																	<EllipsisVerticalIcon />
 
-																	<span className="sr-only">Open menu</span>
+																	<span className="sr-only">
+																		{t('transactions.openMenu')}
+																	</span>
 																</Button>
 															}
 														/>
@@ -432,7 +442,7 @@ export function DataTable() {
 														<DropdownMenuContent align="end" className="w-32">
 															<DropdownMenuItem
 																onClick={() => handleEdit(transaction)}>
-																Edit
+																{t('common.edit')}
 															</DropdownMenuItem>
 
 															<DropdownMenuSeparator />
@@ -443,7 +453,7 @@ export function DataTable() {
 																onClick={() =>
 																	handleDeleteRequest(transaction)
 																}>
-																Delete
+																{t('common.delete')}
 															</DropdownMenuItem>
 														</DropdownMenuContent>
 													</DropdownMenu>
@@ -483,26 +493,29 @@ export function DataTable() {
 				}}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Delete transaction?</AlertDialogTitle>
+						<AlertDialogTitle>{t('transactions.deleteTitle')}</AlertDialogTitle>
 
 						<AlertDialogDescription>
-							Are you sure you want to delete{' '}
+							{t('transactions.deleteDescription')}{' '}
 							<span className="font-medium text-foreground">
-								"{transactionToDelete?.name || 'this transaction'}"
+								"
+								{transactionToDelete?.name || t('transactions.thisTransaction')}
+								"
 							</span>
-							? This action cannot be undone and the account balance will be
-							updated.
+							. {t('transactions.deleteWarning')}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 
 					<AlertDialogFooter>
-						<AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+						<AlertDialogCancel disabled={deleting}>
+							{t('common.cancel')}
+						</AlertDialogCancel>
 
 						<AlertDialogAction
 							variant="destructive"
 							disabled={deleting}
 							onClick={handleDeleteConfirm}>
-							{deleting ? 'Deleting...' : 'Delete'}
+							{deleting ? t('transactions.deleting') : t('common.delete')}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>

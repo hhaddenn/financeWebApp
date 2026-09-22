@@ -1,10 +1,15 @@
 import { useActionState } from 'react';
+
 import { Link, useNavigate } from 'react-router-dom';
 
 import { register } from '../../api/auth';
 
+import { usePreferences } from '@/context/PreferencesContext';
+
 import { cn } from '@/lib/utils';
+
 import { Button } from '@/components/ui/button';
+
 import {
 	Card,
 	CardContent,
@@ -12,16 +17,19 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
+
 import {
 	Field,
 	FieldDescription,
 	FieldGroup,
 	FieldLabel,
 } from '@/components/ui/field';
+
 import { Input } from '@/components/ui/input';
 
 export default function RegisterForm({ className, ...props }) {
 	const navigate = useNavigate();
+	const { t } = usePreferences();
 
 	const [state, formAction, isPending] = useActionState(
 		async (previousState, formData) => {
@@ -33,7 +41,7 @@ export default function RegisterForm({ className, ...props }) {
 			if (password !== confirmPassword) {
 				return {
 					success: false,
-					error: "Passwords don't match!",
+					error: t('auth.passwordsDoNotMatch'),
 				};
 			}
 
@@ -42,7 +50,7 @@ export default function RegisterForm({ className, ...props }) {
 
 				navigate('/login', {
 					state: {
-						message: 'Account created successfully! You can now log in.',
+						message: t('auth.accountCreated'),
 					},
 				});
 
@@ -53,7 +61,7 @@ export default function RegisterForm({ className, ...props }) {
 				if (!data) {
 					return {
 						success: false,
-						error: 'Something went wrong. Please try again.',
+						error: t('auth.genericError'),
 					};
 				}
 
@@ -65,9 +73,7 @@ export default function RegisterForm({ className, ...props }) {
 				return {
 					success: false,
 					error:
-						messages.length > 0
-							? messages.join(' ')
-							: 'Something went wrong. Please try again.',
+						messages.length > 0 ? messages.join(' ') : t('auth.genericError'),
 				};
 			}
 		},
@@ -80,10 +86,10 @@ export default function RegisterForm({ className, ...props }) {
 			{...props}>
 			<Card className="w-full">
 				<CardHeader className="text-center">
-					<CardTitle className="text-xl">Create your account</CardTitle>
+					<CardTitle className="text-xl">{t('auth.createAccount')}</CardTitle>
 
 					<CardDescription>
-						Enter your details below to create your account
+						{t('auth.createAccountDescription')}
 					</CardDescription>
 				</CardHeader>
 
@@ -92,13 +98,13 @@ export default function RegisterForm({ className, ...props }) {
 						<FieldGroup>
 							{/* Username */}
 							<Field>
-								<FieldLabel htmlFor="username">Username</FieldLabel>
+								<FieldLabel htmlFor="username">{t('auth.username')}</FieldLabel>
 
 								<Input
 									id="username"
 									name="username"
 									type="text"
-									placeholder="Username"
+									placeholder={t('auth.username')}
 									required
 									disabled={isPending}
 								/>
@@ -106,7 +112,7 @@ export default function RegisterForm({ className, ...props }) {
 
 							{/* Email */}
 							<Field>
-								<FieldLabel htmlFor="email">Email</FieldLabel>
+								<FieldLabel htmlFor="email">{t('auth.email')}</FieldLabel>
 
 								<Input
 									id="email"
@@ -122,7 +128,9 @@ export default function RegisterForm({ className, ...props }) {
 							<Field>
 								<Field className="grid grid-cols-2 gap-4">
 									<Field>
-										<FieldLabel htmlFor="password">Password</FieldLabel>
+										<FieldLabel htmlFor="password">
+											{t('auth.password')}
+										</FieldLabel>
 
 										<Input
 											id="password"
@@ -135,7 +143,7 @@ export default function RegisterForm({ className, ...props }) {
 
 									<Field>
 										<FieldLabel htmlFor="confirmPassword">
-											Confirm Password
+											{t('auth.confirmPassword')}
 										</FieldLabel>
 
 										<Input
@@ -149,7 +157,7 @@ export default function RegisterForm({ className, ...props }) {
 								</Field>
 
 								<FieldDescription>
-									Must be at least 8 characters long.
+									{t('auth.passwordRequirement')}
 								</FieldDescription>
 							</Field>
 
@@ -163,13 +171,15 @@ export default function RegisterForm({ className, ...props }) {
 							{/* Submit */}
 							<Field>
 								<Button type="submit" disabled={isPending}>
-									{isPending ? 'Creating account...' : 'Create Account'}
+									{isPending
+										? t('auth.creatingAccount')
+										: t('auth.createAccount')}
 								</Button>
 
 								<FieldDescription className="text-center">
-									Already have an account?{' '}
+									{t('auth.alreadyHaveAccount')}{' '}
 									<Link to="/login" className="underline underline-offset-4">
-										Sign in
+										{t('auth.signIn')}
 									</Link>
 								</FieldDescription>
 							</Field>

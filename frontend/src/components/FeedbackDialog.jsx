@@ -12,10 +12,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+
 import { BugIcon, LightbulbIcon } from 'lucide-react';
+
 import { sendFeedback } from '@/api/feedback';
+import { usePreferences } from '@/context/PreferencesContext';
 
 export function FeedbackDialog({ open, onOpenChange, type }) {
+	const { t } = usePreferences();
+
 	const [message, setMessage] = useState('');
 	const [loading, setLoading] = useState(false);
 
@@ -24,7 +29,9 @@ export function FeedbackDialog({ open, onOpenChange, type }) {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
-		if (!message.trim()) return;
+		if (!message.trim()) {
+			return;
+		}
 
 		try {
 			setLoading(true);
@@ -54,28 +61,30 @@ export function FeedbackDialog({ open, onOpenChange, type }) {
 							<LightbulbIcon className="size-5" />
 						)}
 
-						{isBug ? 'Report a bug' : 'Send a suggestion'}
+						{isBug ? t('feedback.reportBug') : t('feedback.sendSuggestion')}
 					</DialogTitle>
 
 					<DialogDescription>
 						{isBug
-							? 'Tell us about a problem you encountered.'
-							: 'Have an idea that could improve the app? Let us know.'}
+							? t('feedback.bugDescription')
+							: t('feedback.suggestionDescription')}
 					</DialogDescription>
 				</DialogHeader>
 
 				<form onSubmit={handleSubmit} className="space-y-4">
 					<div className="space-y-2">
 						<Label htmlFor="feedback-message">
-							{isBug ? 'What went wrong?' : 'Your suggestion'}
+							{isBug
+								? t('feedback.whatWentWrong')
+								: t('feedback.yourSuggestion')}
 						</Label>
 
 						<Textarea
 							id="feedback-message"
 							placeholder={
 								isBug
-									? 'Describe the problem you encountered...'
-									: 'Tell us about your idea...'
+									? t('feedback.bugPlaceholder')
+									: t('feedback.suggestionPlaceholder')
 							}
 							value={message}
 							onChange={(e) => setMessage(e.target.value)}
@@ -90,11 +99,11 @@ export function FeedbackDialog({ open, onOpenChange, type }) {
 							variant="outline"
 							onClick={() => onOpenChange(false)}
 							disabled={loading}>
-							Cancel
+							{t('common.cancel')}
 						</Button>
 
 						<Button type="submit" disabled={loading || !message.trim()}>
-							{loading ? 'Sending...' : 'Send'}
+							{loading ? t('feedback.sending') : t('feedback.send')}
 						</Button>
 					</DialogFooter>
 				</form>
