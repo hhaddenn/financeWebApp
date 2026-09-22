@@ -51,7 +51,6 @@ const en = {
 		creatingAccount: 'Creating account...',
 		alreadyHaveAccount: 'Already have an account?',
 		signIn: 'Sign in',
-
 		welcomeBack: 'Welcome back',
 		loginDescription: 'Log in to your account.',
 		forgotPassword: 'Forgot your password?',
@@ -139,6 +138,26 @@ const en = {
 	transactions: {
 		transaction: 'Transaction',
 		description: 'View your transactions from today or this week.',
+
+		filters: 'Filters',
+		filterDescription: 'Filter your transactions by different criteria.',
+		search: 'Search',
+		searchPlaceholder: 'Search transactions...',
+		status: 'Status',
+
+		allTypes: 'All types',
+		allStatuses: 'All statuses',
+		allAccounts: 'All accounts',
+		allCategories: 'All categories',
+		allSubcategories: 'All subcategories',
+
+		clearFilters: 'Clear filters',
+
+		startDate: 'Start date',
+		endDate: 'End date',
+		selectStartDate: 'Select start date',
+		selectEndDate: 'Select end date',
+
 		today: 'Today',
 		thisWeek: 'This Week',
 		loading: 'Loading transactions...',
@@ -151,12 +170,15 @@ const en = {
 		amount: 'Amount',
 		empty: 'No transactions found.',
 		unnamed: 'Unnamed transaction',
+
 		paid: 'Paid',
 		scheduled: 'Scheduled',
 		notPaid: 'Not paid',
+
 		income: 'Income',
 		expense: 'Expense',
 		transfer: 'Transfer',
+
 		openMenu: 'Open menu',
 		deleteTitle: 'Delete transaction?',
 		deleteDescription: 'Are you sure you want to delete',
@@ -173,24 +195,33 @@ const en = {
 		editExpense: 'Edit Expense',
 		makeTransfer: 'Make Transfer',
 		editTransfer: 'Edit Transfer',
+
 		editDescription: 'Edit the transaction details.',
 		createDescription: 'Fill in the details for the new transaction.',
+
 		transferAccount: 'Account to Transfer',
 		selectAccount: 'Select an account',
 		selectDestinationAccount: 'Select destination account',
+
 		name: 'Name',
 		amountToReceive: 'Amount to Receive',
+
 		transferNamePlaceholder: 'Ex: Transfer to savings',
 		incomeNamePlaceholder: 'Ex: Money lent',
 		expenseNamePlaceholder: 'Ex: Fill car tank',
+
 		pickDate: 'Pick a date',
+
 		subcategory: 'Subcategory',
 		selectCategory: 'Select a category',
+
 		internalTransfer: 'Internal Transfer',
 		from: 'From',
 		to: 'To',
+
 		incomeCounterpartyPlaceholder: 'Ex: John (optional)',
 		expenseCounterpartyPlaceholder: 'Ex: Galp (optional)',
+
 		saveChanges: 'Save Changes',
 		createTransaction: 'Create Transaction',
 	},
@@ -220,6 +251,7 @@ const en = {
 			'This action cannot be undone. All transactions associated with this account will be deleted.',
 		deleting: 'Deleting...',
 		errorTitle: 'An error occurred',
+
 		icons: {
 			bank: 'Bank',
 			wallet: 'Wallet',

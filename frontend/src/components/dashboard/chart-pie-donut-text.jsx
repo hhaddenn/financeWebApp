@@ -21,7 +21,6 @@ import {
 
 import { getTransactions } from '@/api/transactions';
 import { getCategoryPreferences } from '@/api/settings';
-
 import { usePreferences } from '@/context/PreferencesContext';
 
 const chartConfig = {
@@ -48,10 +47,11 @@ export function ChartPieDonutText() {
 			try {
 				setLoading(true);
 
-				const [transactionsData, categoryPreferencesData] = await Promise.all([
-					getTransactions(),
-					getCategoryPreferences(),
-				]);
+				const [transactionsResponse, categoryPreferencesData] =
+					await Promise.all([getTransactions(), getCategoryPreferences()]);
+
+				const transactionsData =
+					transactionsResponse.results ?? transactionsResponse;
 
 				setTransactions(transactionsData);
 				setCategoryPreferences(categoryPreferencesData);
@@ -68,7 +68,6 @@ export function ChartPieDonutText() {
 	const categoryPreferencesMap = React.useMemo(() => {
 		return categoryPreferences.reduce((map, preference) => {
 			map[preference.category.id] = preference;
-
 			return map;
 		}, {});
 	}, [categoryPreferences]);
