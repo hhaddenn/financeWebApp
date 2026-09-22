@@ -1,5 +1,9 @@
 import logging
 
+from django.conf import settings
+from django.middleware.csrf import get_token
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -12,6 +16,7 @@ from ..serializers import LoginSerializer, RegisterSerializer, UserSerializer
 logger = logging.getLogger(__name__)
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class CookieTokenObtainPairView(TokenObtainPairView):
     serializer_class = LoginSerializer
 
@@ -25,9 +30,9 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 key="refresh_token",
                 value=refresh_token,
                 httponly=True,
-                secure=False,
+                secure=settings.COOKIE_SECURE,
                 samesite="Lax",
-                path="/",
+                path="/api/auth/",
             )
 
             response.data.pop("refresh", None)
@@ -35,6 +40,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
         return response
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class CookieTokenRefreshView(TokenRefreshView):
     permission_classes = (AllowAny,)
 
@@ -53,6 +59,7 @@ class CookieTokenRefreshView(TokenRefreshView):
         return Response(serializer.validated_data)
 
 
+@method_decorator(csrf_protect, name="dispatch")
 class LogoutView(generics.GenericAPIView):
     permission_classes = (AllowAny,)
 
@@ -73,7 +80,7 @@ class LogoutView(generics.GenericAPIView):
 
         response.delete_cookie(
             "refresh_token",
-            path="/",
+            path="/api/auth/",
         )
 
         return response
@@ -90,3 +97,12 @@ class MeView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class CsrfTokenView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request):
+        get_token(request)
+        return Response({"detail": "CSRF cookie set."})

@@ -1,11 +1,9 @@
 import { useActionState } from 'react';
-
 import { Link, useNavigate } from 'react-router-dom';
 
 import { register } from '../../api/auth';
 
 import { usePreferences } from '@/context/PreferencesContext';
-
 import { cn } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
@@ -27,16 +25,50 @@ import {
 
 import { Input } from '@/components/ui/input';
 
+const MAX_USERNAME_LENGTH = 150;
+const MAX_EMAIL_LENGTH = 254;
+const MAX_PASSWORD_LENGTH = 128;
+
 export default function RegisterForm({ className, ...props }) {
 	const navigate = useNavigate();
 	const { t } = usePreferences();
 
 	const [state, formAction, isPending] = useActionState(
 		async (previousState, formData) => {
-			const username = formData.get('username');
-			const email = formData.get('email');
-			const password = formData.get('password');
-			const confirmPassword = formData.get('confirmPassword');
+			const username = String(formData.get('username') ?? '').trim();
+			const email = String(formData.get('email') ?? '').trim();
+			const password = String(formData.get('password') ?? '');
+			const confirmPassword = String(formData.get('confirmPassword') ?? '');
+
+			// Client-side validation.
+			// A validação real deve existir também no backend.
+			if (!username) {
+				return {
+					success: false,
+					error: t('auth.usernameRequired'),
+				};
+			}
+
+			if (!email) {
+				return {
+					success: false,
+					error: t('auth.emailRequired'),
+				};
+			}
+
+			if (!password) {
+				return {
+					success: false,
+					error: t('auth.passwordRequired'),
+				};
+			}
+
+			if (!confirmPassword) {
+				return {
+					success: false,
+					error: t('auth.passwordRequired'),
+				};
+			}
 
 			if (password !== confirmPassword) {
 				return {
@@ -45,35 +77,68 @@ export default function RegisterForm({ className, ...props }) {
 				};
 			}
 
+			if (username.length > MAX_USERNAME_LENGTH) {
+				return {
+					success: false,
+					error: t('auth.invalidUsername'),
+				};
+			}
+
+			if (email.length > MAX_EMAIL_LENGTH) {
+				return {
+					success: false,
+					error: t('auth.invalidEmail'),
+				};
+			}
+
+			if (password.length > MAX_PASSWORD_LENGTH) {
+				return {
+					success: false,
+					error: t('auth.invalidPassword'),
+				};
+			}
+
 			try {
 				await register(username, email, password);
 
 				navigate('/login', {
+					replace: true,
 					state: {
 						message: t('auth.accountCreated'),
 					},
 				});
 
-				return { success: true };
+				return {
+					success: true,
+					error: null,
+				};
 			} catch (error) {
+				const status = error.response?.status;
 				const data = error.response?.data;
 
-				if (!data) {
-					return {
-						success: false,
-						error: t('auth.genericError'),
-					};
-				}
+				/*
+				 * Só mostramos mensagens de validação esperadas
+				 * pelo backend.
+				 *
+				 * Não mostramos error.message porque pode conter
+				 * informação técnica da aplicação.
+				 */
+				if (status === 400 && data) {
+					const messages = Object.values(data)
+						.flat()
+						.filter((message) => typeof message === 'string');
 
-				// DRF validation errors
-				const messages = Object.values(data)
-					.flat()
-					.filter((message) => typeof message === 'string');
+					if (messages.length > 0) {
+						return {
+							success: false,
+							error: messages.join(' '),
+						};
+					}
+				}
 
 				return {
 					success: false,
-					error:
-						messages.length > 0 ? messages.join(' ') : t('auth.genericError'),
+					error: t('auth.genericError'),
 				};
 			}
 		},
@@ -105,8 +170,11 @@ export default function RegisterForm({ className, ...props }) {
 									name="username"
 									type="text"
 									placeholder={t('auth.username')}
+									autoComplete="username"
+									maxLength={MAX_USERNAME_LENGTH}
 									required
 									disabled={isPending}
+									aria-invalid={Boolean(state?.error)}
 								/>
 							</Field>
 
@@ -119,14 +187,17 @@ export default function RegisterForm({ className, ...props }) {
 									name="email"
 									type="email"
 									placeholder="m@example.com"
+									autoComplete="email"
+									maxLength={MAX_EMAIL_LENGTH}
 									required
 									disabled={isPending}
+									aria-invalid={Boolean(state?.error)}
 								/>
 							</Field>
 
 							{/* Passwords */}
 							<Field>
-								<Field className="grid grid-cols-2 gap-4">
+								<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 									<Field>
 										<FieldLabel htmlFor="password">
 											{t('auth.password')}
@@ -136,6 +207,8 @@ export default function RegisterForm({ className, ...props }) {
 											id="password"
 											name="password"
 											type="password"
+											autoComplete="new-password"
+											maxLength={MAX_PASSWORD_LENGTH}
 											required
 											disabled={isPending}
 										/>
@@ -150,11 +223,13 @@ export default function RegisterForm({ className, ...props }) {
 											id="confirmPassword"
 											name="confirmPassword"
 											type="password"
+											autoComplete="new-password"
+											maxLength={MAX_PASSWORD_LENGTH}
 											required
 											disabled={isPending}
 										/>
 									</Field>
-								</Field>
+								</div>
 
 								<FieldDescription>
 									{t('auth.passwordRequirement')}
@@ -163,14 +238,17 @@ export default function RegisterForm({ className, ...props }) {
 
 							{/* Error */}
 							{state?.error && (
-								<FieldDescription className="text-center text-red-500">
+								<FieldDescription
+									className="text-center text-destructive"
+									role="alert"
+									aria-live="polite">
 									{state.error}
 								</FieldDescription>
 							)}
 
 							{/* Submit */}
 							<Field>
-								<Button type="submit" disabled={isPending}>
+								<Button type="submit" disabled={isPending} className="w-full">
 									{isPending
 										? t('auth.creatingAccount')
 										: t('auth.createAccount')}

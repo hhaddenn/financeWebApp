@@ -1,113 +1,207 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-
-import { BugIcon, LightbulbIcon } from 'lucide-react';
+import { BugIcon, LightbulbIcon, Loader2 } from 'lucide-react';
 
 import { sendFeedback } from '@/api/feedback';
 import { usePreferences } from '@/context/PreferencesContext';
 
+const MAX_MESSAGE_LENGTH = 2000;
+
 export function FeedbackDialog({ open, onOpenChange, type }) {
-	const { t } = usePreferences();
+  const { t } = usePreferences();
 
-	const [message, setMessage] = useState('');
-	const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-	const isBug = type === 'bug';
+  const isBug = type === 'bug';
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();
+  // Garantir que só existem tipos válidos.
+  const feedbackType = isBug ? 'bug' : 'suggestion';
 
-		if (!message.trim()) {
-			return;
-		}
+  // Limpar o formulário quando o dialog fecha.
+  useEffect(() => {
+    if (!open) {
+      setMessage('');
+      setError('');
+    }
+  }, [open]);
 
-		try {
-			setLoading(true);
+  const trimmedMessage = message.trim();
+  const isValid = trimmedMessage.length > 0;
 
-			await sendFeedback({
-				type,
-				message,
-			});
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-			setMessage('');
-			onOpenChange(false);
-		} catch (error) {
-			console.error(error);
-		} finally {
-			setLoading(false);
-		}
-	};
+    if (loading) {
+      return;
+    }
 
-	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
-						{isBug ? (
-							<BugIcon className="size-5" />
-						) : (
-							<LightbulbIcon className="size-5" />
-						)}
+    if (!trimmedMessage) {
+      setError(t('feedback.messageRequired'));
+      return;
+    }
 
-						{isBug ? t('feedback.reportBug') : t('feedback.sendSuggestion')}
-					</DialogTitle>
+    if (trimmedMessage.length > MAX_MESSAGE_LENGTH) {
+      setError(t('feedback.messageTooLong'));
+      return;
+    }
 
-					<DialogDescription>
-						{isBug
-							? t('feedback.bugDescription')
-							: t('feedback.suggestionDescription')}
-					</DialogDescription>
-				</DialogHeader>
+    try {
+      setLoading(true);
+      setError('');
 
-				<form onSubmit={handleSubmit} className="space-y-4">
-					<div className="space-y-2">
-						<Label htmlFor="feedback-message">
-							{isBug
-								? t('feedback.whatWentWrong')
-								: t('feedback.yourSuggestion')}
-						</Label>
+      await sendFeedback({
+        type: feedbackType,
+        message: trimmedMessage,
+      });
 
-						<Textarea
-							id="feedback-message"
-							placeholder={
-								isBug
-									? t('feedback.bugPlaceholder')
-									: t('feedback.suggestionPlaceholder')
-							}
-							value={message}
-							onChange={(e) => setMessage(e.target.value)}
-							rows={6}
-							disabled={loading}
-						/>
-					</div>
+      setMessage('');
+      onOpenChange(false);
+    } catch {
+      // Não expor detalhes internos do erro ao utilizador.
+      setError(t('feedback.sendError'));
+    } finally {
+      setLoading(false);
+    }
+  };
 
-					<DialogFooter>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => onOpenChange(false)}
-							disabled={loading}>
-							{t('common.cancel')}
-						</Button>
+  const handleOpenChange = (nextOpen) => {
+    if (loading) {
+      return;
+    }
 
-						<Button type="submit" disabled={loading || !message.trim()}>
-							{loading ? t('feedback.sending') : t('feedback.send')}
-						</Button>
-					</DialogFooter>
-				</form>
-			</DialogContent>
-		</Dialog>
-	);
+    onOpenChange(nextOpen);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {isBug ? (
+              <BugIcon
+                className="size-5"
+                aria-hidden="true"
+              />
+            ) : (
+              <LightbulbIcon
+                className="size-5"
+                aria-hidden="true"
+              />
+            )}
+
+            {isBug
+              ? t('feedback.reportBug')
+              : t('feedback.sendSuggestion')}
+          </DialogTitle>
+
+          <DialogDescription>
+            {isBug
+              ? t('feedback.bugDescription')
+              : t('feedback.suggestionDescription')}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4"
+          noValidate
+        >
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="feedback-message">
+                {isBug
+                  ? t('feedback.whatWentWrong')
+                  : t('feedback.yourSuggestion')}
+              </Label>
+
+              <span
+                className={`text-xs ${
+                  message.length > MAX_MESSAGE_LENGTH
+                    ? 'text-destructive'
+                    : 'text-muted-foreground'
+                }`}
+              >
+                {message.length}/{MAX_MESSAGE_LENGTH}
+              </span>
+            </div>
+
+            <Textarea
+              id="feedback-message"
+              name="message"
+              placeholder={
+                isBug
+                  ? t('feedback.bugPlaceholder')
+                  : t('feedback.suggestionPlaceholder')
+              }
+              value={message}
+              onChange={(event) => {
+                setMessage(event.target.value);
+
+                if (error) {
+                  setError('');
+                }
+              }}
+              maxLength={MAX_MESSAGE_LENGTH}
+              rows={6}
+              disabled={loading}
+              aria-invalid={Boolean(error)}
+              aria-describedby={error ? 'feedback-error' : undefined}
+              autoFocus
+            />
+
+            {error && (
+              <p
+                id="feedback-error"
+                className="text-sm text-destructive"
+                role="alert"
+              >
+                {error}
+              </p>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+              disabled={loading}
+            >
+              {t('common.cancel')}
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={loading || !isValid}
+            >
+              {loading && (
+                <Loader2
+                  className="mr-2 size-4 animate-spin"
+                  aria-hidden="true"
+                />
+              )}
+
+              {loading
+                ? t('feedback.sending')
+                : t('feedback.send')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }
