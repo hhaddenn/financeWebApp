@@ -6,7 +6,7 @@ import { ArrowLeftRight, Minus, Plus, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
-import { TransactionDialog } from './transaction-dialog';
+import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 
 import { usePreferences } from '@/context/PreferencesContext';
 
