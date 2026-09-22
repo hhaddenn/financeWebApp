@@ -1,9 +1,25 @@
 import axios from 'axios';
 
 const api = axios.create({
-	baseURL: 'http://localhost:8000/api',
+	baseURL: import.meta.env.VITE_API_URL,
 	withCredentials: true,
+	xsrfCookieName: 'csrftoken',
+	xsrfHeaderName: 'X-CSRFToken',
 });
+
+const getCookie = (name) => {
+	const cookies = document.cookie.split(';');
+
+	for (const cookie of cookies) {
+		const [key, ...value] = cookie.trim().split('=');
+
+		if (key === name) {
+			return decodeURIComponent(value.join('='));
+		}
+	}
+
+	return null;
+};
 
 let accessToken = null;
 let refreshPromise = null;
@@ -15,6 +31,13 @@ export const setAccessToken = (token) => {
 api.interceptors.request.use((config) => {
 	if (accessToken) {
 		config.headers.Authorization = `Bearer ${accessToken}`;
+	}
+
+	const csrfToken = getCookie('csrftoken');
+	const method = config.method?.toLowerCase();
+
+	if (csrfToken && ['post', 'put', 'patch', 'delete'].includes(method)) {
+		config.headers['X-CSRFToken'] = csrfToken;
 	}
 
 	return config;

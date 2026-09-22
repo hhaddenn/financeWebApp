@@ -1,24 +1,19 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
-	Landmark,
-	Wallet,
-	CreditCard,
-	PiggyBank,
 	Banknote,
-	Plus,
 	ChartNoAxesCombined,
+	CreditCard,
 	EllipsisVerticalIcon,
+	Landmark,
+	PiggyBank,
+	Plus,
+	Wallet,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-
 import { Button } from '@/components/ui/button';
-
 import { Input } from '@/components/ui/input';
-
 import { Label } from '@/components/ui/label';
 
 import {
@@ -57,6 +52,10 @@ import {
 } from '@/api/accounts';
 
 import { usePreferences } from '@/context/PreferencesContext';
+
+const MAX_ACCOUNT_NAME_LENGTH = 50;
+const MIN_BALANCE = -999999999;
+const MAX_BALANCE = 999999999;
 
 const accountIcons = {
 	landmark: Landmark,
@@ -100,6 +99,12 @@ const iconOptions = [
 	},
 ];
 
+const DEFAULT_FORM = {
+	name: '',
+	initial_balance: '',
+	icon: 'landmark',
+};
+
 export function SectionCards() {
 	const { language, t } = usePreferences();
 
@@ -108,88 +113,80 @@ export function SectionCards() {
 	const [accounts, setAccounts] = useState([]);
 	const [loading, setLoading] = useState(true);
 
-	// Create / Edit dialog
+	// Create / Edit
 	const [dialogOpen, setDialogOpen] = useState(false);
-	const [creating, setCreating] = useState(false);
+	const [saving, setSaving] = useState(false);
 	const [editingAccount, setEditingAccount] = useState(null);
 
-	// Delete confirmation
+	// Delete
 	const [accountToDelete, setAccountToDelete] = useState(null);
 	const [deleting, setDeleting] = useState(false);
 
-	// Error dialog
+	// Error
 	const [errorDialogOpen, setErrorDialogOpen] = useState(false);
 	const [errorMessage, setErrorMessage] = useState('');
 
 	// Form
-	const [form, setForm] = useState({
-		name: '',
-		initial_balance: '',
-		icon: 'landmark',
-	});
+	const [form, setForm] = useState(DEFAULT_FORM);
 
-	const showError = (error) => {
-		console.error(error);
+	const showError = useCallback(
+		(error) => {
+			// Não mostrar error.message ao utilizador.
+			// Pode conter detalhes técnicos do backend.
+			console.error(error);
 
-		let message = t('accounts.unexpectedError');
+			const status = error?.response?.status;
+			const data = error?.response?.data;
 
-		if (error.response?.data) {
-			const data = error.response.data;
+			let message = t('accounts.unexpectedError');
 
-			if (typeof data === 'string') {
-				message = data;
-			} else if (data.detail) {
-				message = data.detail;
-			} else {
-				const messages = Object.entries(data)
-					.map(([field, errors]) => {
-						const text = Array.isArray(errors)
-							? errors.join(', ')
-							: String(errors);
+			// Apenas tratar respostas de erro esperadas da API.
+			if (status >= 400 && status < 500 && data) {
+				if (typeof data.detail === 'string') {
+					message = data.detail;
+				} else if (typeof data === 'object') {
+					const messages = Object.values(data)
+						.flat()
+						.filter((value) => typeof value === 'string');
 
-						return `${field}: ${text}`;
-					})
-					.join('\n');
-
-				if (messages) {
-					message = messages;
+					if (messages.length > 0) {
+						message = messages.join('\n');
+					}
 				}
 			}
-		} else if (error.message) {
-			message = error.message;
-		}
 
-		setErrorMessage(message);
-		setErrorDialogOpen(true);
-	};
+			setErrorMessage(message);
+			setErrorDialogOpen(true);
+		},
+		[t],
+	);
 
-	const loadAccounts = async () => {
+	const loadAccounts = useCallback(async () => {
 		try {
 			setLoading(true);
 
 			const data = await getAccounts();
 
-			setAccounts(data);
+			// Garantir que o estado recebe sempre um array.
+			setAccounts(Array.isArray(data) ? data : []);
 		} catch (error) {
 			showError(error);
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [showError]);
 
 	useEffect(() => {
 		loadAccounts();
-	}, []);
+	}, [loadAccounts]);
+
+	const resetForm = () => {
+		setForm({ ...DEFAULT_FORM });
+		setEditingAccount(null);
+	};
 
 	const handleOpenCreate = () => {
-		setEditingAccount(null);
-
-		setForm({
-			name: '',
-			initial_balance: '',
-			icon: 'landmark',
-		});
-
+		resetForm();
 		setDialogOpen(true);
 	};
 
@@ -197,63 +194,115 @@ export function SectionCards() {
 		setEditingAccount(account);
 
 		setForm({
-			name: account.name,
-			initial_balance: account.balance ?? '',
-			icon: account.icon || 'landmark',
+			name: account.name ?? '',
+			// Atenção: idealmente este campo deve representar
+			// realmente initial_balance e não o balance atual.
+			initial_balance: account.initial_balance ?? '',
+			icon: accountIcons[account.icon] ? account.icon : DEFAULT_FORM.icon,
 		});
 
 		setDialogOpen(true);
 	};
 
+	const handleDialogChange = (open) => {
+		if (saving) {
+			return;
+		}
+
+		setDialogOpen(open);
+
+		if (!open) {
+			resetForm();
+		}
+	};
+
+	const validateForm = () => {
+		const name = form.name.trim();
+		const balanceText = String(form.initial_balance).trim();
+
+		if (!name) {
+			return t('accounts.nameRequired');
+		}
+
+		if (name.length > MAX_ACCOUNT_NAME_LENGTH) {
+			return t('accounts.nameTooLong');
+		}
+
+		// Campo vazio significa 0.
+		const balance = balanceText === '' ? 0 : Number(balanceText);
+
+		if (!Number.isFinite(balance)) {
+			return t('accounts.invalidBalance');
+		}
+
+		if (balance < MIN_BALANCE || balance > MAX_BALANCE) {
+			return t('accounts.invalidBalance');
+		}
+
+		if (!Object.prototype.hasOwnProperty.call(accountIcons, form.icon)) {
+			return t('accounts.invalidIcon');
+		}
+
+		return null;
+	};
+
 	const handleSubmit = async (event) => {
 		event.preventDefault();
 
-		if (!form.name.trim()) {
-			setErrorMessage(t('accounts.nameRequired'));
+		if (saving) {
+			return;
+		}
+
+		const validationError = validateForm();
+
+		if (validationError) {
+			setErrorMessage(validationError);
 			setErrorDialogOpen(true);
 			return;
 		}
 
+		const name = form.name.trim();
+		const balance =
+			String(form.initial_balance).trim() === ''
+				? 0
+				: Number(form.initial_balance);
+
 		try {
-			setCreating(true);
+			setSaving(true);
+
+			const payload = {
+				name,
+				initial_balance: balance,
+				icon: form.icon,
+			};
 
 			if (editingAccount) {
-				await updateAccount(editingAccount.id, {
-					name: form.name.trim(),
-					initial_balance: Number(form.initial_balance) || 0,
-					icon: form.icon,
-				});
+				await updateAccount(editingAccount.id, payload);
 			} else {
-				await createAccount({
-					name: form.name.trim(),
-					initial_balance: Number(form.initial_balance) || 0,
-					icon: form.icon,
-				});
+				await createAccount(payload);
 			}
 
-			setForm({
-				name: '',
-				initial_balance: '',
-				icon: 'landmark',
-			});
-
-			setEditingAccount(null);
+			resetForm();
 			setDialogOpen(false);
 
 			await loadAccounts();
 		} catch (error) {
 			showError(error);
 		} finally {
-			setCreating(false);
+			setSaving(false);
 		}
 	};
 
 	const handleDeleteRequest = (account) => {
+		if (deleting) {
+			return;
+		}
+
 		setAccountToDelete(account);
 	};
 
 	const handleDeleteConfirm = async () => {
-		if (!accountToDelete) {
+		if (!accountToDelete || deleting) {
 			return;
 		}
 
@@ -265,14 +314,17 @@ export function SectionCards() {
 			setAccountToDelete(null);
 
 			await loadAccounts();
-
-			window.location.reload();
 		} catch (error) {
 			showError(error);
 		} finally {
 			setDeleting(false);
 		}
 	};
+
+	const formattedCurrency = new Intl.NumberFormat(locale, {
+		style: 'currency',
+		currency: 'EUR',
+	});
 
 	if (loading) {
 		return <p>{t('accounts.loading')}</p>;
@@ -288,12 +340,17 @@ export function SectionCards() {
 						<Card key={account.id} className="shadow-none">
 							<CardHeader className="pb-2">
 								<div className="flex items-center justify-between gap-2">
-									<div className="flex items-center gap-2">
-										<div className="flex size-9 items-center justify-center rounded-md bg-muted">
-											<Icon className="size-5 text-muted-foreground" />
+									<div className="flex min-w-0 items-center gap-2">
+										<div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
+											<Icon
+												className="size-5 text-muted-foreground"
+												aria-hidden="true"
+											/>
 										</div>
 
-										<p className="text-sm text-muted-foreground">
+										<p
+											className="truncate text-sm text-muted-foreground"
+											title={account.name}>
 											{account.name}
 										</p>
 									</div>
@@ -303,9 +360,9 @@ export function SectionCards() {
 											render={
 												<Button
 													variant="ghost"
-													className="size-8 text-muted-foreground"
+													className="size-8 shrink-0 text-muted-foreground"
 													size="icon">
-													<EllipsisVerticalIcon />
+													<EllipsisVerticalIcon aria-hidden="true" />
 
 													<span className="sr-only">
 														{t('accounts.openMenu')}
@@ -315,7 +372,9 @@ export function SectionCards() {
 										/>
 
 										<DropdownMenuContent align="end" className="w-32">
-											<DropdownMenuItem onClick={() => handleOpenEdit(account)}>
+											<DropdownMenuItem
+												onClick={() => handleOpenEdit(account)}
+												disabled={deleting || saving}>
 												{t('common.edit')}
 											</DropdownMenuItem>
 
@@ -323,7 +382,7 @@ export function SectionCards() {
 
 											<DropdownMenuItem
 												variant="destructive"
-												disabled={deleting}
+												disabled={deleting || saving}
 												onClick={() => handleDeleteRequest(account)}>
 												{t('common.delete')}
 											</DropdownMenuItem>
@@ -333,14 +392,9 @@ export function SectionCards() {
 							</CardHeader>
 
 							<CardContent>
-								<div className="flex items-end justify-between gap-4">
-									<p className="text-2xl font-semibold tracking-tight tabular-nums">
-										{new Intl.NumberFormat(locale, {
-											style: 'currency',
-											currency: 'EUR',
-										}).format(Number(account.balance))}
-									</p>
-								</div>
+								<p className="text-2xl font-semibold tracking-tight tabular-nums">
+									{formattedCurrency.format(Number(account.balance) || 0)}
+								</p>
 							</CardContent>
 						</Card>
 					);
@@ -350,30 +404,29 @@ export function SectionCards() {
 					type="button"
 					onClick={handleOpenCreate}
 					className="
-						flex min-h-37.5 cursor-pointer
-						flex-col items-center justify-center
-						rounded-xl border border-dashed
-						bg-transparent transition-colors
-						hover:bg-muted/50
-					">
+            flex min-h-37.5 cursor-pointer flex-col
+            items-center justify-center rounded-xl
+            border border-dashed bg-transparent
+            transition-colors hover:bg-muted/50
+          ">
 					<div className="mb-2 flex size-10 items-center justify-center rounded-full bg-muted">
-						<Plus className="size-5 text-muted-foreground" />
+						<Plus className="size-5 text-muted-foreground" aria-hidden="true" />
 					</div>
 
 					<span className="text-sm font-medium">
 						{t('accounts.addAccount')}
 					</span>
 
-					<span className="mt-1 text-xs text-muted-foreground">
+					<span className="mt-1 text-center text-xs text-muted-foreground">
 						{t('accounts.createDescription')}
 					</span>
 				</button>
 			</div>
 
-			{/* Create / Edit dialog */}
-			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+			{/* Create / Edit */}
+			<Dialog open={dialogOpen} onOpenChange={handleDialogChange}>
 				<DialogContent className="sm:max-w-106.25">
-					<form onSubmit={handleSubmit}>
+					<form onSubmit={handleSubmit} noValidate>
 						<DialogHeader>
 							<DialogTitle>
 								{editingAccount
@@ -389,23 +442,32 @@ export function SectionCards() {
 						</DialogHeader>
 
 						<div className="grid gap-5 py-6">
+							{/* Name */}
 							<div className="grid gap-2">
 								<Label htmlFor="account-name">{t('accounts.name')}</Label>
 
 								<Input
 									id="account-name"
+									name="account-name"
 									placeholder={t('accounts.namePlaceholder')}
 									value={form.name}
+									maxLength={MAX_ACCOUNT_NAME_LENGTH}
+									disabled={saving}
 									onChange={(event) =>
-										setForm({
-											...form,
+										setForm((current) => ({
+											...current,
 											name: event.target.value,
-										})
+										}))
 									}
 									required
 								/>
+
+								<p className="text-xs text-muted-foreground">
+									{form.name.length}/{MAX_ACCOUNT_NAME_LENGTH}
+								</p>
 							</div>
 
+							{/* Balance */}
 							<div className="grid gap-2">
 								<Label htmlFor="account-balance">
 									{editingAccount
@@ -415,26 +477,34 @@ export function SectionCards() {
 
 								<Input
 									id="account-balance"
+									name="account-balance"
 									type="number"
+									inputMode="decimal"
 									step="0.01"
+									min={MIN_BALANCE}
+									max={MAX_BALANCE}
 									placeholder="0.00"
 									value={form.initial_balance}
+									disabled={saving}
 									onChange={(event) =>
-										setForm({
-											...form,
+										setForm((current) => ({
+											...current,
 											initial_balance: event.target.value,
-										})
+										}))
 									}
 								/>
 							</div>
 
+							{/* Icon */}
 							<div className="grid gap-2">
 								<Label>{t('accounts.icon')}</Label>
 
-								<div className="grid grid-cols-6 gap-2">
+								<div
+									className="grid grid-cols-3 gap-2 sm:grid-cols-6"
+									role="radiogroup"
+									aria-label={t('accounts.icon')}>
 									{iconOptions.map((option) => {
 										const Icon = option.icon;
-
 										const selected = form.icon === option.value;
 
 										return (
@@ -443,18 +513,26 @@ export function SectionCards() {
 												type="button"
 												title={t(`accounts.icons.${option.label}`)}
 												aria-label={t(`accounts.icons.${option.label}`)}
+												aria-checked={selected}
+												role="radio"
+												disabled={saving}
 												onClick={() =>
-													setForm({
-														...form,
+													setForm((current) => ({
+														...current,
 														icon: option.value,
-													})
+													}))
 												}
-												className={`flex size-12 items-center justify-center rounded-md border transition-colors ${
-													selected
-														? 'border-primary bg-primary text-primary-foreground'
-														: 'hover:bg-muted'
-												}`}>
-												<Icon className="size-5" />
+												className={`
+                          flex size-12 items-center justify-center
+                          rounded-md border transition-colors
+                          disabled:pointer-events-none disabled:opacity-50
+                          ${
+														selected
+															? 'border-primary bg-primary text-primary-foreground'
+															: 'hover:bg-muted'
+													}
+                        `}>
+												<Icon className="size-5" aria-hidden="true" />
 											</button>
 										);
 									})}
@@ -466,12 +544,13 @@ export function SectionCards() {
 							<Button
 								type="button"
 								variant="outline"
-								onClick={() => setDialogOpen(false)}>
+								onClick={() => handleDialogChange(false)}
+								disabled={saving}>
 								{t('common.cancel')}
 							</Button>
 
-							<Button type="submit" disabled={creating}>
-								{creating
+							<Button type="submit" disabled={saving}>
+								{saving
 									? t('accounts.saving')
 									: editingAccount
 										? t('accounts.saveChanges')
@@ -521,13 +600,13 @@ export function SectionCards() {
 				</AlertDialogContent>
 			</AlertDialog>
 
-			{/* Error dialog */}
+			{/* Error */}
 			<Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
 				<DialogContent className="sm:max-w-106.25">
 					<DialogHeader>
 						<DialogTitle>{t('accounts.errorTitle')}</DialogTitle>
 
-						<DialogDescription className="whitespace-pre-line">
+						<DialogDescription className="whitespace-pre-line" role="alert">
 							{errorMessage}
 						</DialogDescription>
 					</DialogHeader>

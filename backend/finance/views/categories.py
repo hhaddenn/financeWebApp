@@ -1,10 +1,12 @@
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 
 from ..models import Category, Subcategory
 from ..serializers import CategorySerializer, SubcategorySerializer
 
 
 class CategoriesList(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
     serializer_class = CategorySerializer
 
     def get_queryset(self):
@@ -13,5 +15,6 @@ class CategoriesList(generics.ListAPIView):
 
 
 class SubcategoriesList(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
     queryset = Subcategory.objects.all()
     serializer_class = SubcategorySerializer

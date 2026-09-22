@@ -4,6 +4,7 @@ from .auth import (
     LogoutView,
     RegisterView,
     MeView,
+    CsrfTokenView,
 )
 
 from .categories import (
@@ -23,7 +24,7 @@ from .transactions import (
     TransactionDetail,
 )
 
-from .feedback import(
+from .feedback import (
     FeedbackView,
 )
 from .settings import (

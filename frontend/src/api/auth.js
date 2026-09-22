@@ -2,7 +2,13 @@
 
 import api, { setAccessToken } from './client';
 
+export const ensureCsrfToken = async () => {
+	await api.get('/auth/csrf/');
+};
+
 export const login = async (username, password) => {
+	await ensureCsrfToken();
+
 	const response = await api.post('/auth/login/', {
 		username,
 		password,
@@ -26,26 +32,23 @@ export const register = async (username, email, password) => {
 };
 
 export const refreshAccessToken = async () => {
-	try {
-		const response = await api.post('/auth/refresh/');
+	await ensureCsrfToken();
 
-		setAccessToken(response.data.access);
+	const response = await api.post('/auth/refresh/');
 
-		return response.data.access;
-	} catch (error) {
-		console.error('Refresh failed:', error.response?.data);
-		console.error('Status:', error.response?.status);
-		throw error;
-	}
+	setAccessToken(response.data.access);
+
+	return response.data.access;
 };
 
 export const getUser = async () => {
-   const response = await api.get('/auth/me/');
-   return response.data;
+	const response = await api.get('/auth/me/');
+	return response.data;
 };
 
 export const logout = async () => {
 	try {
+		await ensureCsrfToken();
 		await api.post('/auth/logout/');
 	} finally {
 		setAccessToken(null);
