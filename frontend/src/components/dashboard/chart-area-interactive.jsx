@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import { TrendingUp } from 'lucide-react';
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
@@ -21,6 +22,7 @@ import {
 } from '@/components/ui/chart';
 
 import { getTransactions } from '@/api/transactions';
+import { getSettings } from '@/api/settings';
 
 const months = [
 	'January',
@@ -37,17 +39,6 @@ const months = [
 	'December',
 ];
 
-const chartConfig = {
-	expense: {
-		label: 'Expense',
-		color: 'var(--chart-1)',
-	},
-	income: {
-		label: 'Income',
-		color: 'var(--chart-2)',
-	},
-};
-
 export function ChartBarMultiple() {
 	const [chartData, setChartData] = useState(
 		months.map((month) => ({
@@ -57,12 +48,25 @@ export function ChartBarMultiple() {
 		})),
 	);
 
+	const [incomeColor, setIncomeColor] = useState('#22c55e');
+	const [expenseColor, setExpenseColor] = useState('#ef4444');
+
+	const [loading, setLoading] = useState(true);
+
 	const currentYear = new Date().getFullYear();
 
 	useEffect(() => {
-		const fetchTransactions = async () => {
+		const fetchData = async () => {
 			try {
-				const transactions = await getTransactions();
+				setLoading(true);
+
+				const [transactions, settings] = await Promise.all([
+					getTransactions(),
+					getSettings(),
+				]);
+
+				setIncomeColor(settings.income_color);
+				setExpenseColor(settings.expense_color);
 
 				const monthlyData = months.map((month) => ({
 					month,
@@ -73,7 +77,7 @@ export function ChartBarMultiple() {
 				transactions.forEach((transaction) => {
 					const date = new Date(transaction.date);
 
-					// Só processar transações deste ano
+					// Only process transactions from the current year
 					if (date.getFullYear() !== currentYear) {
 						return;
 					}
@@ -92,12 +96,43 @@ export function ChartBarMultiple() {
 
 				setChartData(monthlyData);
 			} catch (error) {
-				console.error('Failed to fetch transactions:', error);
+				console.error('Failed to fetch dashboard data:', error);
+			} finally {
+				setLoading(false);
 			}
 		};
 
-		fetchTransactions();
+		fetchData();
 	}, [currentYear]);
+
+	const chartConfig = {
+		expense: {
+			label: 'Expense',
+			color: expenseColor,
+		},
+		income: {
+			label: 'Income',
+			color: incomeColor,
+		},
+	};
+
+	if (loading) {
+		return (
+			<Card>
+				<CardHeader>
+					<CardTitle>Balance</CardTitle>
+
+					<CardDescription>January - December {currentYear}</CardDescription>
+				</CardHeader>
+
+				<CardContent>
+					<div className="flex h-75 items-center justify-center text-sm text-muted-foreground">
+						Loading...
+					</div>
+				</CardContent>
+			</Card>
+		);
+	}
 
 	return (
 		<Card>

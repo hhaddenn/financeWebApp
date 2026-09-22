@@ -49,9 +49,31 @@ urlpatterns = [
         views.TransactionDetail.as_view(),
         name="transaction-retrieve-update-destroy-view",
     ),
+    path("feedback/", views.FeedbackView.as_view(), name="feedback-view"),
+    # Settings
     path(
-        "feedback/",
-        views.FeedbackView.as_view(),
-        name="feedback-view"
-    )
+        "settings/",
+        views.UserSettingsView.as_view(),
+        name="user-settings-view",
+    ),
+    path(
+        "settings/categories/",
+        views.UserCategoryPreferencesView.as_view(),
+        name="user-category-preferences-view",
+    ),
+    path(
+        "settings/categories/<int:pk>/",
+        views.UserCategoryPreferenceDetail.as_view(),
+        name="user-category-preference-detail",
+    ),
+    path(
+        "settings/subcategories/",
+        views.UserSubcategoryPreferencesView.as_view(),
+        name="user-subcategory-preferences-view",
+    ),
+    path(
+        "settings/subcategories/<int:pk>/",
+        views.UserSubcategoryPreferenceDetail.as_view(),
+        name="user-subcategory-preference-detail",
+    ),
 ]

@@ -1,4 +1,5 @@
 import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -25,9 +26,11 @@ import {
 	CreditCardIcon,
 	BellIcon,
 	LogOutIcon,
+	Settings2Icon,
 } from 'lucide-react';
 
 export function NavUser({ user }) {
+	const navigate = useNavigate();
 	const { isMobile } = useSidebar();
 	const { logout } = useAuth();
 
@@ -88,14 +91,9 @@ export function NavUser({ user }) {
 						<DropdownMenuSeparator />
 
 						<DropdownMenuGroup>
-							<DropdownMenuItem>
-								<CircleUserRoundIcon />
-								Account
-							</DropdownMenuItem>
-
-							<DropdownMenuItem>
-								<BellIcon />
-								Notifications
+							<DropdownMenuItem onClick={() => navigate('/settings')}>
+								<Settings2Icon />
+								Settings
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 

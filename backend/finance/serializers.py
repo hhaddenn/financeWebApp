@@ -3,6 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import transaction
 
 from .models import (
     Account,
@@ -12,7 +13,23 @@ from .models import (
     Subcategory,
     Transaction,
     TransactionType,
+    UserSettings,
+    UserCategoryPreference,
+    UserSubcategoryPreference,
 )
+
+DEFAULT_CATEGORY_COLORS = [
+    "#EF4444",
+    "#F97316",
+    "#EAB308",
+    "#22C55E",
+    "#14B8A6",
+    "#3B82F6",
+    "#6366F1",
+    "#8B5CF6",
+    "#EC4899",
+    "#64748B",
+]
 
 
 User = get_user_model()
@@ -82,12 +99,46 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         return value
 
+    @transaction.atomic
     def create(self, validated_data):
-        return User.objects.create_user(
+        user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"],
         )
+
+        # General settings
+        UserSettings.objects.create(user=user)
+
+        # Category preferences
+        categories = Category.objects.all()
+
+        UserCategoryPreference.objects.bulk_create(
+            [
+                UserCategoryPreference(
+                    user=user,
+                    category=category,
+                    color=DEFAULT_CATEGORY_COLORS[index % len(DEFAULT_CATEGORY_COLORS)],
+                )
+                for index, category in enumerate(categories)
+            ]
+        )
+
+        # Subcategory preferences
+        subcategories = Subcategory.objects.all()
+
+        UserSubcategoryPreference.objects.bulk_create(
+            [
+                UserSubcategoryPreference(
+                    user=user,
+                    subcategory=subcategory,
+                    color=DEFAULT_CATEGORY_COLORS[index % len(DEFAULT_CATEGORY_COLORS)],
+                )
+                for index, subcategory in enumerate(subcategories)
+            ]
+        )
+
+        return user
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -214,7 +265,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             "subcategory",
             "subcategory_id",
             "applied",
-            "checked"
+            "checked",
         ]
         read_only_fields = [
             "applied",
@@ -657,3 +708,44 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
         #     )
 
         return attrs
+
+
+# ---------------------------------------------------------------------------
+# User Settings
+# ---------------------------------------------------------------------------
+
+
+class UserSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSettings
+        fields = (
+            "income_color",
+            "expense_color",
+        )
+
+
+class UserCategoryPreferenceSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+
+    class Meta:
+        model = UserCategoryPreference
+        fields = (
+            "id",
+            "category",
+            "color",
+            "hidden",
+        )
+        read_only_fields = ("id", "category")
+
+
+class UserSubcategoryPreferenceSerializer(serializers.ModelSerializer):
+    subcategory = SubcategorySerializer(read_only=True)
+
+    class Meta:
+        model = UserSubcategoryPreference
+        fields = (
+            "id",
+            "subcategory",
+            "hidden",
+        )
+        read_only_fields = ("id", "subcategory")

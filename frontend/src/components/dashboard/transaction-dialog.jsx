@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dialog';
 
 import { Switch } from '@/components/ui/switch';
-
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,7 +28,13 @@ import { createTransaction, updateTransaction } from '@/api/transactions';
 
 import { getCategories, getSubcategories } from '@/api/categories';
 
+import {
+	getCategoryPreferences,
+	getSubcategoryPreferences,
+} from '@/api/settings';
+
 import { getAccounts } from '@/api/accounts';
+
 import { iconMap } from '@/lib/icons';
 
 function CategoryIcon({ name, className }) {
@@ -59,6 +64,10 @@ export function TransactionDialog({
 
 	const [categories, setCategories] = useState([]);
 	const [subcategories, setSubcategories] = useState([]);
+
+	const [categoryPreferences, setCategoryPreferences] = useState([]);
+	const [subcategoryPreferences, setSubcategoryPreferences] = useState([]);
+
 	const [accounts, setAccounts] = useState([]);
 
 	const [accountOpen, setAccountOpen] = useState(false);
@@ -80,22 +89,32 @@ export function TransactionDialog({
 	});
 
 	/*
-	 * Load categories and subcategories.
+	 * Load categories, subcategories and user preferences.
 	 */
 	useEffect(() => {
 		if (!open) return;
 
 		const loadData = async () => {
 			try {
-				const [categoriesData, subcategoriesData] = await Promise.all([
+				const [
+					categoriesData,
+					subcategoriesData,
+					categoryPreferencesData,
+					subcategoryPreferencesData,
+				] = await Promise.all([
 					getCategories(type),
 					getSubcategories(),
+					getCategoryPreferences(),
+					getSubcategoryPreferences(),
 				]);
 
 				setCategories(categoriesData);
 				setSubcategories(subcategoriesData);
+				setCategoryPreferences(categoryPreferencesData);
+				setSubcategoryPreferences(subcategoryPreferencesData);
 			} catch (error) {
 				console.error('Failed to load transaction data:', error);
+				console.error('Backend response:', error.response?.data);
 			}
 		};
 
@@ -134,29 +153,36 @@ export function TransactionDialog({
 		if (!open) return;
 
 		if (transaction) {
-			// We are EDITING
 			setForm({
 				date: transaction.date ? transaction.date.split('T')[0] : '',
+
 				name: transaction.name || '',
+
 				amount:
 					transaction.amount !== null && transaction.amount !== undefined
 						? Number(transaction.amount)
 						: 0,
+
 				amount_to_receive:
 					transaction.amount_to_receive !== null &&
 					transaction.amount_to_receive !== undefined
 						? Number(transaction.amount_to_receive)
 						: 0,
+
 				counterparty: transaction.counterparty || '',
+
 				account_id: transaction.account?.id
 					? String(transaction.account.id)
 					: '',
+
 				transfer_account_id: transaction.transfer_account?.id
 					? String(transaction.transfer_account.id)
 					: '',
+
 				subcategory_id: transaction.subcategory?.id
 					? String(transaction.subcategory.id)
 					: '',
+
 				checked: transaction.checked ?? true,
 			});
 
@@ -181,6 +207,47 @@ export function TransactionDialog({
 			setSelectedCategoryId(null);
 		}
 	}, [open, transaction]);
+
+	/*
+	 * Create lookup maps for user preferences.
+	 */
+	const categoryPreferencesMap = Object.fromEntries(
+		categoryPreferences.map((preference) => [
+			preference.category.id,
+			preference,
+		]),
+	);
+
+	const subcategoryPreferencesMap = Object.fromEntries(
+		subcategoryPreferences.map((preference) => [
+			preference.subcategory.id,
+			preference,
+		]),
+	);
+
+	/*
+	 * Only show categories that are not hidden.
+	 */
+	const visibleCategories = categories.filter((category) => {
+		const preference = categoryPreferencesMap[category.id];
+
+		return !preference?.hidden;
+	});
+
+	/*
+	 * Only show subcategories that are not hidden
+	 * and whose category is not hidden.
+	 *
+	 * Effective hidden rule:
+	 * category.hidden || subcategory.hidden
+	 */
+	const visibleSubcategories = subcategories.filter((subcategory) => {
+		const categoryPreference = categoryPreferencesMap[subcategory.category?.id];
+
+		const subcategoryPreference = subcategoryPreferencesMap[subcategory.id];
+
+		return !categoryPreference?.hidden && !subcategoryPreference?.hidden;
+	});
 
 	/*
 	 * Internal Transfer is read-only in the UI.
@@ -214,7 +281,6 @@ export function TransactionDialog({
 			/*
 			 * Build the payload according to transaction type.
 			 */
-
 			const payload = {
 				date: form.date,
 				name: form.name,
@@ -279,7 +345,6 @@ export function TransactionDialog({
 			}
 		} catch (error) {
 			console.error('Failed to save transaction:', error);
-
 			console.error('Backend response:', error.response?.data);
 		} finally {
 			setSaving(false);
@@ -306,7 +371,14 @@ export function TransactionDialog({
 		(subcategory) => String(subcategory.id) === String(form.subcategory_id),
 	);
 
-	const filteredSubcategories = subcategories.filter(
+	/*
+	 * Subcategories available inside the selected category.
+	 *
+	 * Already filtered by:
+	 * - category hidden
+	 * - subcategory hidden
+	 */
+	const filteredSubcategories = visibleSubcategories.filter(
 		(subcategory) =>
 			String(subcategory.category?.id) === String(selectedCategoryId),
 	);
@@ -350,9 +422,11 @@ export function TransactionDialog({
 								: 'Fill in the details for the new transaction.'}
 						</DialogDescription>
 					</DialogHeader>
-					{/** ACCOUNT */}
+
+					{/* ACCOUNT */}
 					<div className="grid gap-2">
 						<Label>Account</Label>
+
 						<Popover open={accountOpen} onOpenChange={setAccountOpen}>
 							<PopoverTrigger
 								render={
@@ -366,6 +440,7 @@ export function TransactionDialog({
 													name={selectedAccount.icon}
 													className="mr-2 size-4"
 												/>
+
 												{selectedAccount.name}
 											</>
 										) : (
@@ -376,6 +451,7 @@ export function TransactionDialog({
 									</Button>
 								}
 							/>
+
 							<PopoverContent className="w-64 p-2" align="start">
 								<div className="grid gap-1">
 									{accounts.map((account) => (
@@ -394,12 +470,14 @@ export function TransactionDialog({
 															? ''
 															: current.transfer_account_id,
 												}));
+
 												setAccountOpen(false);
 											}}>
 											<CategoryIcon
 												name={account.icon}
 												className="mr-3 size-5"
 											/>
+
 											<span className="flex-1 text-left">{account.name}</span>
 										</Button>
 									))}
@@ -407,10 +485,12 @@ export function TransactionDialog({
 							</PopoverContent>
 						</Popover>
 					</div>
-					{/** TRANSFER DESTINATION */}
+
+					{/* TRANSFER DESTINATION */}
 					{type === 'transfer' && (
 						<div className="grid gap-2">
 							<Label>Account to Transfer</Label>
+
 							<Popover
 								open={transferAccountOpen}
 								onOpenChange={setTransferAccountOpen}>
@@ -426,6 +506,7 @@ export function TransactionDialog({
 														name={selectedTransferAccount.icon}
 														className="mr-2 size-4"
 													/>
+
 													{selectedTransferAccount.name}
 												</>
 											) : (
@@ -436,6 +517,7 @@ export function TransactionDialog({
 										</Button>
 									}
 								/>
+
 								<PopoverContent className="w-64 p-2" align="start">
 									<div className="grid gap-1">
 										{availableTransferAccounts.map((account) => (
@@ -449,12 +531,14 @@ export function TransactionDialog({
 														...current,
 														transfer_account_id: String(account.id),
 													}));
+
 													setTransferAccountOpen(false);
 												}}>
 												<CategoryIcon
 													name={account.icon}
 													className="mr-3 size-5"
 												/>
+
 												<span className="flex-1 text-left">{account.name}</span>
 											</Button>
 										))}
@@ -463,9 +547,11 @@ export function TransactionDialog({
 							</Popover>
 						</div>
 					)}
-					{/** NAME */}
+
+					{/* NAME */}
 					<div className="grid gap-2">
 						<Label htmlFor="transaction-name">Name</Label>
+
 						<Input
 							id="transaction-name"
 							placeholder={
@@ -477,14 +563,19 @@ export function TransactionDialog({
 							}
 							value={form.name}
 							onChange={(event) =>
-								setForm((current) => ({ ...current, name: event.target.value }))
+								setForm((current) => ({
+									...current,
+									name: event.target.value,
+								}))
 							}
 							required
 						/>
 					</div>
-					{/** AMOUNT */}
+
+					{/* AMOUNT */}
 					<div className="grid gap-2">
 						<Label htmlFor="amount">Amount</Label>
+
 						<Input
 							id="amount"
 							type="number"
@@ -500,10 +591,12 @@ export function TransactionDialog({
 							required
 						/>
 					</div>
-					{/** EXPENSE AMOUNT TO RECEIVE */}
+
+					{/* EXPENSE AMOUNT TO RECEIVE */}
 					{type === 'expense' && (
 						<div className="grid gap-2">
 							<Label htmlFor="amount-to-receive">Amount to Receive</Label>
+
 							<Input
 								id="amount-to-receive"
 								type="number"
@@ -520,9 +613,11 @@ export function TransactionDialog({
 							/>
 						</div>
 					)}
-					{/** DATE */}
+
+					{/* DATE */}
 					<div className="grid gap-2">
 						<Label htmlFor="transaction-date">Date</Label>
+
 						<Popover>
 							<PopoverTrigger
 								render={
@@ -535,12 +630,14 @@ export function TransactionDialog({
 									</Button>
 								}
 							/>
+
 							<PopoverContent className="w-auto p-0" align="start">
 								<Calendar
 									mode="single"
 									selected={selectedDate}
 									onSelect={(date) => {
 										if (!date) return;
+
 										setForm((current) => ({
 											...current,
 											date: format(date, 'yyyy-MM-dd'),
@@ -551,29 +648,35 @@ export function TransactionDialog({
 							</PopoverContent>
 						</Popover>
 					</div>
-					{/** TRANSFER READ ONLY SUBCATEGORY */}
+
+					{/* TRANSFER READ ONLY SUBCATEGORY */}
 					{type === 'transfer' && (
 						<div className="grid gap-2">
 							<Label>Subcategory</Label>
+
 							<div className="flex h-10 items-center rounded-md border bg-muted/50 px-3 text-sm">
 								<CategoryIcon
 									name={internalTransferSubcategory?.icon}
 									className="mr-2 size-4"
 								/>
+
 								<span>
 									{internalTransferSubcategory?.name || 'Internal Transfer'}
 								</span>
 							</div>
 						</div>
 					)}
-					{/** CATEGORY */}
+
+					{/* CATEGORY */}
 					{type !== 'transfer' && (
 						<div className="grid gap-2">
 							<Label>Category</Label>
+
 							<Popover
 								open={categoryOpen}
 								onOpenChange={(isOpen) => {
 									setCategoryOpen(isOpen);
+
 									if (!isOpen) {
 										resetCategoryMenu();
 									}
@@ -590,12 +693,16 @@ export function TransactionDialog({
 														name={selectedCategory?.icon}
 														className="mr-2 size-4"
 													/>
+
 													{selectedCategory?.name}
-													<span className="mx-2 text-muted-foreground"></span>
+
+													<span className="mx-2 text-muted-foreground">/</span>
+
 													<CategoryIcon
 														name={selectedSubcategory.icon}
 														className="mr-2 size-4"
 													/>
+
 													{selectedSubcategory.name}
 												</>
 											) : (
@@ -606,10 +713,11 @@ export function TransactionDialog({
 										</Button>
 									}
 								/>
+
 								<PopoverContent className="w-64 p-2" align="start">
 									{selectedCategoryId === null ? (
 										<div className="grid gap-1">
-											{categories.map((category) => (
+											{visibleCategories.map((category) => (
 												<Button
 													key={category.id}
 													type="button"
@@ -620,10 +728,10 @@ export function TransactionDialog({
 														name={category.icon}
 														className="mr-3 size-5"
 													/>
+
 													<span className="flex-1 text-left">
 														{category.name}
 													</span>
-													<span className="text-muted-foreground"></span>
 												</Button>
 											))}
 										</div>
@@ -638,8 +746,10 @@ export function TransactionDialog({
 													name={selectedCategory?.icon}
 													className="mr-2 size-4"
 												/>
+
 												{selectedCategory?.name}
 											</Button>
+
 											{filteredSubcategories.map((subcategory) => (
 												<Button
 													key={subcategory.id}
@@ -651,6 +761,7 @@ export function TransactionDialog({
 														name={subcategory.icon}
 														className="mr-3 size-5"
 													/>
+
 													{subcategory.name}
 												</Button>
 											))}
@@ -660,12 +771,14 @@ export function TransactionDialog({
 							</Popover>
 						</div>
 					)}
-					{/** COUNTERPARTY */}
+
+					{/* COUNTERPARTY */}
 					{type !== 'transfer' && (
 						<div className="grid gap-2">
 							<Label htmlFor="counterparty-name">
 								{type === 'income' ? 'From' : 'To'}
 							</Label>
+
 							<Input
 								id="counterparty-name"
 								placeholder={
