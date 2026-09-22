@@ -1,9 +1,15 @@
 import { useActionState } from 'react';
+
 import { Link, useLocation } from 'react-router-dom';
+
 import { useAuth } from '../../context/AuthContext';
 
+import { usePreferences } from '@/context/PreferencesContext';
+
 import { cn } from '@/lib/utils';
+
 import { Button } from '@/components/ui/button';
+
 import {
 	Card,
 	CardContent,
@@ -11,16 +17,19 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
+
 import {
 	Field,
 	FieldDescription,
 	FieldGroup,
 	FieldLabel,
 } from '@/components/ui/field';
+
 import { Input } from '@/components/ui/input';
 
 export default function LoginForm({ className, ...props }) {
 	const { login } = useAuth();
+	const { t } = usePreferences();
 	const location = useLocation();
 
 	const [state, formAction, isPending] = useActionState(
@@ -51,9 +60,9 @@ export default function LoginForm({ className, ...props }) {
 			{...props}>
 			<Card>
 				<CardHeader className="text-center">
-					<CardTitle className="text-xl">Welcome back</CardTitle>
+					<CardTitle className="text-xl">{t('auth.welcomeBack')}</CardTitle>
 
-					<CardDescription>Login to your account</CardDescription>
+					<CardDescription>{t('auth.loginDescription')}</CardDescription>
 				</CardHeader>
 
 				<CardContent>
@@ -68,13 +77,13 @@ export default function LoginForm({ className, ...props }) {
 
 							{/* Username */}
 							<Field>
-								<FieldLabel htmlFor="username">Username</FieldLabel>
+								<FieldLabel htmlFor="username">{t('auth.username')}</FieldLabel>
 
 								<Input
 									id="username"
 									name="username"
 									type="text"
-									placeholder="Username"
+									placeholder={t('auth.username')}
 									autoComplete="username"
 									required
 									disabled={isPending}
@@ -84,12 +93,14 @@ export default function LoginForm({ className, ...props }) {
 							{/* Password */}
 							<Field>
 								<div className="flex items-center">
-									<FieldLabel htmlFor="password">Password</FieldLabel>
+									<FieldLabel htmlFor="password">
+										{t('auth.password')}
+									</FieldLabel>
 
 									<Link
 										to="/forgot-password"
 										className="ml-auto text-sm underline-offset-4 hover:underline">
-										Forgot your password?
+										{t('auth.forgotPassword')}
 									</Link>
 								</div>
 
@@ -97,7 +108,7 @@ export default function LoginForm({ className, ...props }) {
 									id="password"
 									name="password"
 									type="password"
-									placeholder="Password"
+									placeholder={t('auth.password')}
 									autoComplete="current-password"
 									required
 									disabled={isPending}
@@ -113,23 +124,26 @@ export default function LoginForm({ className, ...props }) {
 
 							{/* Submit */}
 							<Field>
-								<Button type="submit" disabled={isPending} className="w-full hover:cursor-pointer">
-									{isPending ? 'Logging in...' : 'Login'}
+								<Button
+									type="submit"
+									disabled={isPending}
+									className="w-full hover:cursor-pointer">
+									{isPending ? t('auth.loggingIn') : t('auth.login')}
 								</Button>
 							</Field>
 
 							{/* Success */}
 							{state?.success && (
 								<FieldDescription className="text-center text-green-600">
-									Login succeeded!
+									{t('auth.loginSucceeded')}
 								</FieldDescription>
 							)}
 
 							{/* Register */}
 							<FieldDescription className="text-center">
-								Don&apos;t have an account?{' '}
+								{t('auth.noAccount')}{' '}
 								<Link to="/register" className="underline underline-offset-4">
-									Sign up
+									{t('auth.signUp')}
 								</Link>
 							</FieldDescription>
 						</FieldGroup>

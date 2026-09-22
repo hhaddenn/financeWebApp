@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
 
+import { usePreferences } from '@/context/PreferencesContext';
+
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+
 import { AppSidebar } from '@/components/dashboard/app-sidebar';
+
 import { SiteHeader } from '@/components/dashboard/site-header';
 
 import { iconMap } from '@/lib/icons';
 
 import { Button } from '@/components/ui/button';
+
 import {
 	Card,
 	CardContent,
@@ -14,11 +19,17 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
+
 import { Input } from '@/components/ui/input';
+
 import { Label } from '@/components/ui/label';
+
 import { Switch } from '@/components/ui/switch';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
 import {
 	Accordion,
 	AccordionContent,
@@ -38,21 +49,30 @@ import {
 function CategoryIcon({ name, className }) {
 	const Icon = iconMap[name];
 
-	if (!Icon) return null;
+	if (!Icon) {
+		return null;
+	}
 
 	return <Icon className={className} />;
 }
 
 export default function Settings() {
+	const {
+		language,
+		theme,
+		setLanguage,
+		setTheme,
+		t,
+		translateCategory,
+		translateSubcategory,
+	} = usePreferences();
+
 	const [incomeColor, setIncomeColor] = useState('');
 	const [expenseColor, setExpenseColor] = useState('');
-
 	const [categories, setCategories] = useState([]);
 	const [subcategories, setSubcategories] = useState([]);
-
 	const [loading, setLoading] = useState(true);
 	const [saving, setSaving] = useState(false);
-
 	const [error, setError] = useState(null);
 	const [success, setSuccess] = useState(false);
 
@@ -71,14 +91,13 @@ export default function Settings() {
 
 				setIncomeColor(settingsData.income_color);
 				setExpenseColor(settingsData.expense_color);
-
 				setCategories(categoryPreferences);
 				setSubcategories(subcategoryPreferences);
 			} catch (error) {
 				console.error('Failed to load settings:', error);
 				console.error('Backend response:', error.response?.data);
 
-				setError('Failed to load settings.');
+				setError(t('settings.saveError'));
 			} finally {
 				setLoading(false);
 			}
@@ -138,7 +157,7 @@ export default function Settings() {
 			console.error('Failed to save settings:', error);
 			console.error('Backend response:', error.response?.data);
 
-			setError('Failed to save settings.');
+			setError(t('settings.saveError'));
 		} finally {
 			setSaving(false);
 		}
@@ -149,18 +168,18 @@ export default function Settings() {
 			<SidebarProvider>
 				<AppSidebar />
 
-				<SidebarInset>
+				<SidebarInset className="min-h-svh bg-background">
 					<SiteHeader
-						title="Settings"
-						description="Customize your finance preferences"
+						title={t('settings.title')}
+						description={t('settings.description')}
 					/>
 
-					<main className="flex-1">
+					<main className="min-h-[calc(100svh-3.5rem)] flex-1 bg-background">
 						<div className="mx-auto w-full max-w-[1200px] p-4 md:p-6 lg:p-8">
 							<Card>
 								<CardContent className="flex items-center justify-center py-12">
 									<p className="text-sm text-muted-foreground">
-										Loading settings...
+										{t('common.loading')}
 									</p>
 								</CardContent>
 							</Card>
@@ -175,29 +194,17 @@ export default function Settings() {
 		<SidebarProvider>
 			<AppSidebar />
 
-			<SidebarInset>
+			<SidebarInset className="min-h-svh bg-background">
 				<SiteHeader
-					title="Settings"
-					description="Customize your finance preferences"
+					title={t('settings.title')}
+					description={t('settings.description')}
 				/>
 
-				<main className="flex-1">
+				<main className="min-h-[calc(100svh-3.5rem)] flex-1 bg-background">
 					<div className="mx-auto w-full max-w-[1200px] space-y-6 p-4 md:p-6 lg:p-8">
-						{/* Header */}
-						<div>
-							<h2 className="text-2xl font-semibold tracking-tight">
-								Settings
-							</h2>
-
-							<p className="text-sm text-muted-foreground">
-								Manage how your finances are displayed and organized.
-							</p>
-						</div>
-
-						{/* Messages */}
 						{error && (
 							<Alert variant="destructive">
-								<AlertTitle>Error</AlertTitle>
+								<AlertTitle>{t('common.error')}</AlertTitle>
 
 								<AlertDescription>{error}</AlertDescription>
 							</Alert>
@@ -205,39 +212,111 @@ export default function Settings() {
 
 						{success && (
 							<Alert>
-								<AlertTitle>Settings saved</AlertTitle>
+								<AlertTitle>{t('settings.saveSuccess')}</AlertTitle>
 
-								<AlertDescription>
-									Your preferences have been updated successfully.
-								</AlertDescription>
+								<AlertDescription>{t('settings.saveSuccess')}</AlertDescription>
 							</Alert>
 						)}
 
 						<Tabs defaultValue="general" className="space-y-6">
 							<TabsList>
-								<TabsTrigger value="general">General</TabsTrigger>
+								<TabsTrigger value="general">
+									{t('settings.general')}
+								</TabsTrigger>
 
-								<TabsTrigger value="categories">Categories</TabsTrigger>
+								<TabsTrigger value="categories">
+									{t('settings.categories')}
+								</TabsTrigger>
 
-								<TabsTrigger value="subcategories">Subcategories</TabsTrigger>
+								<TabsTrigger value="subcategories">
+									{t('settings.subcategories')}
+								</TabsTrigger>
 							</TabsList>
 
 							{/* GENERAL */}
+
 							<TabsContent value="general" className="space-y-6">
+								{/* Language */}
+
 								<Card>
 									<CardHeader>
-										<CardTitle>Transaction colors</CardTitle>
+										<CardTitle>{t('settings.language')}</CardTitle>
 
 										<CardDescription>
-											Choose the colors used to represent income and expenses.
+											{t('settings.languageDescription')}
+										</CardDescription>
+									</CardHeader>
+
+									<CardContent>
+										<div className="flex flex-wrap gap-3">
+											<Button
+												variant={language === 'pt' ? 'default' : 'outline'}
+												onClick={() => setLanguage('pt')}>
+												🇵🇹 Português
+											</Button>
+
+											<Button
+												variant={language === 'en' ? 'default' : 'outline'}
+												onClick={() => setLanguage('en')}>
+												🇬🇧 English
+											</Button>
+										</div>
+									</CardContent>
+								</Card>
+
+								{/* Appearance */}
+
+								<Card>
+									<CardHeader>
+										<CardTitle>{t('settings.appearance')}</CardTitle>
+
+										<CardDescription>
+											{t('settings.appearanceDescription')}
+										</CardDescription>
+									</CardHeader>
+
+									<CardContent>
+										<div className="flex flex-wrap gap-3">
+											<Button
+												variant={theme === 'light' ? 'default' : 'outline'}
+												onClick={() => setTheme('light')}>
+												☀️ {t('settings.light')}
+											</Button>
+
+											<Button
+												variant={theme === 'dark' ? 'default' : 'outline'}
+												onClick={() => setTheme('dark')}>
+												🌙 {t('settings.dark')}
+											</Button>
+
+											<Button
+												variant={theme === 'system' ? 'default' : 'outline'}
+												onClick={() => setTheme('system')}>
+												💻 {t('settings.system')}
+											</Button>
+										</div>
+									</CardContent>
+								</Card>
+
+								{/* Transaction colors */}
+
+								<Card>
+									<CardHeader>
+										<CardTitle>{t('settings.transactionColors')}</CardTitle>
+
+										<CardDescription>
+											{t('settings.transactionColorsDescription')}
 										</CardDescription>
 									</CardHeader>
 
 									<CardContent>
 										<div className="grid gap-6 sm:grid-cols-2">
 											{/* Income */}
+
 											<div className="space-y-2">
-												<Label htmlFor="income-color">Income color</Label>
+												<Label htmlFor="income-color">
+													{t('settings.incomeColor')}
+												</Label>
 
 												<div className="flex items-center gap-3">
 													<Input
@@ -263,8 +342,11 @@ export default function Settings() {
 											</div>
 
 											{/* Expense */}
+
 											<div className="space-y-2">
-												<Label htmlFor="expense-color">Expense color</Label>
+												<Label htmlFor="expense-color">
+													{t('settings.expenseColor')}
+												</Label>
 
 												<div className="flex items-center gap-3">
 													<Input
@@ -294,14 +376,14 @@ export default function Settings() {
 							</TabsContent>
 
 							{/* CATEGORIES */}
+
 							<TabsContent value="categories" className="space-y-6">
 								<Card>
 									<CardHeader>
-										<CardTitle>Categories</CardTitle>
+										<CardTitle>{t('settings.categories')}</CardTitle>
 
 										<CardDescription>
-											Customize category colors and choose which categories
-											should be visible.
+											{t('settings.categoryVisibility')}
 										</CardDescription>
 									</CardHeader>
 
@@ -312,6 +394,7 @@ export default function Settings() {
 													key={category.id}
 													className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
 													{/* Category information */}
+
 													<div className="flex items-center gap-3">
 														<div
 															className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border"
@@ -327,17 +410,18 @@ export default function Settings() {
 
 														<div className="space-y-1">
 															<p className="font-medium">
-																{category.category.name}
+																{translateCategory(category.category.name)}
 															</p>
 
 															<p className="text-sm text-muted-foreground">
 																{category.category.description ||
-																	'Customize this category.'}
+																	t('settings.categoryVisibility')}
 															</p>
 														</div>
 													</div>
 
 													{/* Category controls */}
+
 													<div className="flex items-center gap-4">
 														<Input
 															type="color"
@@ -360,7 +444,9 @@ export default function Settings() {
 														/>
 
 														<span className="w-16 text-sm text-muted-foreground">
-															{category.hidden ? 'Hidden' : 'Visible'}
+															{category.hidden
+																? t('common.hidden')
+																: t('common.visible')}
 														</span>
 													</div>
 												</div>
@@ -371,14 +457,14 @@ export default function Settings() {
 							</TabsContent>
 
 							{/* SUBCATEGORIES */}
+
 							<TabsContent value="subcategories" className="space-y-6">
 								<Card>
 									<CardHeader>
-										<CardTitle>Subcategories</CardTitle>
+										<CardTitle>{t('settings.subcategories')}</CardTitle>
 
 										<CardDescription>
-											Choose which subcategories should be visible. Open a
-											category to manage its subcategories.
+											{t('settings.subcategoryVisibility')}
 										</CardDescription>
 									</CardHeader>
 
@@ -401,7 +487,6 @@ export default function Settings() {
 														value={`category-${category.id}`}>
 														<AccordionTrigger className="hover:no-underline">
 															<div className="flex items-center gap-3">
-																{/* Category icon */}
 																<div
 																	className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
 																	style={{
@@ -415,7 +500,7 @@ export default function Settings() {
 																</div>
 
 																<span className="font-medium">
-																	{category.category.name}
+																	{translateCategory(category.category.name)}
 																</span>
 
 																<span className="text-sm text-muted-foreground">
@@ -435,6 +520,7 @@ export default function Settings() {
 																			<div key={subcategory.id}>
 																				<div className="flex items-center justify-between gap-4 py-3 pl-6">
 																					{/* Subcategory information */}
+
 																					<div className="flex items-center gap-3">
 																						<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
 																							<CategoryIcon
@@ -447,19 +533,23 @@ export default function Settings() {
 
 																						<div className="space-y-1">
 																							<p className="text-sm font-medium">
-																								{subcategory.subcategory.name}
+																								{translateSubcategory(
+																									subcategory.subcategory.name,
+																								)}
 																							</p>
 
 																							{category.hidden && (
 																								<p className="text-xs text-muted-foreground">
-																									Hidden because its category is
-																									hidden.
+																									{t(
+																										'settings.categoryVisibility',
+																									)}
 																								</p>
 																							)}
 																						</div>
 																					</div>
 
 																					{/* Subcategory controls */}
+
 																					<div className="flex items-center gap-4">
 																						<Switch
 																							checked={!subcategory.hidden}
@@ -476,8 +566,8 @@ export default function Settings() {
 
 																						<span className="w-16 text-sm text-muted-foreground">
 																							{effectivelyHidden
-																								? 'Hidden'
-																								: 'Visible'}
+																								? t('common.hidden')
+																								: t('common.visible')}
 																						</span>
 																					</div>
 																				</div>
@@ -502,9 +592,10 @@ export default function Settings() {
 						</Tabs>
 
 						{/* Save */}
+
 						<div className="flex justify-end">
 							<Button onClick={handleSave} disabled={saving}>
-								{saving ? 'Saving...' : 'Save changes'}
+								{saving ? t('settings.saving') : t('settings.saveChanges')}
 							</Button>
 						</div>
 					</div>

@@ -24,36 +24,51 @@ import {
 import { getTransactions } from '@/api/transactions';
 import { getSettings } from '@/api/settings';
 
-const months = [
-	'January',
-	'February',
-	'March',
-	'April',
-	'May',
-	'June',
-	'July',
-	'August',
-	'September',
-	'October',
-	'November',
-	'December',
-];
+import { usePreferences } from '@/context/PreferencesContext';
+
+const months = {
+	pt: [
+		'Janeiro',
+		'Fevereiro',
+		'Março',
+		'Abril',
+		'Maio',
+		'Junho',
+		'Julho',
+		'Agosto',
+		'Setembro',
+		'Outubro',
+		'Novembro',
+		'Dezembro',
+	],
+
+	en: [
+		'January',
+		'February',
+		'March',
+		'April',
+		'May',
+		'June',
+		'July',
+		'August',
+		'September',
+		'October',
+		'November',
+		'December',
+	],
+};
 
 export function ChartBarMultiple() {
-	const [chartData, setChartData] = useState(
-		months.map((month) => ({
-			month,
-			expense: 0,
-			income: 0,
-		})),
-	);
+	const { language, t } = usePreferences();
 
+	const [chartData, setChartData] = useState([]);
 	const [incomeColor, setIncomeColor] = useState('#22c55e');
 	const [expenseColor, setExpenseColor] = useState('#ef4444');
-
 	const [loading, setLoading] = useState(true);
 
 	const currentYear = new Date().getFullYear();
+
+	const currentMonths = months[language] ?? months.pt;
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -65,10 +80,11 @@ export function ChartBarMultiple() {
 					getSettings(),
 				]);
 
-				setIncomeColor(settings.income_color);
-				setExpenseColor(settings.expense_color);
+				setIncomeColor(settings.income_color || '#22c55e');
 
-				const monthlyData = months.map((month) => ({
+				setExpenseColor(settings.expense_color || '#ef4444');
+
+				const monthlyData = currentMonths.map((month) => ({
 					month,
 					expense: 0,
 					income: 0,
@@ -103,15 +119,16 @@ export function ChartBarMultiple() {
 		};
 
 		fetchData();
-	}, [currentYear]);
+	}, [currentYear, language]);
 
 	const chartConfig = {
 		expense: {
-			label: 'Expense',
+			label: t('settings.expenseColor'),
 			color: expenseColor,
 		},
+
 		income: {
-			label: 'Income',
+			label: t('settings.incomeColor'),
 			color: incomeColor,
 		},
 	};
@@ -122,12 +139,14 @@ export function ChartBarMultiple() {
 				<CardHeader>
 					<CardTitle>Balance</CardTitle>
 
-					<CardDescription>January - December {currentYear}</CardDescription>
+					<CardDescription>
+						{currentMonths[0]} - {currentMonths[11]} {currentYear}
+					</CardDescription>
 				</CardHeader>
 
 				<CardContent>
 					<div className="flex h-75 items-center justify-center text-sm text-muted-foreground">
-						Loading...
+						{t('common.loading')}
 					</div>
 				</CardContent>
 			</Card>
@@ -139,7 +158,9 @@ export function ChartBarMultiple() {
 			<CardHeader>
 				<CardTitle>Balance</CardTitle>
 
-				<CardDescription>January - December {currentYear}</CardDescription>
+				<CardDescription>
+					{currentMonths[0]} - {currentMonths[11]} {currentYear}
+				</CardDescription>
 			</CardHeader>
 
 			<CardContent>
@@ -176,12 +197,17 @@ export function ChartBarMultiple() {
 
 			<CardFooter className="flex-col items-start gap-2 text-sm">
 				<div className="flex gap-2 leading-none font-medium">
-					Income and expenses for {currentYear}
+					{language === 'pt'
+						? `Receitas e despesas de ${currentYear}`
+						: `Income and expenses for ${currentYear}`}
+
 					<TrendingUp className="h-4 w-4" />
 				</div>
 
 				<div className="leading-none text-muted-foreground">
-					Showing monthly transaction totals
+					{language === 'pt'
+						? 'Totais mensais das transações'
+						: 'Showing monthly transaction totals'}
 				</div>
 			</CardFooter>
 		</Card>

@@ -21,6 +21,7 @@ export function NavMain({ items }) {
 								tooltip={item.title}
 								onClick={() => navigate(item.url)}>
 								{item.icon}
+
 								<span>{item.title}</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>

@@ -273,6 +273,25 @@ class UserSettings(models.Model):
         max_length=20,
         default="#ef4444",
     )
+    language = models.CharField(
+        max_length=2,
+        choices=[
+            ("pt", "Português"),
+            ("en", "English"),
+        ],
+        default="pt",
+    )
+
+    theme = models.CharField(
+        max_length=10,
+        choices=[
+            ("light", "Light"),
+            ("dark", "Dark"),
+            ("system", "System"),
+        ],
+        default="light",
+    )
+
 
 class UserCategoryPreference(models.Model):
     user = models.ForeignKey(

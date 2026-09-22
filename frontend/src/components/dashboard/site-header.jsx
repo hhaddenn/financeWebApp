@@ -10,11 +10,9 @@ export function SiteHeader({
 				<SidebarTrigger />
 
 				<div>
-					<h1 className="text-sm font-semibold">{title}</h1>
+					<h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
 
-					<p className="hidden text-xs text-muted-foreground sm:block">
-						{description}
-					</p>
+					<p className="text-sm text-muted-foreground">{description}</p>
 				</div>
 			</div>
 		</header>

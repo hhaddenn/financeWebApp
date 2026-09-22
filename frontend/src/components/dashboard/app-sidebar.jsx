@@ -2,7 +2,6 @@ import {
 	LayoutDashboardIcon,
 	ArrowLeftRightIcon,
 	WalletIcon,
-	Settings2Icon,
 	BugIcon,
 	LightbulbIcon,
 } from 'lucide-react';
@@ -19,39 +18,45 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from '@/components/ui/sidebar';
+
 import { getUser } from '@/api/auth';
+
 import { useState, useEffect } from 'react';
+
 import { FeedbackDialog } from '@/components/FeedbackDialog';
 
-const data = {
-	navMain: [
-		{
-			title: 'Dashboard',
-			url: '/dashboard',
-			icon: <LayoutDashboardIcon />,
-		},
-		{
-			title: 'Transactions',
-			url: '/transactions',
-			icon: <ArrowLeftRightIcon />,
-		},
-	],
-};
+import { usePreferences } from '@/context/PreferencesContext';
 
 export function AppSidebar({ ...props }) {
+	const { t } = usePreferences();
+
 	const [user, setUser] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [feedbackType, setFeedbackType] = useState(null);
+
+	const data = {
+		navMain: [
+			{
+				title: t('navigation.dashboard'),
+				url: '/dashboard',
+				icon: <LayoutDashboardIcon />,
+			},
+			{
+				title: t('navigation.transactions'),
+				url: '/transactions',
+				icon: <ArrowLeftRightIcon />,
+			},
+		],
+	};
 
 	const loadUser = async () => {
 		try {
 			setLoading(true);
 
 			const data = await getUser();
-
 			setUser(data);
 		} catch (error) {
-			showError(error);
+			console.error('Failed to load user:', error);
 		} finally {
 			setLoading(false);
 		}
@@ -71,6 +76,7 @@ export function AppSidebar({ ...props }) {
 								className="h-10 px-2"
 								render={<a href="/dashboard" />}>
 								<WalletIcon className="size-5" />
+
 								<span className="text-base font-semibold">FinanceApp</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
@@ -86,19 +92,21 @@ export function AppSidebar({ ...props }) {
 					<SidebarMenu className="mb-2">
 						<SidebarMenuItem>
 							<SidebarMenuButton
-								tooltip="Report a bug"
+								tooltip={t('feedback.reportBug')}
 								onClick={() => setFeedbackType('bug')}>
 								<BugIcon />
-								<span>Report a bug</span>
+
+								<span>{t('feedback.reportBug')}</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 
 						<SidebarMenuItem>
 							<SidebarMenuButton
-								tooltip="Suggestions"
+								tooltip={t('feedback.suggestions')}
 								onClick={() => setFeedbackType('suggestion')}>
 								<LightbulbIcon />
-								<span>Suggestions</span>
+
+								<span>{t('feedback.suggestions')}</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					</SidebarMenu>
