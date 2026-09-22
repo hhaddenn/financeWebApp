@@ -206,9 +206,9 @@ const en = {
 		name: 'Name',
 		amountToReceive: 'Amount to Receive',
 
-		transferNamePlaceholder: 'Ex: Transfer to savings',
-		incomeNamePlaceholder: 'Ex: Money lent',
-		expenseNamePlaceholder: 'Ex: Fill car tank',
+		transferNamePlaceholder: 'Ex: Transfer to savings (optional)',
+		incomeNamePlaceholder: 'Ex: Money lent (optional)',
+		expenseNamePlaceholder: 'Ex: Fill car tank (optional)',
 
 		pickDate: 'Pick a date',
 
