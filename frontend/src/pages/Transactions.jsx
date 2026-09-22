@@ -1,12 +1,12 @@
 import * as React from 'react';
 
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/dashboard/app-sidebar';
-import { SiteHeader } from '@/components/dashboard/site-header';
-import { TransactionsFilters } from '@/components/dashboard/transactions-filters';
-import { TransactionsTable } from '@/components/dashboard/transactions-table';
-import { TransactionDialog } from '@/components/dashboard/transaction-dialog';
-import { TransactionActionMenu } from '@/components/dashboard/transaction-action-menu';
+import { AppSidebar } from '@/components/navigation/AppSidebar';
+import { SiteHeader } from '@/components/navigation/SiteHeader';
+import { TransactionsFilters } from '@/components/transactions/TransactionsFilters';
+import { TransactionsTable } from '@/components/transactions/TransactionsTable';
+import { TransactionDialog } from '@/components/transactions/TransactionDialog';
+import { TransactionActionMenu } from '@/components/transactions/TransactionActionMenu';
 
 import { getAccounts } from '@/api/accounts';
 import { getCategories, getSubcategories } from '@/api/categories';

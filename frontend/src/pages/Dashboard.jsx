@@ -1,12 +1,12 @@
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
-import { AppSidebar } from '@/components/dashboard/app-sidebar';
-import { SiteHeader } from '@/components/dashboard/site-header';
+import { AppSidebar } from '@/components/navigation/AppSidebar';
+import { SiteHeader } from '@/components/navigation/SiteHeader';
 import { SectionCards } from '@/components/dashboard/section-cards';
 import { ChartBarMultiple } from '@/components/dashboard/chart-area-interactive';
 import { DataTable } from '@/components/dashboard/data-table';
 import { ChartPieDonutText } from '@/components/dashboard/chart-pie-donut-text';
-import { TransactionActionMenu } from '@/components/dashboard/transaction-action-menu';
+import { TransactionActionMenu } from '@/components/transactions/TransactionActionMenu';
 
 import { usePreferences } from '@/context/PreferencesContext';
 

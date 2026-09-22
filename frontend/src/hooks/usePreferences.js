@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import { getSettings, updateSettings } from '@/api/settings';
 
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 
 import pt from '@/locales/pt';
 import en from '@/locales/en';
