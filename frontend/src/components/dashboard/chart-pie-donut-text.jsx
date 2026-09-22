@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/chart';
 
 import { getTransactions } from '@/api/transactions';
+import { getCategoryPreferences } from '@/api/settings';
 
 const chartConfig = {
 	expenses: {
@@ -27,15 +28,9 @@ const chartConfig = {
 	},
 };
 
-// Generate a different color for each category.
-const getCategoryColor = (index, total) => {
-	const hue = (index * 360) / total;
-
-	return `hsl(${hue}, 70%, 50%)`;
-};
-
 export function ChartPieDonutText() {
 	const [transactions, setTransactions] = React.useState([]);
+	const [categoryPreferences, setCategoryPreferences] = React.useState([]);
 	const [loading, setLoading] = React.useState(true);
 
 	// Year and month we want to show.
@@ -44,33 +39,44 @@ export function ChartPieDonutText() {
 	const selectedMonth = 8;
 
 	React.useEffect(() => {
-		const loadTransactions = async () => {
+		const loadData = async () => {
 			try {
-				const data = await getTransactions();
+				const [transactionsData, categoryPreferencesData] = await Promise.all([
+					getTransactions(),
+					getCategoryPreferences(),
+				]);
 
-				setTransactions(data);
+				setTransactions(transactionsData);
+				setCategoryPreferences(categoryPreferencesData);
 			} catch (error) {
-				console.error('Failed to load transactions:', error);
+				console.error('Failed to load chart data:', error);
 			} finally {
 				setLoading(false);
 			}
 		};
 
-		loadTransactions();
+		loadData();
 	}, []);
+
+	const categoryPreferencesMap = React.useMemo(() => {
+		return categoryPreferences.reduce((map, preference) => {
+			map[preference.category.id] = preference;
+			return map;
+		}, {});
+	}, [categoryPreferences]);
 
 	const chartData = React.useMemo(() => {
 		const categories = {};
 
 		transactions.forEach((transaction) => {
-			// Only Expenses
+			// Only expenses
 			if (transaction.transaction_type !== 'expense') {
 				return;
 			}
 
 			const date = new Date(transaction.date);
 
-			// Only the selected month
+			// Only selected month
 			if (
 				date.getFullYear() !== selectedYear ||
 				date.getMonth() !== selectedMonth
@@ -78,30 +84,39 @@ export function ChartPieDonutText() {
 				return;
 			}
 
-			const categoryName = transaction.subcategory?.name || 'Other';
+			const category = transaction.subcategory?.category;
 
-			const amount = Number(transaction.amount);
-
-			if (!categories[categoryName]) {
-				categories[categoryName] = 0;
+			if (!category) {
+				return;
 			}
 
-			categories[categoryName] += amount;
+			const preference = categoryPreferencesMap[category.id];
+
+			// Category hidden in settings
+			if (preference?.hidden) {
+				return;
+			}
+
+			const categoryName = category.name;
+			const amount = Number(transaction.amount);
+
+			if (!categories[category.id]) {
+				categories[category.id] = {
+					categoryId: category.id,
+					category: categoryName,
+					expenses: 0,
+					fill: preference?.color || '#64748b',
+				};
+			}
+
+			categories[category.id].expenses += amount;
 		});
 
-		// Transform in array and order from higher to lower
-		const entries = Object.entries(categories).sort(
-			([, amountA], [, amountB]) => amountB - amountA,
+		// Order from higher to lower
+		return Object.values(categories).sort(
+			(itemA, itemB) => itemB.expenses - itemA.expenses,
 		);
-
-		const total = entries.length;
-
-		return entries.map(([category, expenses], index) => ({
-			category,
-			expenses,
-			fill: getCategoryColor(index, total),
-		}));
-	}, [transactions, selectedYear, selectedMonth]);
+	}, [transactions, categoryPreferencesMap, selectedYear, selectedMonth]);
 
 	const totalExpenses = React.useMemo(() => {
 		return chartData.reduce((total, item) => total + item.expenses, 0);
@@ -120,7 +135,6 @@ export function ChartPieDonutText() {
 			<Card>
 				<CardHeader>
 					<CardTitle>Category expenses</CardTitle>
-
 					<CardDescription>{monthName}</CardDescription>
 				</CardHeader>
 
@@ -212,7 +226,7 @@ export function ChartPieDonutText() {
 
 							return (
 								<div
-									key={item.category}
+									key={item.categoryId}
 									className="flex items-center justify-between gap-2">
 									<div className="flex min-w-0 items-center gap-2">
 										<div

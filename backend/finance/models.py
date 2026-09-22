@@ -255,3 +255,73 @@ class RecurringTransaction(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class UserSettings(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="settings",
+    )
+
+    income_color = models.CharField(
+        max_length=20,
+        default="#22c55e",
+    )
+
+    expense_color = models.CharField(
+        max_length=20,
+        default="#ef4444",
+    )
+
+class UserCategoryPreference(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="category_preferences",
+    )
+
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name="user_preferences",
+    )
+
+    color = models.CharField(
+        max_length=20,
+        default="#64748b",
+    )
+
+    hidden = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=["user", "category"],
+                name="unique_user_category_preference",
+            ),
+        )
+
+
+class UserSubcategoryPreference(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="subcategory_preferences",
+    )
+
+    subcategory = models.ForeignKey(
+        Subcategory,
+        on_delete=models.CASCADE,
+        related_name="user_preferences",
+    )
+
+    hidden = models.BooleanField(default=False)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=["user", "subcategory"],
+                name="unique_user_subcategory_preference",
+            ),
+        )
