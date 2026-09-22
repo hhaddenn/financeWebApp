@@ -12,6 +12,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
+import Settings from './pages/Settings';
 
 function App() {
 	const { isLoggedIn, isLoading } = useAuth();
@@ -47,6 +48,15 @@ function App() {
 						element={
 							<ProtectedRoute>
 								<Dashboard />
+							</ProtectedRoute>
+						}
+					/>
+
+					<Route
+						path="/settings"
+						element={
+							<ProtectedRoute>
+								<Settings />
 							</ProtectedRoute>
 						}
 					/>

@@ -26,3 +26,10 @@ from .transactions import (
 from .feedback import(
     FeedbackView,
 )
+from .settings import (
+    UserSettingsView,
+    UserCategoryPreferencesView,
+    UserCategoryPreferenceDetail,
+    UserSubcategoryPreferencesView,
+    UserSubcategoryPreferenceDetail,
+)
