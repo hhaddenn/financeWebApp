@@ -1,8 +1,12 @@
 from .auth import (
     CookieTokenObtainPairView,
+    VerifyLoginView,
     CookieTokenRefreshView,
     LogoutView,
     RegisterView,
+    VerifyEmailView,
+    PasswordResetRequestView,
+    PasswordResetConfirmView,
     MeView,
     CsrfTokenView,
 )

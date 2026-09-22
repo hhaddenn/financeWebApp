@@ -7,9 +7,29 @@ urlpatterns = [
     path("auth/csrf/", views.CsrfTokenView.as_view(), name="csrf-token"),
     path("auth/register/", views.RegisterView.as_view(), name="register"),
     path(
+        "auth/verify-email/<str:uid>/<str:token>/",
+        views.VerifyEmailView.as_view(),
+        name="verify-email",
+    ),
+    path(
         "auth/login/",
         views.CookieTokenObtainPairView.as_view(),
         name="login",
+    ),
+    path(
+        "auth/login/verify/",
+        views.VerifyLoginView.as_view(),
+        name="login-verify",
+    ),
+    path(
+        "auth/password-reset/",
+        views.PasswordResetRequestView.as_view(),
+        name="password-reset-request",
+    ),
+    path(
+        "auth/password-reset/confirm/<str:uid>/<str:token>/",
+        views.PasswordResetConfirmView.as_view(),
+        name="password-reset-confirm",
     ),
     path(
         "auth/refresh/",

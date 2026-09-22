@@ -38,10 +38,6 @@ User = get_user_model()
 # ---------------------------------------------------------------------------
 # User
 # ---------------------------------------------------------------------------
-class LoginSerializer(TokenObtainPairSerializer):
-    default_error_messages = {"no_active_account": "Invalid username or password."}
-
-
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
@@ -105,6 +101,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"],
+            is_active=False,
         )
 
         # General settings
