@@ -10,6 +10,7 @@ import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Transactions from './pages/Transactions';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import Settings from './pages/Settings';
@@ -48,6 +49,15 @@ function App() {
 						element={
 							<ProtectedRoute>
 								<Dashboard />
+							</ProtectedRoute>
+						}
+					/>
+
+					<Route
+						path="/transactions"
+						element={
+							<ProtectedRoute>
+								<Transactions />
 							</ProtectedRoute>
 						}
 					/>

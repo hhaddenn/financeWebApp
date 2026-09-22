@@ -52,7 +52,6 @@ const pt = {
 		creatingAccount: 'A criar conta...',
 		alreadyHaveAccount: 'Já tens uma conta?',
 		signIn: 'Iniciar sessão',
-
 		welcomeBack: 'Bem-vindo de volta',
 		loginDescription: 'Inicia sessão na tua conta.',
 		forgotPassword: 'Esqueceste-te da palavra-passe?',
@@ -141,6 +140,26 @@ const pt = {
 	transactions: {
 		transaction: 'Transação',
 		description: 'Consulta as tuas transações de hoje ou desta semana.',
+
+		filters: 'Filtros',
+		filterDescription: 'Filtra as tuas transações por diferentes critérios.',
+		search: 'Pesquisar',
+		searchPlaceholder: 'Pesquisar transações...',
+		status: 'Estado',
+
+		allTypes: 'Todos os tipos',
+		allStatuses: 'Todos os estados',
+		allAccounts: 'Todas as contas',
+		allCategories: 'Todas as categorias',
+		allSubcategories: 'Todas as subcategorias',
+
+		clearFilters: 'Limpar filtros',
+
+		startDate: 'Data inicial',
+		endDate: 'Data final',
+		selectStartDate: 'Seleciona a data inicial',
+		selectEndDate: 'Seleciona a data final',
+
 		today: 'Hoje',
 		thisWeek: 'Esta semana',
 		loading: 'A carregar transações...',
@@ -153,12 +172,15 @@ const pt = {
 		amount: 'Valor',
 		empty: 'Não foram encontradas transações.',
 		unnamed: 'Transação sem nome',
+
 		paid: 'Pago',
 		scheduled: 'Agendado',
 		notPaid: 'Não pago',
+
 		income: 'Receita',
 		expense: 'Despesa',
 		transfer: 'Transferência',
+
 		openMenu: 'Abrir menu',
 		deleteTitle: 'Eliminar transação?',
 		deleteDescription: 'Tens a certeza de que queres eliminar',
@@ -175,24 +197,33 @@ const pt = {
 		editExpense: 'Editar despesa',
 		makeTransfer: 'Fazer transferência',
 		editTransfer: 'Editar transferência',
+
 		editDescription: 'Edita os detalhes da transação.',
 		createDescription: 'Preenche os dados da nova transação.',
+
 		transferAccount: 'Conta de destino',
 		selectAccount: 'Seleciona uma conta',
 		selectDestinationAccount: 'Seleciona a conta de destino',
+
 		name: 'Nome',
 		amountToReceive: 'Valor a receber',
+
 		transferNamePlaceholder: 'Ex.: Transferência para poupança',
 		incomeNamePlaceholder: 'Ex.: Dinheiro emprestado',
 		expenseNamePlaceholder: 'Ex.: Encher o depósito',
+
 		pickDate: 'Escolhe uma data',
+
 		subcategory: 'Subcategoria',
 		selectCategory: 'Seleciona uma categoria',
+
 		internalTransfer: 'Transferência interna',
 		from: 'De',
 		to: 'Para',
+
 		incomeCounterpartyPlaceholder: 'Ex.: João (opcional)',
 		expenseCounterpartyPlaceholder: 'Ex.: Galp (opcional)',
+
 		saveChanges: 'Guardar alterações',
 		createTransaction: 'Criar transação',
 	},
@@ -222,6 +253,7 @@ const pt = {
 			'Esta ação não pode ser anulada. Todas as transações associadas a esta conta serão eliminadas.',
 		deleting: 'A eliminar...',
 		errorTitle: 'Ocorreu um erro',
+
 		icons: {
 			bank: 'Banco',
 			wallet: 'Carteira',

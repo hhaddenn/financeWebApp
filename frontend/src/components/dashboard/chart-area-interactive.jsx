@@ -23,7 +23,6 @@ import {
 
 import { getTransactions } from '@/api/transactions';
 import { getSettings } from '@/api/settings';
-
 import { usePreferences } from '@/context/PreferencesContext';
 
 const months = {
@@ -41,7 +40,6 @@ const months = {
 		'Novembro',
 		'Dezembro',
 	],
-
 	en: [
 		'January',
 		'February',
@@ -67,7 +65,6 @@ export function ChartBarMultiple() {
 	const [loading, setLoading] = useState(true);
 
 	const currentYear = new Date().getFullYear();
-
 	const currentMonths = months[language] ?? months.pt;
 
 	useEffect(() => {
@@ -75,13 +72,15 @@ export function ChartBarMultiple() {
 			try {
 				setLoading(true);
 
-				const [transactions, settings] = await Promise.all([
+				const [transactionsResponse, settings] = await Promise.all([
 					getTransactions(),
 					getSettings(),
 				]);
 
-				setIncomeColor(settings.income_color || '#22c55e');
+				const transactions =
+					transactionsResponse.results ?? transactionsResponse;
 
+				setIncomeColor(settings.income_color || '#22c55e');
 				setExpenseColor(settings.expense_color || '#ef4444');
 
 				const monthlyData = currentMonths.map((month) => ({
@@ -126,7 +125,6 @@ export function ChartBarMultiple() {
 			label: t('settings.expenseColor'),
 			color: expenseColor,
 		},
-
 		income: {
 			label: t('settings.incomeColor'),
 			color: incomeColor,

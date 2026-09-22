@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
+
 import { Button } from '@/components/ui/button';
 
 import {
@@ -45,11 +46,8 @@ import {
 import { EllipsisVerticalIcon } from 'lucide-react';
 
 import { getTransactions, deleteTransaction } from '@/api/transactions';
-
 import { iconMap } from '@/lib/icons';
-
 import { TransactionDialog } from './transaction-dialog';
-
 import { usePreferences } from '@/context/PreferencesContext';
 
 export function DataTable() {
@@ -68,6 +66,52 @@ export function DataTable() {
 
 	const locale = language === 'pt' ? 'pt-PT' : 'en-US';
 
+	const getDateFilters = (selectedPeriod) => {
+		const now = new Date();
+
+		const formatFilterDate = (date) => {
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, '0');
+			const day = String(date.getDate()).padStart(2, '0');
+
+			return `${year}-${month}-${day}`;
+		};
+
+		if (selectedPeriod === 'today') {
+			const today = formatFilterDate(now);
+
+			return {
+				start_date: today,
+				end_date: today,
+			};
+		}
+
+		if (selectedPeriod === 'week') {
+			const day = now.getDay();
+
+			// JS:
+			// Sunday = 0
+			// Monday = 1
+			// ...
+			// Saturday = 6
+
+			const monday = new Date(now);
+			const diff = day === 0 ? -6 : 1 - day;
+
+			monday.setDate(now.getDate() + diff);
+
+			const sunday = new Date(monday);
+			sunday.setDate(monday.getDate() + 6);
+
+			return {
+				start_date: formatFilterDate(monday),
+				end_date: formatFilterDate(sunday),
+			};
+		}
+
+		return {};
+	};
+
 	React.useEffect(() => {
 		const loadTransactions = async () => {
 			try {
@@ -76,12 +120,21 @@ export function DataTable() {
 
 				const filters = getDateFilters(period);
 
-				const transactions = await getTransactions(filters);
+				const response = await getTransactions(filters);
 
-				setData(transactions);
+				// DRF pagination returns:
+				// {
+				//   count,
+				//   next,
+				//   previous,
+				//   results
+				// }
+				//
+				// The fallback keeps this component compatible
+				// if the API ever returns a plain array.
+				setData(response.results ?? response);
 			} catch (err) {
 				console.error('Failed to load transactions:', err);
-
 				setError(t('transactions.loadError'));
 			} finally {
 				setLoading(false);
@@ -117,9 +170,7 @@ export function DataTable() {
 			window.location.reload();
 		} catch (err) {
 			console.error('Failed to delete transaction:', err);
-
 			setError(t('transactions.deleteError'));
-
 			setDeleting(false);
 		}
 	};
@@ -179,57 +230,6 @@ export function DataTable() {
 		return iconMap[iconName] || iconMap['circle-help'];
 	};
 
-	const getDateFilters = (selectedPeriod) => {
-		const now = new Date();
-
-		const formatFilterDate = (date) => {
-			const year = date.getFullYear();
-
-			const month = String(date.getMonth() + 1).padStart(2, '0');
-
-			const day = String(date.getDate()).padStart(2, '0');
-
-			return `${year}-${month}-${day}`;
-		};
-
-		if (selectedPeriod === 'today') {
-			const today = formatFilterDate(now);
-
-			return {
-				start_date: today,
-				end_date: today,
-			};
-		}
-
-		if (selectedPeriod === 'week') {
-			const day = now.getDay();
-
-			// JS:
-			// Sunday = 0
-			// Monday = 1
-			// ...
-			// Saturday = 6
-
-			const monday = new Date(now);
-
-			const diff = day === 0 ? -6 : 1 - day;
-
-			monday.setDate(now.getDate() + diff);
-
-			const sunday = new Date(monday);
-
-			sunday.setDate(monday.getDate() + 6);
-
-			return {
-				start_date: formatFilterDate(monday),
-
-				end_date: formatFilterDate(sunday),
-			};
-		}
-
-		return {};
-	};
-
 	return (
 		<>
 			<div className="w-full space-y-4">
@@ -287,19 +287,13 @@ export function DataTable() {
 							<TableHeader>
 								<TableRow>
 									<TableHead>{t('transactions.date')}</TableHead>
-
 									<TableHead>{t('transactions.transaction')}</TableHead>
-
 									<TableHead>{t('transactions.category')}</TableHead>
-
 									<TableHead>{t('transactions.account')}</TableHead>
-
 									<TableHead>{t('transactions.type')}</TableHead>
-
 									<TableHead className="text-right">
 										{t('transactions.amount')}
 									</TableHead>
-
 									<TableHead className="w-12" />
 								</TableRow>
 							</TableHeader>
@@ -316,7 +310,6 @@ export function DataTable() {
 								) : (
 									data.map((transaction) => {
 										const subcategory = transaction.subcategory;
-
 										const CategoryIcon = getCategoryIcon(transaction);
 
 										return (
