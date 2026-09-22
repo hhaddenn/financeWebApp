@@ -16,7 +16,9 @@ import {
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 import { Button } from '@/components/ui/button';
+
 import { Input } from '@/components/ui/input';
+
 import { Label } from '@/components/ui/label';
 
 import {
@@ -54,6 +56,8 @@ import {
 	deleteAccount,
 } from '@/api/accounts';
 
+import { usePreferences } from '@/context/PreferencesContext';
+
 const accountIcons = {
 	landmark: Landmark,
 	wallet: Wallet,
@@ -66,37 +70,41 @@ const accountIcons = {
 const iconOptions = [
 	{
 		value: 'landmark',
-		label: 'Bank',
+		label: 'bank',
 		icon: Landmark,
 	},
 	{
 		value: 'wallet',
-		label: 'Wallet',
+		label: 'wallet',
 		icon: Wallet,
 	},
 	{
 		value: 'credit_card',
-		label: 'Credit Card',
+		label: 'creditCard',
 		icon: CreditCard,
 	},
 	{
 		value: 'piggy_bank',
-		label: 'Piggy Bank',
+		label: 'piggyBank',
 		icon: PiggyBank,
 	},
 	{
 		value: 'banknote',
-		label: 'Money',
+		label: 'money',
 		icon: Banknote,
 	},
 	{
 		value: 'investment',
-		label: 'Investment',
+		label: 'investment',
 		icon: ChartNoAxesCombined,
 	},
 ];
 
 export function SectionCards() {
+	const { language, t } = usePreferences();
+
+	const locale = language === 'pt' ? 'pt-PT' : 'en-US';
+
 	const [accounts, setAccounts] = useState([]);
 	const [loading, setLoading] = useState(true);
 
@@ -123,7 +131,7 @@ export function SectionCards() {
 	const showError = (error) => {
 		console.error(error);
 
-		let message = 'An unexpected error occurred.';
+		let message = t('accounts.unexpectedError');
 
 		if (error.response?.data) {
 			const data = error.response.data;
@@ -173,7 +181,6 @@ export function SectionCards() {
 		loadAccounts();
 	}, []);
 
-	// Open create dialog
 	const handleOpenCreate = () => {
 		setEditingAccount(null);
 
@@ -186,7 +193,6 @@ export function SectionCards() {
 		setDialogOpen(true);
 	};
 
-	// Open edit dialog
 	const handleOpenEdit = (account) => {
 		setEditingAccount(account);
 
@@ -203,7 +209,7 @@ export function SectionCards() {
 		event.preventDefault();
 
 		if (!form.name.trim()) {
-			setErrorMessage('Give a name to the account.');
+			setErrorMessage(t('accounts.nameRequired'));
 			setErrorDialogOpen(true);
 			return;
 		}
@@ -242,12 +248,10 @@ export function SectionCards() {
 		}
 	};
 
-	// Open delete confirmation
 	const handleDeleteRequest = (account) => {
 		setAccountToDelete(account);
 	};
 
-	// Actually delete account
 	const handleDeleteConfirm = async () => {
 		if (!accountToDelete) {
 			return;
@@ -261,6 +265,7 @@ export function SectionCards() {
 			setAccountToDelete(null);
 
 			await loadAccounts();
+
 			window.location.reload();
 		} catch (error) {
 			showError(error);
@@ -270,7 +275,7 @@ export function SectionCards() {
 	};
 
 	if (loading) {
-		return <p>Loading Accounts...</p>;
+		return <p>{t('accounts.loading')}</p>;
 	}
 
 	return (
@@ -293,7 +298,6 @@ export function SectionCards() {
 										</p>
 									</div>
 
-									{/* Account actions */}
 									<DropdownMenu>
 										<DropdownMenuTrigger
 											render={
@@ -303,14 +307,16 @@ export function SectionCards() {
 													size="icon">
 													<EllipsisVerticalIcon />
 
-													<span className="sr-only">Open menu</span>
+													<span className="sr-only">
+														{t('accounts.openMenu')}
+													</span>
 												</Button>
 											}
 										/>
 
 										<DropdownMenuContent align="end" className="w-32">
 											<DropdownMenuItem onClick={() => handleOpenEdit(account)}>
-												Edit
+												{t('common.edit')}
 											</DropdownMenuItem>
 
 											<DropdownMenuSeparator />
@@ -319,7 +325,7 @@ export function SectionCards() {
 												variant="destructive"
 												disabled={deleting}
 												onClick={() => handleDeleteRequest(account)}>
-												Delete
+												{t('common.delete')}
 											</DropdownMenuItem>
 										</DropdownMenuContent>
 									</DropdownMenu>
@@ -329,7 +335,10 @@ export function SectionCards() {
 							<CardContent>
 								<div className="flex items-end justify-between gap-4">
 									<p className="text-2xl font-semibold tracking-tight tabular-nums">
-										€{Number(account.balance).toFixed(2)}
+										{new Intl.NumberFormat(locale, {
+											style: 'currency',
+											currency: 'EUR',
+										}).format(Number(account.balance))}
 									</p>
 								</div>
 							</CardContent>
@@ -337,19 +346,26 @@ export function SectionCards() {
 					);
 				})}
 
-				{/* Add account */}
 				<button
 					type="button"
 					onClick={handleOpenCreate}
-					className="flex min-h-37.5 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed bg-transparent transition-colors hover:bg-muted/50">
+					className="
+						flex min-h-37.5 cursor-pointer
+						flex-col items-center justify-center
+						rounded-xl border border-dashed
+						bg-transparent transition-colors
+						hover:bg-muted/50
+					">
 					<div className="mb-2 flex size-10 items-center justify-center rounded-full bg-muted">
 						<Plus className="size-5 text-muted-foreground" />
 					</div>
 
-					<span className="text-sm font-medium">Add account</span>
+					<span className="text-sm font-medium">
+						{t('accounts.addAccount')}
+					</span>
 
 					<span className="mt-1 text-xs text-muted-foreground">
-						Create a new account
+						{t('accounts.createDescription')}
 					</span>
 				</button>
 			</div>
@@ -360,24 +376,25 @@ export function SectionCards() {
 					<form onSubmit={handleSubmit}>
 						<DialogHeader>
 							<DialogTitle>
-								{editingAccount ? 'Edit Account' : 'New Account'}
+								{editingAccount
+									? t('accounts.editAccount')
+									: t('accounts.newAccount')}
 							</DialogTitle>
 
 							<DialogDescription>
 								{editingAccount
-									? 'Update the details of your account.'
-									: 'Fill in the details for the new account.'}
+									? t('accounts.editDescription')
+									: t('accounts.newDescription')}
 							</DialogDescription>
 						</DialogHeader>
 
 						<div className="grid gap-5 py-6">
-							{/* Name */}
 							<div className="grid gap-2">
-								<Label htmlFor="account-name">Name</Label>
+								<Label htmlFor="account-name">{t('accounts.name')}</Label>
 
 								<Input
 									id="account-name"
-									placeholder="Ex: Main Account"
+									placeholder={t('accounts.namePlaceholder')}
 									value={form.name}
 									onChange={(event) =>
 										setForm({
@@ -389,10 +406,11 @@ export function SectionCards() {
 								/>
 							</div>
 
-							{/* Balance */}
 							<div className="grid gap-2">
 								<Label htmlFor="account-balance">
-									{editingAccount ? 'Current Balance' : 'Initial Balance'}
+									{editingAccount
+										? t('accounts.currentBalance')
+										: t('accounts.initialBalance')}
 								</Label>
 
 								<Input
@@ -410,20 +428,21 @@ export function SectionCards() {
 								/>
 							</div>
 
-							{/* Icon */}
 							<div className="grid gap-2">
-								<Label>Icon</Label>
+								<Label>{t('accounts.icon')}</Label>
 
 								<div className="grid grid-cols-6 gap-2">
 									{iconOptions.map((option) => {
 										const Icon = option.icon;
+
 										const selected = form.icon === option.value;
 
 										return (
 											<button
 												key={option.value}
 												type="button"
-												title={option.label}
+												title={t(`accounts.icons.${option.label}`)}
+												aria-label={t(`accounts.icons.${option.label}`)}
 												onClick={() =>
 													setForm({
 														...form,
@@ -448,15 +467,15 @@ export function SectionCards() {
 								type="button"
 								variant="outline"
 								onClick={() => setDialogOpen(false)}>
-								Cancel
+								{t('common.cancel')}
 							</Button>
 
 							<Button type="submit" disabled={creating}>
 								{creating
-									? 'Saving...'
+									? t('accounts.saving')
 									: editingAccount
-										? 'Save Changes'
-										: 'Create Account'}
+										? t('accounts.saveChanges')
+										: t('accounts.createAccount')}
 							</Button>
 						</DialogFooter>
 					</form>
@@ -473,29 +492,30 @@ export function SectionCards() {
 				}}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Delete account?</AlertDialogTitle>
+						<AlertDialogTitle>{t('accounts.deleteTitle')}</AlertDialogTitle>
 
 						<AlertDialogDescription>
-							Are you sure you want to delete{' '}
+							{t('accounts.deleteDescription')}{' '}
 							<span className="font-medium text-foreground">
 								"{accountToDelete?.name}"
 							</span>
 							?
 							<br />
 							<br />
-							This action cannot be undone.
-							All transactions associated with this account will be deleted.
+							{t('accounts.deleteWarning')}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 
 					<AlertDialogFooter>
-						<AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+						<AlertDialogCancel disabled={deleting}>
+							{t('common.cancel')}
+						</AlertDialogCancel>
 
 						<AlertDialogAction
 							variant="destructive"
 							disabled={deleting}
 							onClick={handleDeleteConfirm}>
-							{deleting ? 'Deleting...' : 'Delete'}
+							{deleting ? t('accounts.deleting') : t('common.delete')}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
@@ -505,7 +525,7 @@ export function SectionCards() {
 			<Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
 				<DialogContent className="sm:max-w-106.25">
 					<DialogHeader>
-						<DialogTitle>An error occurred</DialogTitle>
+						<DialogTitle>{t('accounts.errorTitle')}</DialogTitle>
 
 						<DialogDescription className="whitespace-pre-line">
 							{errorMessage}

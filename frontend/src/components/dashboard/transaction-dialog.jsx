@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
 import { Calendar } from '@/components/ui/calendar';
 
 import {
@@ -22,7 +23,9 @@ import {
 } from '@/components/ui/popover';
 
 import { useState, useEffect } from 'react';
+
 import { format } from 'date-fns';
+import { enUS, pt } from 'date-fns/locale';
 
 import { createTransaction, updateTransaction } from '@/api/transactions';
 
@@ -36,6 +39,8 @@ import {
 import { getAccounts } from '@/api/accounts';
 
 import { iconMap } from '@/lib/icons';
+
+import { usePreferences } from '@/context/PreferencesContext';
 
 function CategoryIcon({ name, className }) {
 	const Icon = name ? iconMap[name] : null;
@@ -52,12 +57,25 @@ export function TransactionDialog({
 	onOpenChange,
 	onCreated,
 }) {
+	const { language, t, translateCategory, translateSubcategory } =
+		usePreferences();
+
 	const isEditing = Boolean(transaction);
 
+	const dateLocale = language === 'pt' ? pt : enUS;
+
 	const titles = {
-		income: isEditing ? 'Edit Income' : 'Add Income',
-		expense: isEditing ? 'Edit Expense' : 'Add Expense',
-		transfer: isEditing ? 'Edit Transfer' : 'Make Transfer',
+		income: isEditing
+			? t('transactions.editIncome')
+			: t('transactions.addIncome'),
+
+		expense: isEditing
+			? t('transactions.editExpense')
+			: t('transactions.addExpense'),
+
+		transfer: isEditing
+			? t('transactions.editTransfer')
+			: t('transactions.makeTransfer'),
 	};
 
 	const [saving, setSaving] = useState(false);
@@ -114,6 +132,7 @@ export function TransactionDialog({
 				setSubcategoryPreferences(subcategoryPreferencesData);
 			} catch (error) {
 				console.error('Failed to load transaction data:', error);
+
 				console.error('Backend response:', error.response?.data);
 			}
 		};
@@ -123,9 +142,6 @@ export function TransactionDialog({
 
 	/*
 	 * Reload accounts every time the dialog opens.
-	 *
-	 * This keeps the account list up to date after creating,
-	 * editing or deleting accounts.
 	 */
 	useEffect(() => {
 		if (!open) return;
@@ -144,10 +160,6 @@ export function TransactionDialog({
 
 	/*
 	 * Populate form when editing.
-	 *
-	 * When creating a new transaction:
-	 * - amount starts at 0
-	 * - amount_to_receive starts at 0
 	 */
 	useEffect(() => {
 		if (!open) return;
@@ -237,9 +249,6 @@ export function TransactionDialog({
 	/*
 	 * Only show subcategories that are not hidden
 	 * and whose category is not hidden.
-	 *
-	 * Effective hidden rule:
-	 * category.hidden || subcategory.hidden
 	 */
 	const visibleSubcategories = subcategories.filter((subcategory) => {
 		const categoryPreference = categoryPreferencesMap[subcategory.category?.id];
@@ -251,9 +260,6 @@ export function TransactionDialog({
 
 	/*
 	 * Internal Transfer is read-only in the UI.
-	 *
-	 * The backend is responsible for assigning the
-	 * Internal Transfer subcategory.
 	 */
 	const internalTransferSubcategory = subcategories.find(
 		(subcategory) => subcategory.name?.toLowerCase() === 'internal transfer',
@@ -278,9 +284,6 @@ export function TransactionDialog({
 		try {
 			setSaving(true);
 
-			/*
-			 * Build the payload according to transaction type.
-			 */
 			const payload = {
 				date: form.date,
 				name: form.name,
@@ -290,41 +293,17 @@ export function TransactionDialog({
 				checked: form.checked,
 			};
 
-			/*
-			 * TRANSFER
-			 *
-			 * Only send:
-			 * - account_id
-			 * - transfer_account_id
-			 * - amount
-			 * - name
-			 * - date
-			 * - transaction_type
-			 *
-			 * No subcategory_id.
-			 * No counterparty.
-			 * No amount_to_receive.
-			 */
 			if (type === 'transfer') {
 				payload.transfer_account_id = Number(form.transfer_account_id);
 			}
 
-			/*
-			 * INCOME / EXPENSE
-			 */
 			if (type === 'income' || type === 'expense') {
 				payload.counterparty = form.counterparty || null;
 
-				/*
-				 * amount_to_receive only exists for expenses.
-				 */
 				if (type === 'expense') {
 					payload.amount_to_receive = Number(form.amount_to_receive);
 				}
 
-				/*
-				 * Subcategory is editable for income/expense.
-				 */
 				if (form.subcategory_id) {
 					payload.subcategory_id = Number(form.subcategory_id);
 				}
@@ -345,6 +324,7 @@ export function TransactionDialog({
 			}
 		} catch (error) {
 			console.error('Failed to save transaction:', error);
+
 			console.error('Backend response:', error.response?.data);
 		} finally {
 			setSaving(false);
@@ -371,13 +351,6 @@ export function TransactionDialog({
 		(subcategory) => String(subcategory.id) === String(form.subcategory_id),
 	);
 
-	/*
-	 * Subcategories available inside the selected category.
-	 *
-	 * Already filtered by:
-	 * - category hidden
-	 * - subcategory hidden
-	 */
 	const filteredSubcategories = visibleSubcategories.filter(
 		(subcategory) =>
 			String(subcategory.category?.id) === String(selectedCategoryId),
@@ -414,18 +387,20 @@ export function TransactionDialog({
 			<DialogContent className="sm:max-w-106.25">
 				<form onSubmit={handleSubmit}>
 					<DialogHeader>
-						<DialogTitle>{type ? titles[type] : 'Transaction'}</DialogTitle>
+						<DialogTitle>
+							{type ? titles[type] : t('transactions.transaction')}
+						</DialogTitle>
 
 						<DialogDescription>
 							{isEditing
-								? 'Edit the transaction details.'
-								: 'Fill in the details for the new transaction.'}
+								? t('transactions.editDescription')
+								: t('transactions.createDescription')}
 						</DialogDescription>
 					</DialogHeader>
 
 					{/* ACCOUNT */}
 					<div className="grid gap-2">
-						<Label>Account</Label>
+						<Label>{t('transactions.account')}</Label>
 
 						<Popover open={accountOpen} onOpenChange={setAccountOpen}>
 							<PopoverTrigger
@@ -445,7 +420,7 @@ export function TransactionDialog({
 											</>
 										) : (
 											<span className="text-muted-foreground">
-												Select an account
+												{t('transactions.selectAccount')}
 											</span>
 										)}
 									</Button>
@@ -489,7 +464,7 @@ export function TransactionDialog({
 					{/* TRANSFER DESTINATION */}
 					{type === 'transfer' && (
 						<div className="grid gap-2">
-							<Label>Account to Transfer</Label>
+							<Label>{t('transactions.transferAccount')}</Label>
 
 							<Popover
 								open={transferAccountOpen}
@@ -511,7 +486,7 @@ export function TransactionDialog({
 												</>
 											) : (
 												<span className="text-muted-foreground">
-													Select destination account
+													{t('transactions.selectDestinationAccount')}
 												</span>
 											)}
 										</Button>
@@ -550,16 +525,16 @@ export function TransactionDialog({
 
 					{/* NAME */}
 					<div className="grid gap-2">
-						<Label htmlFor="transaction-name">Name</Label>
+						<Label htmlFor="transaction-name">{t('transactions.name')}</Label>
 
 						<Input
 							id="transaction-name"
 							placeholder={
 								type === 'transfer'
-									? 'Ex: Transfer to savings'
+									? t('transactions.transferNamePlaceholder')
 									: type === 'income'
-										? 'Ex: Money lent'
-										: 'Ex: Fill car tank'
+										? t('transactions.incomeNamePlaceholder')
+										: t('transactions.expenseNamePlaceholder')
 							}
 							value={form.name}
 							onChange={(event) =>
@@ -574,7 +549,7 @@ export function TransactionDialog({
 
 					{/* AMOUNT */}
 					<div className="grid gap-2">
-						<Label htmlFor="amount">Amount</Label>
+						<Label htmlFor="amount">{t('transactions.amount')}</Label>
 
 						<Input
 							id="amount"
@@ -595,7 +570,9 @@ export function TransactionDialog({
 					{/* EXPENSE AMOUNT TO RECEIVE */}
 					{type === 'expense' && (
 						<div className="grid gap-2">
-							<Label htmlFor="amount-to-receive">Amount to Receive</Label>
+							<Label htmlFor="amount-to-receive">
+								{t('transactions.amountToReceive')}
+							</Label>
 
 							<Input
 								id="amount-to-receive"
@@ -616,7 +593,7 @@ export function TransactionDialog({
 
 					{/* DATE */}
 					<div className="grid gap-2">
-						<Label htmlFor="transaction-date">Date</Label>
+						<Label htmlFor="transaction-date">{t('transactions.date')}</Label>
 
 						<Popover>
 							<PopoverTrigger
@@ -626,7 +603,11 @@ export function TransactionDialog({
 										variant="outline"
 										id="transaction-date"
 										className="justify-start font-normal">
-										{selectedDate ? format(selectedDate, 'PPP') : 'Pick a date'}
+										{selectedDate
+											? format(selectedDate, 'PPP', {
+													locale: dateLocale,
+												})
+											: t('transactions.pickDate')}
 									</Button>
 								}
 							/>
@@ -644,6 +625,7 @@ export function TransactionDialog({
 										}));
 									}}
 									defaultMonth={selectedDate}
+									locale={dateLocale}
 								/>
 							</PopoverContent>
 						</Popover>
@@ -652,7 +634,7 @@ export function TransactionDialog({
 					{/* TRANSFER READ ONLY SUBCATEGORY */}
 					{type === 'transfer' && (
 						<div className="grid gap-2">
-							<Label>Subcategory</Label>
+							<Label>{t('transactions.subcategory')}</Label>
 
 							<div className="flex h-10 items-center rounded-md border bg-muted/50 px-3 text-sm">
 								<CategoryIcon
@@ -661,7 +643,9 @@ export function TransactionDialog({
 								/>
 
 								<span>
-									{internalTransferSubcategory?.name || 'Internal Transfer'}
+									{internalTransferSubcategory
+										? translateSubcategory(internalTransferSubcategory.name)
+										: t('transactions.internalTransfer')}
 								</span>
 							</div>
 						</div>
@@ -670,7 +654,7 @@ export function TransactionDialog({
 					{/* CATEGORY */}
 					{type !== 'transfer' && (
 						<div className="grid gap-2">
-							<Label>Category</Label>
+							<Label>{t('transactions.category')}</Label>
 
 							<Popover
 								open={categoryOpen}
@@ -694,7 +678,9 @@ export function TransactionDialog({
 														className="mr-2 size-4"
 													/>
 
-													{selectedCategory?.name}
+													{selectedCategory
+														? translateCategory(selectedCategory.name)
+														: null}
 
 													<span className="mx-2 text-muted-foreground">/</span>
 
@@ -703,11 +689,11 @@ export function TransactionDialog({
 														className="mr-2 size-4"
 													/>
 
-													{selectedSubcategory.name}
+													{translateSubcategory(selectedSubcategory.name)}
 												</>
 											) : (
 												<span className="text-muted-foreground">
-													Select a category
+													{t('transactions.selectCategory')}
 												</span>
 											)}
 										</Button>
@@ -730,7 +716,7 @@ export function TransactionDialog({
 													/>
 
 													<span className="flex-1 text-left">
-														{category.name}
+														{translateCategory(category.name)}
 													</span>
 												</Button>
 											))}
@@ -747,7 +733,9 @@ export function TransactionDialog({
 													className="mr-2 size-4"
 												/>
 
-												{selectedCategory?.name}
+												{selectedCategory
+													? translateCategory(selectedCategory.name)
+													: null}
 											</Button>
 
 											{filteredSubcategories.map((subcategory) => (
@@ -762,7 +750,7 @@ export function TransactionDialog({
 														className="mr-3 size-5"
 													/>
 
-													{subcategory.name}
+													{translateSubcategory(subcategory.name)}
 												</Button>
 											))}
 										</div>
@@ -776,15 +764,17 @@ export function TransactionDialog({
 					{type !== 'transfer' && (
 						<div className="grid gap-2">
 							<Label htmlFor="counterparty-name">
-								{type === 'income' ? 'From' : 'To'}
+								{type === 'income'
+									? t('transactions.from')
+									: t('transactions.to')}
 							</Label>
 
 							<Input
 								id="counterparty-name"
 								placeholder={
 									type === 'income'
-										? 'Ex: João (optional)'
-										: 'Ex: Galp (optional)'
+										? t('transactions.incomeCounterpartyPlaceholder')
+										: t('transactions.expenseCounterpartyPlaceholder')
 								}
 								value={form.counterparty}
 								onChange={(event) =>
@@ -798,7 +788,9 @@ export function TransactionDialog({
 					)}
 
 					<div className="flex items-center justify-between border-t pt-4">
-						<Label htmlFor="transaction-checked">Paid</Label>
+						<Label htmlFor="transaction-checked">
+							{t('transactions.paid')}
+						</Label>
 
 						<Switch
 							id="transaction-checked"
@@ -817,7 +809,7 @@ export function TransactionDialog({
 							type="button"
 							variant="outline"
 							onClick={() => onOpenChange(false)}>
-							Cancel
+							{t('common.cancel')}
 						</Button>
 
 						<Button
@@ -828,10 +820,10 @@ export function TransactionDialog({
 								(type === 'transfer' && !form.transfer_account_id)
 							}>
 							{saving
-								? 'Saving...'
+								? t('transactions.saving')
 								: isEditing
-									? 'Save Changes'
-									: 'Create Transaction'}
+									? t('transactions.saveChanges')
+									: t('transactions.createTransaction')}
 						</Button>
 					</DialogFooter>
 				</form>
