@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 import { usePreferences } from '@/context/PreferencesContext';
 
+import AccountSecurity from '@/components/settings/AccountSecurity';
+
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 import { AppSidebar } from '@/components/navigation/AppSidebar';
@@ -231,6 +233,10 @@ export default function Settings() {
 								<TabsTrigger value="subcategories">
 									{t('settings.subcategories')}
 								</TabsTrigger>
+
+								<TabsTrigger value="account">
+									{t('settings.account')}
+								</TabsTrigger>
 							</TabsList>
 
 							{/* GENERAL */}
@@ -373,6 +379,10 @@ export default function Settings() {
 										</div>
 									</CardContent>
 								</Card>
+							</TabsContent>
+
+							<TabsContent value="account">
+								<AccountSecurity />
 							</TabsContent>
 
 							{/* CATEGORIES */}

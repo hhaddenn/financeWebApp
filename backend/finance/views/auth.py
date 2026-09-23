@@ -24,7 +24,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from ..models import LoginChallenge
+from ..models import EmailChangeRequest, LoginChallenge
 from ..serializers import RegisterSerializer, UserSerializer
 
 logger = logging.getLogger(__name__)
@@ -138,6 +138,8 @@ class VerifyLoginView(generics.GenericAPIView):
 
         challenge.used = True
         challenge.save(update_fields=["used"])
+        challenge.user.last_login = timezone.now()
+        challenge.user.save(update_fields=["last_login"])
         return _token_response(challenge.user, challenge.remember_me)
 
 
@@ -320,6 +322,136 @@ class MeView(generics.RetrieveAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class AccountView(generics.RetrieveUpdateAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self):
+        return self.request.user
+
+    def retrieve(self, request, *args, **kwargs):
+        user = self.get_object()
+        return Response(
+            {
+                "username": user.username,
+                "email": user.email,
+                "last_login": user.last_login,
+            }
+        )
+
+    @method_decorator(csrf_protect)
+    def patch(self, request, *args, **kwargs):
+        user = self.get_object()
+        current_password = str(request.data.get("current_password", ""))
+        username = str(request.data.get("username", "")).strip()
+
+        if not user.check_password(current_password):
+            return Response({"detail": "Current password is incorrect."}, status=400)
+        if not username:
+            return Response({"detail": "Username is required."}, status=400)
+        if User.objects.filter(username__iexact=username).exclude(pk=user.pk).exists():
+            return Response({"detail": "Username is already in use."}, status=400)
+
+        user.username = username
+        user.save(update_fields=["username"])
+        return self.retrieve(request)
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class PasswordChangeView(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        user = request.user
+        current_password = str(request.data.get("current_password", ""))
+        new_password = str(request.data.get("new_password", ""))
+        confirm_password = str(request.data.get("confirm_password", ""))
+
+        if not user.check_password(current_password):
+            return Response({"detail": "Current password is incorrect."}, status=400)
+        if new_password != confirm_password:
+            return Response({"detail": "Passwords do not match."}, status=400)
+        try:
+            validate_password(new_password, user)
+        except ValidationError as error:
+            return Response({"password": error.messages}, status=400)
+
+        user.set_password(new_password)
+        user.save(update_fields=["password"])
+        for token in OutstandingToken.objects.filter(user=user):
+            BlacklistedToken.objects.get_or_create(token=token)
+
+        response = Response({"detail": "Password changed successfully."})
+        response.delete_cookie("refresh_token", path="/api/auth/")
+        return response
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class EmailChangeRequestView(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        user = request.user
+        current_password = str(request.data.get("current_password", ""))
+        new_email = str(request.data.get("new_email", "")).strip().lower()
+
+        if not user.check_password(current_password):
+            return Response({"detail": "Current password is incorrect."}, status=400)
+        if User.objects.filter(email__iexact=new_email).exclude(pk=user.pk).exists():
+            return Response({"detail": "Email is already in use."}, status=400)
+
+        raw_token = secrets.token_urlsafe(32)
+        change = EmailChangeRequest.objects.create(
+            user=user,
+            new_email=new_email,
+            token_hash=make_password(raw_token),
+            expires_at=timezone.now() + timedelta(hours=1),
+        )
+        confirmation_url = (
+            f"{settings.FRONTEND_URL}/confirm-email-change/{change.id}/{raw_token}"
+        )
+        send_mail(
+            subject="Confirm your new email address",
+            message=f"Confirm your new email address by opening this link:\n\n{confirmation_url}",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[new_email],
+            fail_silently=False,
+        )
+        return Response({"detail": "Confirmation email sent."})
+
+
+class EmailChangeConfirmView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, uid, token):
+        try:
+            change = EmailChangeRequest.objects.select_related("user").get(pk=uid)
+        except (EmailChangeRequest.DoesNotExist, ValueError, TypeError):
+            return Response({"detail": "Invalid or expired link."}, status=400)
+
+        if change.used or change.expires_at <= timezone.now() or not check_password(token, change.token_hash):
+            return Response({"detail": "Invalid or expired link."}, status=400)
+        if User.objects.filter(email__iexact=change.new_email).exclude(pk=change.user_id).exists():
+            return Response({"detail": "Email is already in use."}, status=400)
+
+        change.user.email = change.new_email
+        change.user.save(update_fields=["email"])
+        change.used = True
+        change.save(update_fields=["used"])
+        return Response({"detail": "Email changed successfully."})
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class LogoutAllView(generics.GenericAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        for token in OutstandingToken.objects.filter(user=request.user):
+            BlacklistedToken.objects.get_or_create(token=token)
+        response = Response({"detail": "All sessions ended."})
+        response.delete_cookie("refresh_token", path="/api/auth/")
+        return response
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")

@@ -38,6 +38,11 @@ urlpatterns = [
     ),
     path("auth/logout/", views.LogoutView.as_view(), name="logout"),
     path("auth/me/", views.MeView.as_view(), name="me"),
+    path("auth/account/", views.AccountView.as_view(), name="account"),
+    path("auth/account/password/", views.PasswordChangeView.as_view(), name="password-change"),
+    path("auth/account/email/", views.EmailChangeRequestView.as_view(), name="email-change-request"),
+    path("auth/account/email/confirm/<uuid:uid>/<str:token>/", views.EmailChangeConfirmView.as_view(), name="email-change-confirm"),
+    path("auth/account/logout-all/", views.LogoutAllView.as_view(), name="logout-all"),
     # Accounts
     path("accounts/", views.AccountsList.as_view(), name="accounts-view"),
     path("accounts/create", views.AccountCreate.as_view(), name="account-create-view"),

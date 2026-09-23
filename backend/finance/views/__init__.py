@@ -9,6 +9,11 @@ from .auth import (
     PasswordResetConfirmView,
     MeView,
     CsrfTokenView,
+    AccountView,
+    PasswordChangeView,
+    EmailChangeRequestView,
+    EmailChangeConfirmView,
+    LogoutAllView,
 )
 
 from .categories import (
