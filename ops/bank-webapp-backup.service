@@ -1,0 +1,10 @@
+[Unit]
+Description=Backup PostgreSQL and media for Bank WebApp
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/bank-webapp
+ExecStart=/opt/bank-webapp/ops/backup-db.sh
