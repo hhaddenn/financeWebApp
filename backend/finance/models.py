@@ -18,6 +18,7 @@ class LoginChallenge(models.Model):
     code_hash = models.CharField(max_length=128)
     expires_at = models.DateTimeField()
     attempts = models.PositiveSmallIntegerField(default=0)
+    remember_me = models.BooleanField(default=False)
     used = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
