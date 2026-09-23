@@ -19,6 +19,18 @@ const en = {
 		dashboard: 'Dashboard',
 		settings: 'Settings',
 		transactions: 'Transactions',
+		news: 'News',
+	},
+
+	news: {
+		title: 'News',
+		description: 'Discover what is new in your finance app.',
+		empty: 'There are no news yet.',
+		loadError: 'Could not load the news.',
+		unread: 'Unread',
+		readMore: 'Read more',
+		backToNews: 'Back to news',
+		expandImage: 'Expand image',
 	},
 
 	feedback: {

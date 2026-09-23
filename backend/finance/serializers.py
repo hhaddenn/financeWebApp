@@ -16,6 +16,7 @@ from .models import (
     UserSettings,
     UserCategoryPreference,
     UserSubcategoryPreference,
+    News,
 )
 
 DEFAULT_CATEGORY_COLORS = [
@@ -33,6 +34,35 @@ DEFAULT_CATEGORY_COLORS = [
 
 
 User = get_user_model()
+
+
+class NewsSerializer(serializers.ModelSerializer):
+    is_read = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = News
+        fields = (
+            "id",
+            "title",
+            "description",
+            "image_url",
+            "action_label",
+            "action_url",
+            "created_at",
+            "is_read",
+        )
+        read_only_fields = fields
+
+    def get_is_read(self, obj):
+        return obj.reads.filter(user=self.context["request"].user).exists()
+
+    def get_image_url(self, obj):
+        if not obj.image:
+            return None
+
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.image.url) if request else obj.image.url
 
 
 # ---------------------------------------------------------------------------

@@ -71,6 +71,10 @@ urlpatterns = [
         name="transaction-retrieve-update-destroy-view",
     ),
     path("feedback/", views.FeedbackView.as_view(), name="feedback-view"),
+    # News
+    path("news/", views.NewsList.as_view(), name="news-view"),
+    path("news/<int:pk>/", views.NewsDetail.as_view(), name="news-detail"),
+    path("news/<int:pk>/read/", views.NewsMarkRead.as_view(), name="news-read"),
     # Settings
     path(
         "settings/",

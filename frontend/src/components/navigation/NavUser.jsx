@@ -15,7 +15,11 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { EllipsisVerticalIcon, LogOutIcon, Settings2Icon } from 'lucide-react';
+import {
+	EllipsisVerticalIcon,
+	LogOutIcon,
+	Settings2Icon,
+} from 'lucide-react';
 
 import {
 	SidebarMenu,

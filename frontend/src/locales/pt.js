@@ -19,6 +19,18 @@ const pt = {
 		dashboard: 'Dashboard',
 		settings: 'Definições',
 		transactions: 'Transações',
+		news: 'Novidades',
+	},
+
+	news: {
+		title: 'Novidades',
+		description: 'Descobre o que há de novo na tua aplicação financeira.',
+		empty: 'Ainda não existem novidades.',
+		loadError: 'Não foi possível carregar as novidades.',
+		unread: 'Não lida',
+		readMore: 'Ler mais',
+		backToNews: 'Voltar às novidades',
+		expandImage: 'Expandir imagem',
 	},
 
 	feedback: {

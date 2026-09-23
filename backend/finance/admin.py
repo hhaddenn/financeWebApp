@@ -5,11 +5,19 @@ from .models import (
     Account,
     Budget,
     Category,
+    News,
     RecurringTransaction,
     Subcategory,
     Transaction,
     User,
 )
+
+
+@admin.register(News)
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ("title", "action_label", "created_at")
+    search_fields = ("title", "description", "action_label", "action_url")
+    ordering = ("-created_at",)
 
 # ---------------------------------------------------------------------------
 # User

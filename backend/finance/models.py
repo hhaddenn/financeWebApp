@@ -22,6 +22,36 @@ class LoginChallenge(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class News(models.Model):
+    title = models.CharField(max_length=120)
+    description = models.TextField()
+    image = models.FileField(upload_to="news/", blank=True)
+    action_label = models.CharField(max_length=80, blank=True)
+    action_url = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = "news item"
+        verbose_name_plural = "news items"
+
+    def __str__(self):
+        return self.title
+
+
+class NewsRead(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="read_news")
+    news = models.ForeignKey(News, on_delete=models.CASCADE, related_name="reads")
+    read_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=["user", "news"], name="unique_user_news_read"
+            ),
+        )
+
+
 class CategoryType(models.TextChoices):
     INCOME = "income", "Income"
     EXPENSE = "expense", "Expense"
