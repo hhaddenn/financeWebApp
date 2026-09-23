@@ -48,6 +48,7 @@ export default function LoginForm({ className, ...props }) {
 				const result = await login(
 					String(formData.get('username') ?? '').trim(),
 					String(formData.get('password') ?? ''),
+					formData.get('rememberMe') === 'on',
 				);
 
 				return {
@@ -146,6 +147,18 @@ export default function LoginForm({ className, ...props }) {
 											disabled={isPending}
 										/>
 									</Field>
+
+										<Field orientation="horizontal" className="items-center gap-2">
+											<input
+												id="rememberMe"
+												name="rememberMe"
+												type="checkbox"
+												className="size-4 accent-primary"
+											/>
+											<FieldLabel htmlFor="rememberMe" className="cursor-pointer">
+												{t('auth.rememberMe')}
+											</FieldLabel>
+										</Field>
 								</>
 							)}
 

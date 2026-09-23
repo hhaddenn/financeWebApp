@@ -31,17 +31,26 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-def _token_response(user):
+def _token_response(user, remember_me=False):
     refresh_token = RefreshToken.for_user(user)
+
+    if remember_me:
+        refresh_token.set_exp(lifetime=timedelta(days=30))
+
     response = Response({"access": str(refresh_token.access_token)})
-    response.set_cookie(
-        key="refresh_token",
-        value=str(refresh_token),
-        httponly=True,
-        secure=settings.COOKIE_SECURE,
-        samesite="Lax",
-        path="/api/auth/",
-    )
+    cookie_options = {
+        "key": "refresh_token",
+        "value": str(refresh_token),
+        "httponly": True,
+        "secure": settings.COOKIE_SECURE,
+        "samesite": "Lax",
+        "path": "/api/auth/",
+    }
+
+    if remember_me:
+        cookie_options["max_age"] = 30 * 24 * 60 * 60
+
+    response.set_cookie(**cookie_options)
     return response
 
 
@@ -52,6 +61,7 @@ class CookieTokenObtainPairView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         username = request.data.get("username", "")
         password = request.data.get("password", "")
+        remember_me = bool(request.data.get("remember_me", False))
         user = authenticate(request, username=username, password=password)
 
         if user is None:
@@ -71,6 +81,7 @@ class CookieTokenObtainPairView(generics.GenericAPIView):
             user=user,
             code_hash=make_password(code),
             expires_at=timezone.now() + timedelta(minutes=10),
+            remember_me=remember_me,
         )
 
         send_mail(
@@ -127,7 +138,7 @@ class VerifyLoginView(generics.GenericAPIView):
 
         challenge.used = True
         challenge.save(update_fields=["used"])
-        return _token_response(challenge.user)
+        return _token_response(challenge.user, challenge.remember_me)
 
 
 @method_decorator(csrf_protect, name="dispatch")
