@@ -18,7 +18,7 @@ services:
     volumes:
       - redis_data:/data
 
-  backend:
+    backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -37,6 +37,8 @@ services:
     volumes:
       - media_data:/app/backend/media
       - static_data:/app/backend/staticfiles
+    ports:
+      - "127.0.0.1:8000:8000"
     command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60
 
   celery:
