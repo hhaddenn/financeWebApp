@@ -198,7 +198,10 @@ REST_FRAMEWORK = {
 
 DJANGO_SETTINGS_MODULE = "backend.settings"
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_BROKER_URL = os.getenv(
+    "CELERY_BROKER_URL",
+    os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0"),
+)
 
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False
