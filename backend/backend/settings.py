@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,6 +29,13 @@ load_dotenv(BASE_DIR / ".env")  # Load environment variables from .env file
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = os.getenv("DEBUG", "False") == "True"
+
+if not DEBUG and (
+    SECRET_KEY.startswith("django-insecure-") or len(SECRET_KEY) < 50
+):
+    raise ImproperlyConfigured(
+        "Production SECRET_KEY must be long, random, and not use Django's insecure prefix."
+    )
 
 AUTH_USER_MODEL = "finance.User"
 
@@ -50,6 +58,14 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False") == "True"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False") == "True"
+SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
+SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+X_FRAME_OPTIONS = "DENY"
 
 
 # Application definition
@@ -187,3 +203,6 @@ CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SECURE = COOKIE_SECURE
 CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SECURE = COOKIE_SECURE
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
