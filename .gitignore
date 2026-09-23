@@ -10,6 +10,17 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media
+staticfiles/
+backend/staticfiles/
+backend/media/
+
+# Database backups and local deployment artefacts
+backups/
+*.dump
+*.dump.sha256
+*.sql
+*.sql.gz
+docker-compose.override.yml
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.
@@ -540,3 +551,20 @@ MigrationBackup/
 .ionide/
 
 # End of https://www.toptal.com/developers/gitignore/api/vs,react,django
+
+# Django generated files
+staticfiles/
+backend/staticfiles/
+backend/media/
+
+# Database backups
+backups/
+*.dump
+*.dump.sha256
+*.sql
+*.sql.gz
+
+# Docker/local deployment files
+docker-compose.override.yml
+.env.*
+!.env.example
