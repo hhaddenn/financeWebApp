@@ -1,10 +1,10 @@
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
+from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
-
 
 MAX_MESSAGE_LENGTH = 2000
 VALID_FEEDBACK_TYPES = {"bug", "suggestion"}
@@ -45,17 +45,25 @@ class FeedbackView(APIView):
             )
 
         email_message = (
-            f"User: {request.user.username}\n"
-            f"Email: {request.user.email}\n\n"
-            f"Message:\n{message}"
+            "Recebeste um novo feedback da FinanceApp.\n\n"
+            f"Tipo: {feedback_type.title()}\n"
+            f"Utilizador: {request.user.username}\n"
+            f"Email: {request.user.email}\n"
+            f"Data: {timezone.now().strftime('%d/%m/%Y às %H:%M UTC')}\n\n"
+            "Mensagem:\n"
+            "----------------------------------------\n"
+            f"{message}\n"
+            "----------------------------------------\n\n"
+            "Podes responder diretamente a este email para contactar o utilizador."
         )
 
-        send_mail(
-            subject=f"New {feedback_type} received",
-            message=email_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.FEEDBACK_RECIPIENT],
-            fail_silently=False,
+        email = EmailMessage(
+            subject=f"[FinanceApp] Novo {feedback_type}: {request.user.username}",
+            body=email_message,
+            from_email=settings.FEEDBACK_FROM_EMAIL,
+            to=[settings.FEEDBACK_RECIPIENT],
+            reply_to=[request.user.email],
         )
+        email.send(fail_silently=False)
 
         return Response({"message": "Feedback received"})

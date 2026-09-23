@@ -32,6 +32,7 @@ DB_PORT=5432
 EMAIL_HOST_USER=<smtp-user>
 EMAIL_HOST_PASSWORD=<smtp-password>
 DEFAULT_FROM_EMAIL=<verified-sender>
+FEEDBACK_FROM_EMAIL=<verified-feedback-sender>
 FEEDBACK_RECIPIENT=<admin-email>
 FRONTEND_URL=https://app.example.com
 ```
