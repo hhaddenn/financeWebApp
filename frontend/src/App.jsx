@@ -17,6 +17,7 @@ import Settings from './pages/Settings';
 import VerifyEmail from '@/features/auth/pages/VerifyEmail';
 import ForgotPassword from '@/features/auth/pages/ForgotPassword';
 import ResetPassword from '@/features/auth/pages/ResetPassword';
+import ConfirmEmailChange from './pages/ConfirmEmailChange';
 import News from './pages/News';
 import NewsDetail from './pages/NewsDetail';
 
@@ -54,6 +55,11 @@ function App() {
 					<Route
 						path="/reset-password/:uid/:token"
 						element={<ResetPassword />}
+					/>
+
+					<Route
+						path="/confirm-email-change/:uid/:token"
+						element={<ConfirmEmailChange />}
 					/>
 
 					<Route
