@@ -31,6 +31,11 @@ from .transactions import (
 from .feedback import (
     FeedbackView,
 )
+from .news import (
+    NewsList,
+    NewsDetail,
+    NewsMarkRead,
+)
 from .settings import (
     UserSettingsView,
     UserCategoryPreferencesView,
