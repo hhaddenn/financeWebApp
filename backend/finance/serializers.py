@@ -159,7 +159,6 @@ class RegisterSerializer(serializers.ModelSerializer):
                 UserSubcategoryPreference(
                     user=user,
                     subcategory=subcategory,
-                    color=DEFAULT_CATEGORY_COLORS[index % len(DEFAULT_CATEGORY_COLORS)],
                 )
                 for index, subcategory in enumerate(subcategories)
             ]
