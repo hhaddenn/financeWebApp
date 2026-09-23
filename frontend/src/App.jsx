@@ -17,6 +17,8 @@ import Settings from './pages/Settings';
 import VerifyEmail from '@/features/auth/pages/VerifyEmail';
 import ForgotPassword from '@/features/auth/pages/ForgotPassword';
 import ResetPassword from '@/features/auth/pages/ResetPassword';
+import News from './pages/News';
+import NewsDetail from './pages/NewsDetail';
 
 function App() {
 	const { isLoggedIn, isLoading } = useAuth();
@@ -77,6 +79,24 @@ function App() {
 						element={
 							<ProtectedRoute>
 								<Settings />
+							</ProtectedRoute>
+						}
+					/>
+
+					<Route
+						path="/news"
+						element={
+							<ProtectedRoute>
+								<News />
+							</ProtectedRoute>
+						}
+					/>
+
+					<Route
+						path="/news/:id"
+						element={
+							<ProtectedRoute>
+								<NewsDetail />
 							</ProtectedRoute>
 						}
 					/>
