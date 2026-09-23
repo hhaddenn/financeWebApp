@@ -10,13 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
 from pathlib import Path
+
 from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-import os
 
 from dotenv import load_dotenv
 
@@ -30,9 +30,7 @@ load_dotenv(BASE_DIR / ".env")  # Load environment variables from .env file
 SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-if not DEBUG and (
-    SECRET_KEY.startswith("django-insecure-") or len(SECRET_KEY) < 50
-):
+if not DEBUG and (SECRET_KEY.startswith("django-insecure-") or len(SECRET_KEY) < 50):
     raise ImproperlyConfigured(
         "Production SECRET_KEY must be long, random, and not use Django's insecure prefix."
     )
@@ -173,13 +171,15 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_HOST = os.environ["EMAIL_HOST"]
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_USE_SSL = False
 EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
 EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
 
 DEFAULT_FROM_EMAIL = os.environ["DEFAULT_FROM_EMAIL"]
+FEEDBACK_FROM_EMAIL = os.environ["FEEDBACK_FROM_EMAIL"]
 FEEDBACK_RECIPIENT = os.environ["FEEDBACK_RECIPIENT"]
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
 
