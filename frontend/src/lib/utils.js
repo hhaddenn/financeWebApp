@@ -1,5 +1,3 @@
-export { cn } from 'cn';
-
 export function cn(...inputs) {
 	return inputs
 		.flatMap((input) => {
