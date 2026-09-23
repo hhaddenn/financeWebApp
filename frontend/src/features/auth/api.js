@@ -6,12 +6,13 @@ export const ensureCsrfToken = async () => {
 	await api.get('/auth/csrf/');
 };
 
-export const login = async (username, password) => {
+export const login = async (username, password, rememberMe) => {
 	await ensureCsrfToken();
 
 	const response = await api.post('/auth/login/', {
 		username,
 		password,
+		remember_me: rememberMe,
 	});
 
 	setAccessToken(response.data.access);

@@ -71,6 +71,7 @@ const pt = {
 		signIn: 'Iniciar sessão',
 		welcomeBack: 'Bem-vindo de volta',
 		loginDescription: 'Inicia sessão na tua conta.',
+		rememberMe: 'Manter sessão iniciada durante 30 dias',
 		forgotPassword: 'Esqueceste-te da palavra-passe?',
 		loggingIn: 'A iniciar sessão...',
 		login: 'Iniciar sessão',

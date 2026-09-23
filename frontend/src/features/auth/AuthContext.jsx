@@ -27,8 +27,8 @@ export function AuthProvider({ children }) {
 		restoreSession();
 	}, []);
 
-	const login = async (username, password) => {
-		return loginRequest(username, password);
+	const login = async (username, password, rememberMe) => {
+		return loginRequest(username, password, rememberMe);
 	};
 
 	const completeLogin = async (challengeId, code) => {

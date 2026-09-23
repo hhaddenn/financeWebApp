@@ -70,6 +70,7 @@ const en = {
 		signIn: 'Sign in',
 		welcomeBack: 'Welcome back',
 		loginDescription: 'Log in to your account.',
+		rememberMe: 'Keep me signed in for 30 days',
 		forgotPassword: 'Forgot your password?',
 		loggingIn: 'Logging in...',
 		login: 'Login',
