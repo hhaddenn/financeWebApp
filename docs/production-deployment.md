@@ -29,6 +29,9 @@ DB_USER=<production-user>
 DB_PASSWORD=<production-password>
 DB_HOST=127.0.0.1
 DB_PORT=5432
+POSTGRES_DB=<production-db>
+POSTGRES_USER=<production-user>
+POSTGRES_PASSWORD=<production-password>
 EMAIL_HOST_USER=<smtp-user>
 EMAIL_HOST_PASSWORD=<smtp-password>
 DEFAULT_FROM_EMAIL=<verified-sender>
@@ -37,7 +40,7 @@ FEEDBACK_RECIPIENT=<admin-email>
 FRONTEND_URL=https://app.example.com
 ```
 
-For the Docker Compose setup, run Compose with the backend environment file so its `${DB_NAME}`, `${DB_USER}`, and `${DB_PASSWORD}` values are available for interpolation. Set the public API URL separately because Vite embeds it into the frontend at build time:
+For the Docker Compose setup, keep the `POSTGRES_*` values aligned with the `DB_*` values in `backend/.env`. Compose loads them through `env_file`; no database password is interpolated in the YAML. Set the public API URL separately because Vite embeds it into the frontend at build time:
 
 ```bash
 export VITE_API_URL=https://api.example.com/api
