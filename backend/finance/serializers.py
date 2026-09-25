@@ -160,7 +160,7 @@ class RegisterSerializer(serializers.ModelSerializer):
                     user=user,
                     subcategory=subcategory,
                 )
-                for index, subcategory in enumerate(subcategories)
+                for subcategory in subcategories
             ]
         )
 
