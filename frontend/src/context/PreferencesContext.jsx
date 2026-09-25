@@ -103,12 +103,24 @@ export function PreferencesProvider({ children }) {
 		return value ?? path;
 	};
 
-	const translateCategory = (name) => {
-		return translations[language]?.categories?.[name] ?? name;
+	const normalizeTranslationKey = (name) => {
+   	if (!name || typeof name !== 'string') {
+      	return name;
+   	}
+
+   	return name.replace(/\s+/g, '');
 	};
 
+	const translateCategory = (name) => {
+	   const key = normalizeTranslationKey(name);
+	
+	   return translations[language]?.categories?.[key] ?? name;
+	};
+	
 	const translateSubcategory = (name) => {
-		return translations[language]?.subcategories?.[name] ?? name;
+	   const key = normalizeTranslationKey(name);
+	
+	   return translations[language]?.subcategories?.[key] ?? name;
 	};
 
 	const value = useMemo(
