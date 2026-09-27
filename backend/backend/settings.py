@@ -20,7 +20,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 from dotenv import load_dotenv
 
-load_dotenv(BASE_DIR / ".env")  # Load environment variables from .env file
+ENV_FILE = os.getenv("ENV_FILE", ".env")
+load_dotenv(BASE_DIR / ENV_FILE)  # Load environment variables from .env file
+
+
+def env_bool(name, default=False):
+    value = os.getenv(name)
+
+    if value is None:
+        return default
+
+    return value.strip().lower() in ("true", "1", "yes", "on")
 
 
 # Quick-start development settings - unsuitable for production
@@ -28,7 +38,7 @@ load_dotenv(BASE_DIR / ".env")  # Load environment variables from .env file
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ["SECRET_KEY"]
-DEBUG = os.getenv("DEBUG", "False") == "True"
+DEBUG = env_bool("DEBUG", False)
 
 if not DEBUG and (SECRET_KEY.startswith("django-insecure-") or len(SECRET_KEY) < 50):
     raise ImproperlyConfigured(
@@ -55,10 +65,12 @@ CSRF_TRUSTED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-COOKIE_SECURE = os.getenv("COOKIE_SECURE", "False") == "True"
+COOKIE_SECURE = env_bool("COOKIE_SECURE", not DEBUG)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False") == "True"
-SECURE_HSTS_SECONDS = int(os.getenv("SECURE_HSTS_SECONDS", "0"))
+SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", not DEBUG)
+SECURE_HSTS_SECONDS = int(
+    os.getenv("SECURE_HSTS_SECONDS", "0" if DEBUG else "31536000")
+)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
 SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -85,12 +97,12 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -170,20 +182,38 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 
 # Email
-# https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.environ["EMAIL_HOST"]
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
-EMAIL_USE_SSL = False
-EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
-EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend",
+)
 
-DEFAULT_FROM_EMAIL = os.environ["DEFAULT_FROM_EMAIL"]
-FEEDBACK_FROM_EMAIL = os.environ["FEEDBACK_FROM_EMAIL"]
-FEEDBACK_RECIPIENT = os.environ["FEEDBACK_RECIPIENT"]
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
+    EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.resend.com")
+    EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+    EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+    EMAIL_USE_SSL = False
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "resend")
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL",
+    "test@example.com",
+)
+
+FEEDBACK_FROM_EMAIL = os.getenv(
+    "FEEDBACK_FROM_EMAIL",
+    DEFAULT_FROM_EMAIL,
+)
+
+FEEDBACK_RECIPIENT = os.getenv(
+    "FEEDBACK_RECIPIENT",
+    "",
+)
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:5173",
+).rstrip("/")
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
