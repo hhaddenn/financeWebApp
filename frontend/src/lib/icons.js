@@ -71,6 +71,11 @@ import {
 	EllipsisVertical,
 	PiggyBank,
 	Plus,
+	Clapperboard,
+	Martini,
+	Wifi,
+	Droplets,
+	PartyPopper,
 } from 'lucide-react';
 
 export const iconMap = {
@@ -94,6 +99,7 @@ export const iconMap = {
 	'rotate-ccw': Repeat,
 	'circle-plus': CirclePlus,
 	'arrow-right-left': ArrowRightLeft,
+	'party-popper': PartyPopper,
 
 	// Subcategories
 	receipt: Receipt,
@@ -152,4 +158,8 @@ export const iconMap = {
 	'chart-no-axes-combined': ChartNoAxesCombined,
 	'ellipsis-vertical': EllipsisVertical,
   investment: ChartNoAxesCombined,
+  clapperboard: Clapperboard,
+  martini: Martini,
+  wifi: Wifi,
+  droplets: Droplets,
 };

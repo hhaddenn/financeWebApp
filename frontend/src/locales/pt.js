@@ -161,7 +161,6 @@ const pt = {
 		Transportation: 'Transportes',
 		Utilities: 'Serviços',
 		Health: 'Saúde',
-		Entertainment: 'Entretenimento',
 		Shopping: 'Compras',
 		Education: 'Educação',
 		Travel: 'Viagens',
@@ -177,6 +176,7 @@ const pt = {
       Refunds: 'Reembolsos',
       OtherIncome: 'Outros rendimentos',
       Transfer: 'Transferência',
+      EntertainmentandLeisure: 'Entretenimento e lazer',
 },
 
 	subcategories: {
@@ -197,13 +197,11 @@ const pt = {
       PropertyTax: 'Imposto sobre a Propriedade',
       HomeInsurance: 'Seguro de Habitação',
       Maintenance: 'Manutenção',
-      Utilities: 'Utilitários',
       Mechanic: 'Mecânico',
       Parking: 'Estacionamento',
       Tolls: 'Portagem',
       Insurance: 'Seguros',
       CarLoan: 'Empréstimo para Automóveis',
-      Coffee: 'Café',
       Delivery: 'Entrega',
       Doctor: 'Doutor',
       Pharmacy: 'Farmácia',
@@ -249,6 +247,12 @@ const pt = {
       ProductRefund: 'Reembolso do Produto',
       TaxRefund: 'Reembolsos Fiscais',
       Other: 'Outros',
+      MealAllowance: 'Subsídio de Refeição',
+      MobilePhone: 'Telemóvel',
+      NightOut: 'Noite Fora',
+      InternetandTV: 'Internet e TV',
+      CaféandBar: 'Café e Bar',
+      Cinema: 'Cinema',
 },
 
 	dashboard: {

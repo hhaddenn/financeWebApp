@@ -159,7 +159,6 @@ const en = {
 		Transportation: 'Transportation',
 		Utilities: 'Utilities',
 		Health: 'Healthcare',
-		Entertainment: 'Entertainment',
 		Shopping: 'Shopping',
 		Education: 'Education',
 		Travel: 'Travel',
@@ -175,6 +174,7 @@ const en = {
       Refunds: 'Refunds',
       OtherIncome: 'Other Income',
       Transfer: 'Transfer',
+      EntertainmentandLeisure: 'Entertainment and Leisure',
 },
 
 	subcategories: {
@@ -195,13 +195,11 @@ const en = {
       PropertyTax: 'Property Tax',
       HomeInsurance: 'Home Insurance',
       Maintenance: 'Maintenance',
-      Utilities: 'Utilities',
       Mechanic: 'Mechanic',
       Parking: 'Parking',
       Tolls: 'Tolls',
       Insurance: 'Insurance',
       CarLoan: 'Car Loan',
-      Coffee: 'Coffee',
       Delivery: 'Delivery',
       Doctor: 'Doctor',
       Pharmacy: 'Pharmacy',
@@ -247,6 +245,13 @@ const en = {
       ProductRefund: 'Product Refund',
       TaxRefund: 'Tax Refund',
       Other: 'Other',
+      Coffee: 'Coffee',
+      MealAllowance: 'Meal Allowance',
+      MobilePhone: 'Mobile Phone',
+      NightOut: 'Night Out',
+      InternetandTV: 'Internet and TV',
+      CaféandBar: 'Café and Bar',
+      Cinema: 'Cinema',
 },
 
 	dashboard: {
