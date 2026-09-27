@@ -175,7 +175,7 @@ const pt = {
       Business: 'Negócios',
       Gifts: 'Presentes',
       Refunds: 'Reembolsos',
-      OtherIncome: 'Outros proveitos',
+      OtherIncome: 'Outros rendimentos',
       Transfer: 'Transferência',
 },
 
