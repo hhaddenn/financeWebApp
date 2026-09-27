@@ -1,9 +1,15 @@
 import json
 from pathlib import Path
 
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from finance.models import Category, Subcategory
+from finance.models import (
+    Category,
+    Subcategory,
+    UserCategoryPreference,
+    UserSubcategoryPreference,
+)
 
 
 class Command(BaseCommand):
@@ -44,3 +50,18 @@ class Command(BaseCommand):
                 "Categories seeded successfully!"
             )
         )
+
+        User = get_user_model()
+
+        for user in User.objects.all():
+            for category in Category.objects.all():
+                UserCategoryPreference.objects.get_or_create(
+                    user=user,
+                    category=category,
+                )
+        
+            for subcategory in Subcategory.objects.all():
+                UserSubcategoryPreference.objects.get_or_create(
+                    user=user,
+                    subcategory=subcategory,
+                )
