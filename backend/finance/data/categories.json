@@ -9,7 +9,11 @@
 			{ "name": "Property Tax", "icon": "receipt" },
 			{ "name": "Home Insurance", "icon": "shield" },
 			{ "name": "Maintenance", "icon": "hammer" },
-			{ "name": "Utilities", "icon": "zap" }
+			{ "name": "Internet and TV", "icon": "wifi" },
+			{ "name": "Electricity", "icon": "zap" },
+			{ "name": "Water", "icon": "droplets" },
+			{ "name": "Mobile Phone", "icon": "smartphone" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -23,7 +27,8 @@
 			{ "name": "Tolls", "icon": "waypoints" },
 			{ "name": "Insurance", "icon": "shield-check" },
 			{ "name": "Public Transport", "icon": "bus" },
-			{ "name": "Car Loan", "icon": "badge-euro" }
+			{ "name": "Car Loan", "icon": "badge-euro" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -33,8 +38,9 @@
 		"subcategories": [
 			{ "name": "Groceries", "icon": "shopping-cart" },
 			{ "name": "Restaurants", "icon": "utensils" },
-			{ "name": "Coffee", "icon": "coffee" },
-			{ "name": "Delivery", "icon": "bike" }
+			{ "name": "Café and Bar", "icon": "coffee" },
+			{ "name": "Delivery", "icon": "bike" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -45,7 +51,8 @@
 			{ "name": "Doctor", "icon": "stethoscope" },
 			{ "name": "Pharmacy", "icon": "pill" },
 			{ "name": "Health Insurance", "icon": "shield-plus" },
-			{ "name": "Gym", "icon": "dumbbell" }
+			{ "name": "Gym", "icon": "dumbbell" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -56,19 +63,22 @@
 			{ "name": "Clothes", "icon": "shirt" },
 			{ "name": "Electronics", "icon": "smartphone" },
 			{ "name": "Furniture", "icon": "sofa" },
-			{ "name": "General Shopping", "icon": "shopping-basket" }
+			{ "name": "General Shopping", "icon": "shopping-basket" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
-		"name": "Entertainment",
+		"name": "Entertainment and Leisure",
 		"icon": "gamepad-2",
 		"category_type": "expense",
 		"subcategories": [
-			{ "name": "Movies", "icon": "film" },
+			{ "name": "Cinema", "icon": "clapperboard" },
 			{ "name": "Games", "icon": "gamepad-2" },
 			{ "name": "Streaming", "icon": "tv" },
 			{ "name": "Books", "icon": "book-open" },
-			{ "name": "Music", "icon": "music" }
+			{ "name": "Music", "icon": "music" },
+			{ "name": "Night Out", "icon": "martini" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -78,7 +88,8 @@
 		"subcategories": [
 			{ "name": "Courses", "icon": "monitor-play" },
 			{ "name": "Books", "icon": "book-open" },
-			{ "name": "School Fees", "icon": "school" }
+			{ "name": "School Fees", "icon": "school" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -89,7 +100,8 @@
 			{ "name": "Flights", "icon": "plane" },
 			{ "name": "Hotels", "icon": "hotel" },
 			{ "name": "Transport", "icon": "train" },
-			{ "name": "Activities", "icon": "map" }
+			{ "name": "Activities", "icon": "map" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -99,7 +111,8 @@
 		"subcategories": [
 			{ "name": "Children", "icon": "baby" },
 			{ "name": "Childcare", "icon": "heart-handshake" },
-			{ "name": "Gifts", "icon": "gift" }
+			{ "name": "Gifts", "icon": "gift" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -110,7 +123,8 @@
 			{ "name": "Bank Fees", "icon": "building-2" },
 			{ "name": "Loan Payments", "icon": "badge-euro" },
 			{ "name": "Credit Card Fees", "icon": "credit-card" },
-			{ "name": "Taxes", "icon": "receipt-text" }
+			{ "name": "Taxes", "icon": "receipt-text" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -120,7 +134,8 @@
 		"subcategories": [
 			{ "name": "Food", "icon": "bone" },
 			{ "name": "Vet", "icon": "syringe" },
-			{ "name": "Accessories", "icon": "paw-print" }
+			{ "name": "Accessories", "icon": "paw-print" },
+			{ "name": "Other", "icon": "circle-help" }
 		]
 	},
 	{
@@ -137,7 +152,9 @@
 		"subcategories": [
 			{ "name": "Salary", "icon": "wallet" },
 			{ "name": "Bonus", "icon": "badge-plus" },
-			{ "name": "Overtime", "icon": "clock-3" }
+			{ "name": "Overtime", "icon": "clock-3" },
+			{ "name": "Meal Allowance", "icon": "utensils" },
+			{ "name": "Other", "icon": "circle-plus" }
 		]
 	},
 	{
@@ -147,7 +164,8 @@
 		"subcategories": [
 			{ "name": "Dividends", "icon": "coins" },
 			{ "name": "Interest", "icon": "percent" },
-			{ "name": "Capital Gains", "icon": "trending-up" }
+			{ "name": "Capital Gains", "icon": "trending-up" },
+			{ "name": "Other", "icon": "circle-plus" }
 		]
 	},
 	{
@@ -157,7 +175,8 @@
 		"subcategories": [
 			{ "name": "Sales", "icon": "shopping-cart" },
 			{ "name": "Consulting", "icon": "briefcase-business" },
-			{ "name": "Freelance", "icon": "laptop" }
+			{ "name": "Freelance", "icon": "laptop" },
+			{ "name": "Other", "icon": "circle-plus" }
 		]
 	},
 	{
@@ -166,7 +185,8 @@
 		"category_type": "income",
 		"subcategories": [
 			{ "name": "Cash Gifts", "icon": "gift" },
-			{ "name": "Donations Received", "icon": "hand-heart" }
+			{ "name": "Donations Received", "icon": "hand-heart" },
+			{ "name": "Other", "icon": "circle-plus" }
 		]
 	},
 	{
@@ -175,7 +195,8 @@
 		"category_type": "income",
 		"subcategories": [
 			{ "name": "Product Refund", "icon": "package-open" },
-			{ "name": "Tax Refund", "icon": "receipt" }
+			{ "name": "Tax Refund", "icon": "receipt" },
+			{ "name": "Other", "icon": "circle-plus" }
 		]
 	},
 	{

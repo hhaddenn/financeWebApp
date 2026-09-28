@@ -61,8 +61,8 @@ function CategoryIcon({ name, className }) {
 const getDefaultForm = () => ({
 	date: format(new Date(), 'yyyy-MM-dd'),
 	name: '',
-	amount: '',
-	amount_to_receive: '',
+	amount: 0,
+	amount_to_receive: 0,
 	counterparty: '',
 	account_id: '',
 	transfer_account_id: '',
