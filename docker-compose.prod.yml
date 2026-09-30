@@ -74,6 +74,8 @@ services:
 
 volumes:
   postgres_data:
+    external: true
+    name: bank_webapp_postgres_data
   redis_data:
   media_data:
   static_data:
