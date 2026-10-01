@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
   Dialog,
@@ -30,14 +30,6 @@ export function FeedbackDialog({ open, onOpenChange, type }) {
 
   // Garantir que só existem tipos válidos.
   const feedbackType = isBug ? 'bug' : 'suggestion';
-
-  // Limpar o formulário quando o dialog fecha.
-  useEffect(() => {
-    if (!open) {
-      setMessage('');
-      setError('');
-    }
-  }, [open]);
 
   const trimmedMessage = message.trim();
   const isValid = trimmedMessage.length > 0;
