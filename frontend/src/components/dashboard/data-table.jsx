@@ -142,7 +142,7 @@ export function DataTable() {
 		};
 
 		loadTransactions();
-	}, [period, language]);
+	}, [period, t]);
 
 	const handleEdit = (transaction) => {
 		setEditingTransaction(transaction);
