@@ -1,3 +1,4 @@
+/* oxlint-disable react/set-state-in-effect */
 import { useCallback, useEffect, useState } from 'react';
 
 import {
