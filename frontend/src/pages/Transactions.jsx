@@ -85,9 +85,11 @@ export default function Transactions() {
 		}
 	}, [filters]);
 
+	/* oxlint-disable react/set-state-in-effect */
 	React.useEffect(() => {
 		loadTransactions();
 	}, [loadTransactions]);
+	/* oxlint-enable react/set-state-in-effect */
 
 	const handleEdit = (transaction) => {
 		setEditingTransaction(transaction);
