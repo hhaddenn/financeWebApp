@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+/* oxlint-disable react/only-export-components */
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { getSettings, updateSettings } from '@/api/settings';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -13,6 +14,14 @@ const translations = {
 
 const PreferencesContext = createContext(null);
 
+const normalizeTranslationKey = (name) => {
+	if (!name || typeof name !== 'string') {
+		return name;
+	}
+
+	return name.replace(/\s+/g, '');
+};
+
 export function PreferencesProvider({ children }) {
 	const { isLoggedIn, isLoading: authLoading } = useAuth();
 
@@ -20,6 +29,7 @@ export function PreferencesProvider({ children }) {
 	const [theme, setThemeState] = useState('light');
 	const [loading, setLoading] = useState(true);
 
+	/* oxlint-disable react/set-state-in-effect */
 	useEffect(() => {
 		if (authLoading) {
 			return;
@@ -52,6 +62,7 @@ export function PreferencesProvider({ children }) {
 
 		loadPreferences();
 	}, [isLoggedIn, authLoading]);
+	/* oxlint-enable react/set-state-in-effect */
 
 	useEffect(() => {
 		const root = document.documentElement;
@@ -95,33 +106,35 @@ export function PreferencesProvider({ children }) {
 		}
 	};
 
-	const t = (path) => {
-		const value = path
-			.split('.')
-			.reduce((current, key) => current?.[key], translations[language]);
+	const t = useCallback(
+		(path) => {
+			const value = path
+				.split('.')
+				.reduce((current, key) => current?.[key], translations[language]);
 
-		return value ?? path;
-	};
+			return value ?? path;
+		},
+		[language],
+	);
 
-	const normalizeTranslationKey = (name) => {
-   	if (!name || typeof name !== 'string') {
-      	return name;
-   	}
 
-   	return name.replace(/\s+/g, '');
-	};
+	const translateCategory = useCallback(
+	   (name) => {
+	      const key = normalizeTranslationKey(name);
 
-	const translateCategory = (name) => {
-	   const key = normalizeTranslationKey(name);
+	      return translations[language]?.categories?.[key] ?? name;
+	   },
+	   [language],
+        );
 	
-	   return translations[language]?.categories?.[key] ?? name;
-	};
-	
-	const translateSubcategory = (name) => {
-	   const key = normalizeTranslationKey(name);
-	
-	   return translations[language]?.subcategories?.[key] ?? name;
-	};
+	const translateSubcategory = useCallback(
+	   (name) => {
+	      const key = normalizeTranslationKey(name);
+
+	      return translations[language]?.subcategories?.[key] ?? name;
+	   },
+	   [language],
+        );
 
 	const value = useMemo(
 		() => ({
@@ -134,7 +147,14 @@ export function PreferencesProvider({ children }) {
 			translateCategory,
 			translateSubcategory,
 		}),
-		[language, theme, loading],
+		[
+                   language,
+		   theme,
+		   loading,
+		   t,
+		   translateCategory,
+		   translateSubcategory,
+		],
 	);
 
 	return (

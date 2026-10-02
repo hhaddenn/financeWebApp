@@ -118,7 +118,7 @@ export function ChartBarMultiple() {
     };
 
     fetchData();
-  }, [currentYear, language]);
+  }, [currentYear, language, currentMonths]);
 
   const chartConfig = {
     expense: {

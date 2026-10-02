@@ -1,3 +1,4 @@
+/* oxlint-disable react/only-export-components */
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
 import { cva } from "class-variance-authority";

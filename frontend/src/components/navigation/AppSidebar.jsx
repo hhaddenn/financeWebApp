@@ -49,15 +49,15 @@ export function AppSidebar({ ...props }) {
 		],
 	};
 
-	const loadUser = async () => {
-		try {
-			setUser(await getUser());
-		} catch (error) {
-			console.error('Failed to load user:', error);
-		}
-	};
-
 	useEffect(() => {
+		const loadUser = async () => {
+			try {
+				setUser(await getUser());
+			} catch (error) {
+				console.error('Failed to load user:', error);
+			}
+		};
+
 		loadUser();
 		getNews()
 			.then((news) => setUnreadNewsCount(news.filter((item) => !item.is_read).length))

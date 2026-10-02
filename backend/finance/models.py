@@ -71,7 +71,7 @@ class CategoryType(models.TextChoices):
 
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
-    description = models.CharField(max_length=100)
+    description = models.CharField(max_length=100, blank=True)
     icon = models.CharField(max_length=200)
     category_type = models.CharField(max_length=8, choices=CategoryType.choices)
     created_at = models.DateTimeField(auto_now_add=True)

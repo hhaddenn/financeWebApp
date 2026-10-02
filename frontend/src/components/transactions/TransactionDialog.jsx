@@ -1,3 +1,4 @@
+/* oxlint-disable react/set-state-in-effect */
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';

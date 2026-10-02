@@ -106,7 +106,7 @@ export default function Settings() {
 		};
 
 		loadSettings();
-	}, []);
+	}, [t]);
 
 	const updateCategory = (id, changes) => {
 		setCategories((current) =>
