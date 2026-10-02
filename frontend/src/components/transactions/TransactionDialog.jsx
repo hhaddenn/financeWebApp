@@ -409,10 +409,6 @@ export function TransactionDialog({
 
 		const name = form.name.trim();
 
-		if (!name) {
-			return t('transactions.nameRequired');
-		}
-
 		if (name.length > MAX_NAME_LENGTH) {
 			return t('transactions.nameTooLong');
 		}
