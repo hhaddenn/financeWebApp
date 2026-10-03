@@ -1,0 +1,3 @@
+[lint.per-file-ignores]
+"**/migrations/*.py" = ["RUF012", "I001"]
+"backend/finance/views/__init__.py" = ["F401"]

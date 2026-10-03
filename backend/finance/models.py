@@ -1,7 +1,8 @@
+import uuid
+
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.db import models
-import uuid
 
 # Create your models here.
 
@@ -283,12 +284,6 @@ class RecurringTransaction(models.Model):
     frequency = models.CharField(
         max_length=10,
         choices=RecurrenceFrequency.choices,
-    )
-
-    # When during the day
-    time = models.TimeField(
-        null=True,
-        blank=True,
     )
 
     # Weekly: Monday, Tuesday, etc.

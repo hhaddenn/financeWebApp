@@ -1,7 +1,7 @@
-from django.conf import settings
-from django.core.management.base import BaseCommand
 import argostranslate.package
 import argostranslate.translate
+from django.conf import settings
+from django.core.management.base import BaseCommand
 
 from finance.models import Category, Subcategory
 

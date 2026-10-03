@@ -5,7 +5,6 @@ from .models import (
     Account,
     Category,
     Subcategory,
-    Transaction,
     TransactionType,
     UserCategoryPreference,
     UserSubcategoryPreference,

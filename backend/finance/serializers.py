@@ -1,22 +1,21 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.db import transaction
+from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import (
     Account,
     Budget,
     Category,
+    News,
     RecurringTransaction,
     Subcategory,
     Transaction,
     TransactionType,
-    UserSettings,
     UserCategoryPreference,
+    UserSettings,
     UserSubcategoryPreference,
-    News,
 )
 
 DEFAULT_CATEGORY_COLORS = [
@@ -276,7 +275,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transaction
-        fields = [
+        fields = (
             "id",
             "date",
             "name",
@@ -291,11 +290,11 @@ class TransactionSerializer(serializers.ModelSerializer):
             "subcategory",
             "subcategory_id",
             "applied",
-            "checked",
-        ]
-        read_only_fields = [
-            "applied",
-        ]
+            "checked"
+        )
+        read_only_fields = (
+            "applied"
+        )
 
     def validate(self, attrs):
         user = self.context["request"].user
@@ -376,15 +375,14 @@ class TransactionSerializer(serializers.ModelSerializer):
             attrs["amount_to_receive"] = 0
             attrs["counterparty"] = None
 
-            if subcategory is not None:
-                if subcategory.category.category_type != transaction_type:
-                    raise serializers.ValidationError(
-                        {
-                            "subcategory": (
-                                "The subcategory does not match the transaction type."
-                            )
-                        }
-                    )
+            if (subcategory is not None and subcategory.category.category_type != transaction_type):
+                raise serializers.ValidationError(
+                    {
+                        "subcategory": (
+                            "The subcategory does not match the transaction type."
+                        )
+                    }
+                )
 
         # ---------------------------------------------------------------
         # Expense
@@ -400,15 +398,14 @@ class TransactionSerializer(serializers.ModelSerializer):
                     }
                 )
 
-            if subcategory is not None:
-                if subcategory.category.category_type != transaction_type:
-                    raise serializers.ValidationError(
-                        {
-                            "subcategory": (
-                                "The subcategory does not match the transaction type."
-                            )
-                        }
-                    )
+            if (subcategory is not None and subcategory.category.category_type != transaction_type):
+                raise serializers.ValidationError(
+                    {
+                        "subcategory": (
+                            "The subcategory does not match the transaction type."
+                        )
+                    }
+                )
 
         return attrs
 
@@ -580,11 +577,6 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
             getattr(self.instance, "subcategory", None),
         )
 
-        time = attrs.get(
-            "time",
-            getattr(self.instance, "time", None),
-        )
-
         day_of_week = attrs.get(
             "day_of_week",
             getattr(self.instance, "day_of_week", None),
@@ -629,15 +621,14 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
         # Subcategory
         # ---------------------------------------------------------------
 
-        if subcategory is not None:
-            if subcategory.category.category_type != transaction_type:
-                raise serializers.ValidationError(
-                    {
-                        "subcategory": (
-                            "The subcategory does not match the transaction type."
-                        )
-                    }
-                )
+        if (subcategory is not None and subcategory.category.category_type != transaction_type):
+            raise serializers.ValidationError(
+                {
+                    "subcategory": (
+                        "The subcategory does not match the transaction type."
+                    )
+                }
+            )
 
         # ---------------------------------------------------------------
         # Frequency rules
@@ -720,18 +711,6 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"day_of_week": "Yearly recurrence cannot have a day of week."}
                 )
-
-        # ---------------------------------------------------------------
-        # Time
-        # ---------------------------------------------------------------
-
-        # If you want every recurring transaction to have a time,
-        # uncomment this:
-        #
-        # if time is None:
-        #     raise serializers.ValidationError(
-        #         {"time": "A recurrence requires a time."}
-        #     )
 
         return attrs
 
