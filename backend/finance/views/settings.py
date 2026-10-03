@@ -3,7 +3,6 @@ from rest_framework.permissions import IsAuthenticated
 
 from ..models import (
     UserCategoryPreference,
-    UserSettings,
     UserSubcategoryPreference,
 )
 from ..serializers import (

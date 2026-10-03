@@ -1,50 +1,46 @@
+from .accounts import (
+    AccountCreate,
+    AccountDetail,
+    AccountsList,
+)
 from .auth import (
+    AccountView,
     CookieTokenObtainPairView,
-    VerifyLoginView,
     CookieTokenRefreshView,
+    CsrfTokenView,
+    EmailChangeConfirmView,
+    EmailChangeRequestView,
+    LogoutAllView,
     LogoutView,
+    MeView,
+    PasswordChangeView,
+    PasswordResetConfirmView,
+    PasswordResetRequestView,
     RegisterView,
     VerifyEmailView,
-    PasswordResetRequestView,
-    PasswordResetConfirmView,
-    MeView,
-    CsrfTokenView,
-    AccountView,
-    PasswordChangeView,
-    EmailChangeRequestView,
-    EmailChangeConfirmView,
-    LogoutAllView,
+    VerifyLoginView,
 )
-
 from .categories import (
     CategoriesList,
     SubcategoriesList,
 )
-
-from .accounts import (
-    AccountsList,
-    AccountCreate,
-    AccountDetail,
-)
-
-from .transactions import (
-    TransactionsList,
-    TransactionCreate,
-    TransactionDetail,
-)
-
 from .feedback import (
     FeedbackView,
 )
 from .news import (
-    NewsList,
     NewsDetail,
+    NewsList,
     NewsMarkRead,
 )
 from .settings import (
-    UserSettingsView,
-    UserCategoryPreferencesView,
     UserCategoryPreferenceDetail,
-    UserSubcategoryPreferencesView,
+    UserCategoryPreferencesView,
+    UserSettingsView,
     UserSubcategoryPreferenceDetail,
+    UserSubcategoryPreferencesView,
+)
+from .transactions import (
+    TransactionCreate,
+    TransactionDetail,
+    TransactionsList,
 )
