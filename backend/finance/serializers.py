@@ -192,7 +192,19 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = "__all__"
-        read_only_fields = ("user", "balance")
+        read_only_fields = ("user",)
+
+    def validate(self, attrs):
+        if self.instance is not None and "initial_balance" in attrs:
+            raise serializers.ValidationError(
+                {
+                    "initial_balance": (
+                        "Initial balance cannot be changed after account creation."
+                    )
+                }
+            )
+
+        return attrs
 
     def create(self, validated_data):
         validated_data["balance"] = validated_data["initial_balance"]
@@ -201,13 +213,7 @@ class AccountSerializer(serializers.ModelSerializer):
         return Account.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        initial_balance = validated_data.get("initial_balance")
-
-        if initial_balance is not None:
-            validated_data["balance"] = initial_balance
-
         return super().update(instance, validated_data)
-
 
 # ---------------------------------------------------------------------------
 # Global categories
@@ -293,7 +299,7 @@ class TransactionSerializer(serializers.ModelSerializer):
             "checked"
         )
         read_only_fields = (
-            "applied"
+            "applied",
         )
 
     def validate(self, attrs):
@@ -317,6 +323,16 @@ class TransactionSerializer(serializers.ModelSerializer):
         subcategory = attrs.get(
             "subcategory",
             getattr(self.instance, "subcategory", None),
+        )
+
+        amount = attrs.get(
+            "amount",
+            getattr(self.instance, "amount", None),
+        )
+
+        amount_to_receive = attrs.get(
+            "amount_to_receive",
+            getattr(self.instance, "amount_to_receive", 0),
         )
 
         # ---------------------------------------------------------------
@@ -403,6 +419,15 @@ class TransactionSerializer(serializers.ModelSerializer):
                     {
                         "subcategory": (
                             "The subcategory does not match the transaction type."
+                        )
+                    }
+                )
+
+            if amount_to_receive > amount:
+                raise serializers.ValidationError(
+                    {
+                        "amount_to_receive": (
+                            "Amount to receive cannot be greater than the expense amount."
                         )
                     }
                 )

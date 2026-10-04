@@ -8,6 +8,7 @@ def process_due_transactions():
     transactions = Transaction.objects.filter(
         date__lte=timezone.localdate(),
         applied=False,
+        checked=True
     )
 
     for transaction in transactions:
