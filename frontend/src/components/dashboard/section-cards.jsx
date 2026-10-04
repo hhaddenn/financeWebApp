@@ -198,7 +198,7 @@ export function SectionCards() {
 			name: account.name ?? '',
 			// Atenção: idealmente este campo deve representar
 			// realmente initial_balance e não o balance atual.
-			initial_balance: account.initial_balance ?? '',
+			initial_balance: account.balance ?? '',
 			icon: accountIcons[account.icon] ? account.icon : DEFAULT_FORM.icon,
 		});
 
@@ -273,8 +273,10 @@ export function SectionCards() {
 
 			const payload = {
 				name,
-				initial_balance: balance,
 				icon: form.icon,
+				...(editingAccount
+					? { balance }
+					: { initial_balance: balance }),
 			};
 
 			if (editingAccount) {
