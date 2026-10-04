@@ -72,7 +72,8 @@ def apply_transaction(transaction):
         account.save(update_fields=["balance"])
 
     elif transaction.transaction_type == TransactionType.EXPENSE:
-        account.balance -= transaction.amount
+        net_amount = transaction.amount - transaction.amount_to_receive
+        account.balance -= net_amount
         account.save(update_fields=["balance"])
 
     elif transaction.transaction_type == TransactionType.TRANSFER:
@@ -103,7 +104,8 @@ def reverse_transaction(transaction):
         account.save(update_fields=["balance"])
 
     elif transaction.transaction_type == TransactionType.EXPENSE:
-        account.balance += transaction.amount
+        net_amount = transaction.amount - transaction.amount_to_receive
+        account.balance += net_amount
         account.save(update_fields=["balance"])
 
     elif transaction.transaction_type == TransactionType.TRANSFER:

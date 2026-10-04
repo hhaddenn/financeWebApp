@@ -5,7 +5,7 @@ from django.core import mail
 from django.test import override_settings
 from rest_framework.test import APITestCase
 
-from .models import LoginChallenge
+from finance.models import LoginChallenge
 
 User = get_user_model()
 
@@ -149,6 +149,3 @@ class AuthenticationTests(APITestCase):
 
         old_refresh = self.client.post("/api/auth/refresh/")
         self.assertEqual(old_refresh.status_code, 401)
-
-
-# Create your tests here.

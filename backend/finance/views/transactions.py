@@ -84,6 +84,8 @@ class TransactionCreate(generics.CreateAPIView):
             transaction.applied = True
             transaction.save(update_fields=["applied"])
 
+        transaction.refresh_from_db()
+
 
 class TransactionDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TransactionSerializer
@@ -122,6 +124,8 @@ class TransactionDetail(generics.RetrieveUpdateDestroyAPIView):
             # The transaction should not affect the balance.
             new_transaction.applied = False
             new_transaction.save(update_fields=["applied"])
+
+        new_transaction.refresh_from_db()
 
     @db_transaction.atomic
     def perform_destroy(self, instance):
