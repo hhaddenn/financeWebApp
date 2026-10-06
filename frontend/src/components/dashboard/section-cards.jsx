@@ -102,7 +102,7 @@ const iconOptions = [
 
 const DEFAULT_FORM = {
 	name: '',
-	initial_balance: '',
+	balance: '',
 	icon: 'landmark',
 };
 
@@ -196,9 +196,7 @@ export function SectionCards() {
 
 		setForm({
 			name: account.name ?? '',
-			// Atenção: idealmente este campo deve representar
-			// realmente initial_balance e não o balance atual.
-			initial_balance: account.balance ?? '',
+			balance: account.balance ?? '',
 			icon: accountIcons[account.icon] ? account.icon : DEFAULT_FORM.icon,
 		});
 
@@ -219,7 +217,7 @@ export function SectionCards() {
 
 	const validateForm = () => {
 		const name = form.name.trim();
-		const balanceText = String(form.initial_balance).trim();
+		const balanceText = String(form.balance).trim();
 
 		if (!name) {
 			return t('accounts.nameRequired');
@@ -264,9 +262,9 @@ export function SectionCards() {
 
 		const name = form.name.trim();
 		const balance =
-			String(form.initial_balance).trim() === ''
+			String(form.balance).trim() === ''
 				? 0
-				: Number(form.initial_balance);
+				: Number(form.balance);
 
 		try {
 			setSaving(true);
@@ -274,9 +272,7 @@ export function SectionCards() {
 			const payload = {
 				name,
 				icon: form.icon,
-				...(editingAccount
-					? { balance }
-					: { initial_balance: balance }),
+				balance,
 			};
 
 			if (editingAccount) {
@@ -487,12 +483,12 @@ export function SectionCards() {
 									min={MIN_BALANCE}
 									max={MAX_BALANCE}
 									placeholder="0.00"
-									value={form.initial_balance}
+									value={form.balance}
 									disabled={saving}
 									onChange={(event) =>
 										setForm((current) => ({
 											...current,
-											initial_balance: event.target.value,
+											balance: event.target.value,
 										}))
 									}
 								/>

@@ -62,3 +62,23 @@ class AccountAPITests(APITestCase):
       self.assertEqual(response.status_code, 400)
       self.assertEqual(self.account.initial_balance, Decimal("100.00"))
       self.assertEqual(self.account.balance, Decimal("344.20"))
+
+   def test_create_account_sets_initial_balance_from_balance(self):
+      url = reverse("account-create-view")
+
+      response = self.client.post(
+         url,
+         {
+            "name": "Savings",
+            "balance": "250.00",
+            "icon": "landmark",
+         },
+         format="json",
+      )
+
+      self.assertEqual(response.status_code, 201)
+
+      account = Account.objects.get(name="Savings")
+
+      self.assertEqual(account.balance, Decimal("250.00"))
+      self.assertEqual(account.initial_balance, Decimal("250.00"))
