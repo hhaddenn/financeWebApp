@@ -19,7 +19,7 @@ services:
       - redis_data:/data
 
   backend:
-    image: ghcr.io/hhaddenn/financewebapp-backend:latest
+    image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file:
       - ./backend/.env
@@ -40,7 +40,7 @@ services:
     command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60
 
   celery:
-    image: ghcr.io/hhaddenn/financewebapp-backend:latest
+    image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file:
       - ./backend/.env
@@ -58,7 +58,7 @@ services:
     command: celery -A backend worker --loglevel=INFO
 
   frontend:
-    image: ghcr.io/hhaddenn/financewebapp-frontend:latest
+    image: ghcr.io/hhaddenn/financewebapp-frontend:${FRONTEND_IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       - backend
