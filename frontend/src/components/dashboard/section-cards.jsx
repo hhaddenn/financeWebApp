@@ -53,6 +53,7 @@ import {
 } from '@/api/accounts';
 
 import { usePreferences } from '@/context/PreferencesContext';
+import { buildAccountPayload } from '@/utils/accountPayload';
 
 const MAX_ACCOUNT_NAME_LENGTH = 50;
 const MIN_BALANCE = -999999999;
@@ -260,20 +261,11 @@ export function SectionCards() {
 			return;
 		}
 
-		const name = form.name.trim();
-		const balance =
-			String(form.balance).trim() === ''
-				? 0
-				: Number(form.balance);
 
 		try {
 			setSaving(true);
 
-			const payload = {
-				name,
-				icon: form.icon,
-				balance,
-			};
+			const payload = buildAccountPayload(form);
 
 			if (editingAccount) {
 				await updateAccount(editingAccount.id, payload);
