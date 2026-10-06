@@ -43,6 +43,8 @@ import { iconMap } from '@/lib/icons';
 
 import { usePreferences } from '@/context/PreferencesContext';
 
+import { buildTransactionPayload } from '@/utils/transactionPayload';
+
 const MAX_NAME_LENGTH = 50;
 const MAX_COUNTERPARTY_LENGTH = 255;
 const MAX_AMOUNT = 99999999.99;
@@ -489,42 +491,11 @@ export function TransactionDialog({
 			setSaving(true);
 			setError('');
 
-			const amount = Number(form.amount);
-
-			const payload = {
-				date: form.date,
-				name: form.name.trim(),
-				amount,
-				transaction_type: type,
-				account_id: Number(form.account_id),
-				checked: Boolean(form.checked),
-			};
-
-			if (type === 'transfer') {
-				payload.transfer_account_id = Number(form.transfer_account_id);
-
-				/*
-				 * Internal Transfer is controlled by the application.
-				 */
-				if (internalTransferSubcategory) {
-					payload.subcategory_id = Number(internalTransferSubcategory.id);
-				}
-			}
-
-			if (type === 'income' || type === 'expense') {
-				const counterparty = form.counterparty.trim();
-
-				payload.counterparty = counterparty || null;
-
-				if (type === 'expense') {
-					payload.amount_to_receive =
-						form.amount_to_receive === '' ? 0 : Number(form.amount_to_receive);
-				}
-
-				if (form.subcategory_id) {
-					payload.subcategory_id = Number(form.subcategory_id);
-				}
-			}
+			const payload = buildTransactionPayload(
+				form,
+				type,
+				internalTransferSubcategory,
+			);
 
 			if (isEditing) {
 				await updateTransaction(transaction.id, payload);
