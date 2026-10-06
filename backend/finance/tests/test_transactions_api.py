@@ -275,4 +275,53 @@ class TransactionAPITests(APITestCase):
             response.data["amount_to_receive"][0],
             "Amount to receive cannot be greater than the expense amount.",
         )
-        
+
+    def test_creating_income_preserves_counterparty(self):
+        url = reverse("transaction-create-view")
+
+        response = self.client.post(
+            url,
+            {
+                "transaction_type": TransactionType.INCOME,
+                "amount": "50.00",
+                "date": timezone.localdate().isoformat(),
+                "account_id": self.account.id,
+                "checked": True,
+                "counterparty": "Employer",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+
+        transaction = Transaction.objects.get(id=response.data["id"])
+
+        self.assertEqual(transaction.counterparty, "Employer")
+        self.assertEqual(response.data["counterparty"], "Employer")
+
+    def test_updating_income_preserves_counterparty(self):
+        transaction = Transaction.objects.create(
+            transaction_type=TransactionType.INCOME,
+            amount=Decimal("50.00"),
+            date=timezone.localdate(),
+            account=self.account,
+            counterparty="Old Employer",
+            checked=True,
+        )
+
+        url = reverse(
+            "transaction-retrieve-update-destroy-view",
+            args=[transaction.id],
+        )
+
+        response = self.client.patch(
+            url,
+            {"counterparty": "New Employer"},
+            format="json",
+        )
+
+        transaction.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(transaction.counterparty, "New Employer")
+        self.assertEqual(response.data["counterparty"], "New Employer")

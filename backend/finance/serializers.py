@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
@@ -193,6 +195,9 @@ class AccountSerializer(serializers.ModelSerializer):
         model = Account
         fields = "__all__"
         read_only_fields = ("user",)
+        extra_kwargs: ClassVar[dict] = {
+            "initial_balance": {"required": False},
+        }
 
     def validate(self, attrs):
         if self.instance is not None and "initial_balance" in attrs:
@@ -207,7 +212,7 @@ class AccountSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_data["balance"] = validated_data["initial_balance"]
+        validated_data["initial_balance"] = validated_data["balance"]
         validated_data["user"] = self.context["request"].user
 
         return Account.objects.create(**validated_data)
@@ -389,7 +394,6 @@ class TransactionSerializer(serializers.ModelSerializer):
                 )
 
             attrs["amount_to_receive"] = 0
-            attrs["counterparty"] = None
 
             if (subcategory is not None and subcategory.category.category_type != transaction_type):
                 raise serializers.ValidationError(
@@ -453,7 +457,6 @@ class TransactionSerializer(serializers.ModelSerializer):
 
         elif transaction_type == TransactionType.INCOME:
             validated_data["amount_to_receive"] = 0
-            validated_data["counterparty"] = None
 
         return super().create(validated_data)
 
@@ -471,7 +474,6 @@ class TransactionSerializer(serializers.ModelSerializer):
 
         elif transaction_type == TransactionType.INCOME:
             validated_data["amount_to_receive"] = 0
-            validated_data["counterparty"] = None
 
         return super().update(instance, validated_data)
 
