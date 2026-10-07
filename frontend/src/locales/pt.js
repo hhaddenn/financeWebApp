@@ -19,6 +19,7 @@ const pt = {
 		dashboard: 'Dashboard',
 		settings: 'Definições',
 		transactions: 'Transações',
+		recurringTransactions: 'Transações recorrentes',
 		news: 'Novidades',
 	},
 
@@ -353,6 +354,10 @@ const pt = {
 
 		saveChanges: 'Guardar alterações',
 		createTransaction: 'Criar transação',
+	},
+
+	recurringTransactions: {
+		description: 'Consulta as tuas transações recorrente.',
 	},
 
 	accounts: {

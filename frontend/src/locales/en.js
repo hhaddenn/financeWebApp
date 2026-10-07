@@ -19,6 +19,7 @@ const en = {
 		dashboard: 'Dashboard',
 		settings: 'Settings',
 		transactions: 'Transactions',
+		recurringTransactions: 'Recurring Transactions',
 		news: 'News',
 	},
 
@@ -352,6 +353,10 @@ const en = {
 
 		saveChanges: 'Save Changes',
 		createTransaction: 'Create Transaction',
+	},
+
+	recurringTransactions: {
+		description: 'View your recurring transactions.',
 	},
 
 	accounts: {
