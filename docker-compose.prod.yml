@@ -57,6 +57,22 @@ services:
       - media_data:/app/backend/media
     command: celery -A backend worker --loglevel=INFO
 
+  celery-beat:
+    image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DB_HOST: db
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: celery -A backend beat --loglevel=INFO
+
   frontend:
     image: ghcr.io/hhaddenn/financewebapp-frontend:${FRONTEND_IMAGE_TAG:-latest}
     restart: unless-stopped

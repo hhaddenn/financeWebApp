@@ -11,6 +11,7 @@ from .models import (
     Budget,
     Category,
     News,
+    RecurrenceFrequency,
     RecurringTransaction,
     Subcategory,
     Transaction,
@@ -661,23 +662,7 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
         # Frequency rules
         # ---------------------------------------------------------------
 
-        if frequency == "daily":
-            if day_of_week is not None:
-                raise serializers.ValidationError(
-                    {"day_of_week": "Daily recurrence cannot have a day of week."}
-                )
-
-            if day_of_month is not None:
-                raise serializers.ValidationError(
-                    {"day_of_month": "Daily recurrence cannot have a day of month."}
-                )
-
-            if month is not None:
-                raise serializers.ValidationError(
-                    {"month": "Daily recurrence cannot have a month."}
-                )
-
-        elif frequency == "weekly":
+        if frequency == RecurrenceFrequency.WEEKLY:
             if day_of_week is None:
                 raise serializers.ValidationError(
                     {"day_of_week": "Weekly recurrence requires a day of week."}
@@ -698,11 +683,11 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
                     {"month": "Weekly recurrence cannot have a month."}
                 )
 
-        elif frequency == "monthly":
+        elif frequency == RecurrenceFrequency.MONTHLY:
             if day_of_month is None:
-                # This also allows your "unknown day" idea if you
-                # decide monthly-without-day should be supported.
-                pass
+                raise serializers.ValidationError({
+                    "day_of_month": "This field is required for monthly recurrence."
+                })
             elif not 1 <= day_of_month <= 31:
                 raise serializers.ValidationError(
                     {"day_of_month": "Day of month must be between 1 and 31."}
@@ -718,18 +703,23 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
                     {"month": "Monthly recurrence cannot have a month."}
                 )
 
-        elif frequency == "yearly":
+        elif frequency == RecurrenceFrequency.YEARLY:
             if month is None:
                 raise serializers.ValidationError(
                     {"month": "Yearly recurrence requires a month."}
                 )
+
+            if day_of_month is None:
+                raise serializers.ValidationError({
+                    "day_of_month": "This field is required for yearly recurrence."
+                })
 
             if not 1 <= month <= 12:
                 raise serializers.ValidationError(
                     {"month": "Month must be between 1 and 12."}
                 )
 
-            if day_of_month is not None and not 1 <= day_of_month <= 31:
+            if not 1 <= day_of_month <= 31:
                 raise serializers.ValidationError(
                     {"day_of_month": "Day of month must be between 1 and 31."}
                 )

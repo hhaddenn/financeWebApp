@@ -236,7 +236,6 @@ class Budget(models.Model):
 
 
 class RecurrenceFrequency(models.TextChoices):
-    DAILY = "daily", "Daily"
     WEEKLY = "weekly", "Weekly"
     MONTHLY = "monthly", "Monthly"
     YEARLY = "yearly", "Yearly"
@@ -305,7 +304,7 @@ class RecurringTransaction(models.Model):
     )
 
     # Next occurrence to be processed
-    next_run_at = models.DateTimeField(
+    next_run_at = models.DateField(
         null=True,
         blank=True,
     )

@@ -76,6 +76,22 @@ urlpatterns = [
         name="transaction-retrieve-update-destroy-view",
     ),
     path("feedback/", views.FeedbackView.as_view(), name="feedback-view"),
+    # Recurring transactions
+    path(
+        "recurring-transactions/",
+        views.RecurringTransactionsList.as_view(),
+        name="recurring-transactions-view",
+    ),
+    path(
+        "recurring-transactions/create",
+        views.RecurringTransactionCreate.as_view(),
+        name="recurring-transaction-create-view",
+    ),
+    path(
+        "recurring-transactions/<int:pk>",
+        views.RecurringTransactionDetail.as_view(),
+        name="recurring-transaction-detail-view",
+    ),
     # News
     path("news/", views.NewsList.as_view(), name="news-view"),
     path("news/<int:pk>/", views.NewsDetail.as_view(), name="news-detail"),
