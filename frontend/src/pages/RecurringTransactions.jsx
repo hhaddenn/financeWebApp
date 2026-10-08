@@ -2,6 +2,16 @@ import { useCallback, useEffect, useState } from "react";
 
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { AppSidebar } from "@/components/navigation/AppSidebar";
 import { SiteHeader } from "@/components/navigation/SiteHeader";
@@ -15,8 +25,8 @@ import {
     updateRecurringTransaction,
 } from "@/api/recurringTransactions";
 
-import { getAccounts } from '@/api/accounts';
-import { getSubcategories } from '@/api/categories';
+import { getAccounts } from "@/api/accounts";
+import { getSubcategories } from "@/api/categories";
 
 import { usePreferences } from "@/context/PreferencesContext";
 
@@ -28,6 +38,9 @@ export default function RecurringTransactions() {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState(null);
+
+    const [transactionToDelete, setTransactionToDelete] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     const loadRecurringTransactions = useCallback(async () => {
         setLoading(true);
@@ -108,20 +121,26 @@ export default function RecurringTransactions() {
         }
     };
 
-    const handleDelete = async (transaction) => {
-        const confirmed = window.confirm(
-            t("recurringTransactions.deleteConfirm"),
-        );
+    const handleDelete = (transaction) => {
+        setTransactionToDelete(transaction);
+    };
 
-        if (!confirmed) {
+    const handleConfirmDelete = async () => {
+        if (!transactionToDelete) {
             return;
         }
 
         try {
-            await deleteRecurringTransaction(transaction.id);
+            setDeleting(true);
+
+            await deleteRecurringTransaction(transactionToDelete.id);
             await loadRecurringTransactions();
+
+            setTransactionToDelete(null);
         } catch (error) {
             console.error("Failed to delete recurring transaction:", error);
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -187,6 +206,60 @@ export default function RecurringTransactions() {
                     transaction={editingTransaction}
                     onSaved={loadRecurringTransactions}
                 />
+                <AlertDialog
+                    open={Boolean(transactionToDelete)}
+                    onOpenChange={(open) => {
+                        if (!open && !deleting) {
+                            setTransactionToDelete(null);
+                        }
+                    }}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>
+                                {t("recurringTransactions.deleteTitle")}
+                            </AlertDialogTitle>
+
+                            <AlertDialogDescription asChild>
+                                <div className="space-y-2">
+                                    <p>
+                                        {t(
+                                            "recurringTransactions.deleteDescription",
+                                        )}{" "}
+                                        <strong>
+                                            {transactionToDelete?.name ||
+                                                t(
+                                                    "recurringTransactions.unnamed",
+                                                )}
+                                        </strong>
+                                        ?
+                                    </p>
+
+                                    <p>
+                                        {t(
+                                            "recurringTransactions.deleteWarning",
+                                        )}
+                                    </p>
+                                </div>
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={deleting}>
+                                {t("common.cancel")}
+                            </AlertDialogCancel>
+
+                            <AlertDialogAction
+                                disabled={deleting}
+                                onClick={handleConfirmDelete}
+                            >
+                                {deleting
+                                    ? t("recurringTransactions.deleting")
+                                    : t("common.delete")}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </SidebarInset>
         </SidebarProvider>
     );

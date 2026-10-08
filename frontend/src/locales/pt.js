@@ -412,6 +412,11 @@ const pt = {
         november: "Novembro",
         december: "Dezembro",
 
+        deleteTitle: "Eliminar transação recorrente?",
+        deleteDescription: "Tens a certeza de que queres eliminar",
+        deleteWarning: "Esta ação não pode ser anulada.",
+        deleting: "A eliminar...",
+
         dialog: {
             addTitle: "Adicionar transação recorrente",
             editTitle: "Editar transação recorrente",

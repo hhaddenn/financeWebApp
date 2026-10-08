@@ -408,6 +408,11 @@ const en = {
         november: "November",
         december: "December",
 
+        deleteTitle: "Delete recurring transaction?",
+        deleteDescription: "Are you sure you want to delete",
+        deleteWarning: "This action cannot be undone.",
+        deleting: "Deleting...",
+
         dialog: {
             addTitle: "Add recurring transaction",
             editTitle: "Edit recurring transaction",
