@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
 from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -238,6 +239,19 @@ CELERY_BROKER_URL = os.getenv(
     "CELERY_BROKER_URL",
     os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0"),
 )
+
+CELERY_TIMEZONE = "UTC"
+
+CELERY_BEAT_SCHEDULE = {
+    "process-recurring-transactions-daily": {
+        "task": "finance.tasks.process_recurring_transactions_task",
+        "schedule": crontab(hour=0, minute=5),
+    },
+    "process-due-transactions-daily": {
+        "task": "finance.tasks.process_due_transactions_task",
+        "schedule": crontab(hour=0, minute=10),
+    },
+}
 
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False

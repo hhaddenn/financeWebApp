@@ -1,10 +1,16 @@
+from calendar import monthrange
+from datetime import date, timedelta
+
 from django.contrib.auth import get_user_model
 from django.db import transaction as db_transaction
+from django.utils import timezone
 
 from .models import (
     Account,
     Category,
+    RecurringTransaction,
     Subcategory,
+    Transaction,
     TransactionType,
     UserCategoryPreference,
     UserSubcategoryPreference,
@@ -61,6 +67,133 @@ def _get_locked_accounts(transaction):
 
     return accounts
 
+
+def calculate_next_run_at(recurring_transaction, reference_date=None):
+    if reference_date is None:
+        reference_date = timezone.localdate()
+
+    if recurring_transaction.frequency == "weekly":
+        current_weekday = reference_date.weekday()
+        target_weekday = recurring_transaction.day_of_week
+
+        days_ahead = target_weekday - current_weekday
+        if days_ahead < 0:
+            days_ahead += 7
+
+        next_date = reference_date + timedelta(days=days_ahead)
+        return next_date
+
+    if recurring_transaction.frequency == "monthly":
+        day = recurring_transaction.day_of_month
+
+        year = reference_date.year
+        month = reference_date.month
+
+        if reference_date.day > day:
+            if month == 12:
+                month = 1
+                year += 1
+            else:
+                month += 1
+        last_day = monthrange(year, month)[1]
+        effective_day = min(day, last_day)
+
+        next_date = date(year, month, effective_day)
+        return next_date
+
+    if recurring_transaction.frequency == "yearly":
+        month = recurring_transaction.month
+        day = recurring_transaction.day_of_month
+
+        year = reference_date.year
+
+        last_day = monthrange(year, month)[1]
+        effective_day = min(day, last_day)
+
+        next_date = date(
+            year,
+            month,
+            effective_day,
+        )
+
+        if next_date < reference_date:
+            year += 1
+
+            last_day = monthrange(year, month)[1]
+            effective_day = min(day, last_day)
+
+            next_date = date(
+                year,
+                month,
+                effective_day,
+            )
+
+        return next_date
+
+    raise ValueError("Unsupported recurrence frequency.")
+
+
+def create_transaction_from_recurring(recurring_transaction):
+    return Transaction.objects.create(
+        name=recurring_transaction.name,
+        amount=recurring_transaction.amount,
+        subcategory=recurring_transaction.subcategory,
+        transaction_type=recurring_transaction.transaction_type,
+        date=recurring_transaction.next_run_at,
+        account=recurring_transaction.account,
+        counterparty=recurring_transaction.counterparty,
+        applied=False,
+        checked=False,
+    )
+
+@db_transaction.atomic
+def process_recurring_transaction(recurring_transaction):
+    if recurring_transaction.next_run_at is None:
+        raise ValueError("Recurring transaction has no next run date.")
+
+    transaction = create_transaction_from_recurring(
+        recurring_transaction
+    )
+
+    reference_date = (
+        recurring_transaction.next_run_at
+        + timedelta(days=1)
+    )
+
+    recurring_transaction.next_run_at = calculate_next_run_at(
+        recurring_transaction,
+        reference_date=reference_date,
+    )
+
+    recurring_transaction.save(
+        update_fields=["next_run_at"]
+    )
+
+    return transaction
+
+@db_transaction.atomic
+def process_due_recurring_transactions(reference_date=None):
+    if reference_date is None:
+        reference_date = timezone.localdate()
+
+    recurring_transactions = RecurringTransaction.objects.select_for_update().filter(
+        active=True,
+        next_run_at__lte=reference_date,
+    )
+
+    transactions = []
+
+    for recurring_transaction in recurring_transactions:
+        while (
+            recurring_transaction.next_run_at is not None
+            and recurring_transaction.next_run_at <= reference_date
+        ):
+            transaction = process_recurring_transaction(
+                recurring_transaction
+            )
+            transactions.append(transaction)
+
+    return transactions
 
 @db_transaction.atomic
 def apply_transaction(transaction):

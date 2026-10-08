@@ -32,6 +32,11 @@ from .news import (
     NewsList,
     NewsMarkRead,
 )
+from .recurring_transactions import (
+    RecurringTransactionCreate,
+    RecurringTransactionDetail,
+    RecurringTransactionsList,
+)
 from .settings import (
     UserCategoryPreferenceDetail,
     UserCategoryPreferencesView,

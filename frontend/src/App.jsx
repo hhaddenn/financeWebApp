@@ -11,6 +11,7 @@ import Login from '@/features/auth/pages/Login';
 import Register from '@/features/auth/pages/Register';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
+import RecurringTransactions from './pages/RecurringTransactions';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import Settings from './pages/Settings';
@@ -76,6 +77,15 @@ function App() {
 						element={
 							<ProtectedRoute>
 								<Transactions />
+							</ProtectedRoute>
+						}
+					/>
+
+					<Route
+						path="/recurring-transactions"
+						element={
+							<ProtectedRoute>
+								<RecurringTransactions />
 							</ProtectedRoute>
 						}
 					/>

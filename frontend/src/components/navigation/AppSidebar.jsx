@@ -5,6 +5,7 @@ import {
 	BugIcon,
 	LightbulbIcon,
 	NewspaperIcon,
+	Repeat2Icon,
 } from 'lucide-react';
 
 import { NavMain } from '@/components/navigation/NavMain';
@@ -45,6 +46,11 @@ export function AppSidebar({ ...props }) {
 				title: t('navigation.transactions'),
 				url: '/transactions',
 				icon: <ArrowLeftRightIcon />,
+			},
+			{
+				title: t('navigation.recurringTransactions'),
+				url: '/recurring-transactions',
+				icon: <Repeat2Icon />,
 			},
 		],
 	};
