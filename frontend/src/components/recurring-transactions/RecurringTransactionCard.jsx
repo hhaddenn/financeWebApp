@@ -1,96 +1,182 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
-const weekdays = [
-	'Monday',
-	'Tuesday',
-	'Wednesday',
-	'Thursday',
-	'Friday',
-	'Saturday',
-	'Sunday',
-];
+import { usePreferences } from "@/context/PreferencesContext";
 
-function getSchedule(transaction) {
-	if (transaction.frequency === 'weekly') {
-		return `Weekly · ${weekdays[transaction.day_of_week]}`;
-	}
+function formatDate(value, language) {
+    if (!value) {
+        return "—";
+    }
 
-	if (transaction.frequency === 'monthly') {
-		return `Monthly · Day ${transaction.day_of_month}`;
-	}
+    const date = new Date(`${value}T00:00:00`);
 
-	if (transaction.frequency === 'yearly') {
-		return `Yearly · ${transaction.day_of_month}/${transaction.month}`;
-	}
+    return new Intl.DateTimeFormat(
+        language === "pt" ? "pt-PT" : "en-US",
+    ).format(date);
+}
 
-	return transaction.frequency;
+function getSchedule(transaction, t) {
+    const weekdays = [
+        t("recurringTransactions.monday"),
+        t("recurringTransactions.tuesday"),
+        t("recurringTransactions.wednesday"),
+        t("recurringTransactions.thursday"),
+        t("recurringTransactions.friday"),
+        t("recurringTransactions.saturday"),
+        t("recurringTransactions.sunday"),
+    ];
+
+    const months = [
+        t("recurringTransactions.january"),
+        t("recurringTransactions.february"),
+        t("recurringTransactions.march"),
+        t("recurringTransactions.april"),
+        t("recurringTransactions.may"),
+        t("recurringTransactions.june"),
+        t("recurringTransactions.july"),
+        t("recurringTransactions.august"),
+        t("recurringTransactions.september"),
+        t("recurringTransactions.october"),
+        t("recurringTransactions.november"),
+        t("recurringTransactions.december"),
+    ];
+
+    if (transaction.frequency === "weekly") {
+        return `${t("recurringTransactions.weekly")} · ${
+            weekdays[transaction.day_of_week]
+        }`;
+    }
+
+    if (transaction.frequency === "monthly") {
+        return `${t("recurringTransactions.monthly")} · ${t(
+            "recurringTransactions.day",
+        )} ${transaction.day_of_month}`;
+    }
+
+    if (transaction.frequency === "yearly") {
+        return `${t("recurringTransactions.yearly")} · ${
+            transaction.day_of_month
+        } ${months[transaction.month - 1]}`;
+    }
+
+    return transaction.frequency;
 }
 
 export default function RecurringTransactionCard({
-	transaction,
-	onEdit,
-	onDelete,
-	onToggleActive,
+    transaction,
+    onEdit,
+    onDelete,
+    onToggleActive,
 }) {
-	return (
-		<Card>
-			<CardHeader className="flex flex-row items-start justify-between gap-4">
-				<div className="space-y-1">
-					<CardTitle>{transaction.name}</CardTitle>
+    const { t, language, translateCategory, translateSubcategory } =
+        usePreferences();
 
-					<p className="text-muted-foreground text-sm capitalize">
-						{transaction.transaction_type}
-					</p>
-				</div>
+    const isIncome = transaction.transaction_type === "income";
 
-				<Switch
-					checked={transaction.active}
-					onCheckedChange={(checked) => onToggleActive(transaction, checked)}
-				/>
-			</CardHeader>
+    const category = transaction.subcategory?.category;
+    const subcategory = transaction.subcategory;
 
-			<CardContent className="space-y-4">
-				<div>
-					<p className="text-2xl font-semibold">{transaction.amount}</p>
+    return (
+        <Card className="h-full">
+            <CardHeader className="flex flex-row items-start justify-between gap-4">
+                <div className="min-w-0 space-y-1">
+                    <CardTitle className="truncate">
+                        {transaction.name || t("recurringTransactions.unnamed")}
+                    </CardTitle>
 
-					<p className="text-muted-foreground text-sm">
-						{getSchedule(transaction)}
-					</p>
-				</div>
+                    <p className="text-muted-foreground text-sm">
+                        {isIncome
+                            ? t("recurringTransactions.income")
+                            : t("recurringTransactions.expense")}
+                    </p>
+                </div>
 
-				{transaction.counterparty && (
-					<p className="text-sm">
-						<span className="text-muted-foreground">Counterparty:</span>{' '}
-						{transaction.counterparty}
-					</p>
-				)}
+                <Switch
+                    checked={transaction.active}
+                    aria-label={
+                        transaction.active
+                            ? t("recurringTransactions.active")
+                            : t("recurringTransactions.inactive")
+                    }
+                    onCheckedChange={(checked) =>
+                        onToggleActive(transaction, checked)
+                    }
+                />
+            </CardHeader>
 
-				<p className="text-sm">
-					<span className="text-muted-foreground">Next:</span>{' '}
-					{transaction.next_run_at ?? '—'}
-				</p>
+            <CardContent className="space-y-4">
+                <div className="space-y-1">
+                    <p className="text-2xl font-semibold">
+                        {transaction.amount}
+                    </p>
 
-				<div className="flex gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={() => onEdit(transaction)}>
-						Edit
-					</Button>
+                    <p className="text-muted-foreground text-sm">
+                        {getSchedule(transaction, t)}
+                    </p>
+                </div>
 
-					<Button
-						type="button"
-						variant="destructive"
-						size="sm"
-						onClick={() => onDelete(transaction)}>
-						Delete
-					</Button>
-				</div>
-			</CardContent>
-		</Card>
-	);
+                {transaction.account?.name && (
+                    <p className="text-sm">
+                        <span className="text-muted-foreground">
+                            {t("recurringTransactions.account")}:
+                        </span>{" "}
+                        {transaction.account.name}
+                    </p>
+                )}
+
+                {subcategory && (
+                    <p className="text-sm">
+                        <span className="text-muted-foreground">
+                            {t("recurringTransactions.category")}:
+                        </span>{" "}
+                        {category
+                            ? `${translateCategory(category.name)} / `
+                            : ""}
+                        {translateSubcategory(subcategory.name)}
+                    </p>
+                )}
+
+                {transaction.counterparty && (
+                    <p className="text-sm">
+                        <span className="text-muted-foreground">
+                            {isIncome
+                                ? t("recurringTransactions.from")
+                                : t("recurringTransactions.to")}
+                            :
+                        </span>{" "}
+                        {transaction.counterparty}
+                    </p>
+                )}
+
+                <p className="text-sm">
+                    <span className="text-muted-foreground">
+                        {t("recurringTransactions.next")}:
+                    </span>{" "}
+                    {formatDate(transaction.next_run_at, language)}
+                </p>
+
+                <div className="flex gap-2 pt-1">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEdit(transaction)}
+                    >
+                        {t("recurringTransactions.edit")}
+                    </Button>
+
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => onDelete(transaction)}
+                    >
+                        {t("recurringTransactions.delete")}
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
