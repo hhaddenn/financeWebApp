@@ -1,5 +1,7 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
+import { useState } from "react";
+
 import { AppSidebar } from "@/components/navigation/AppSidebar";
 import { SiteHeader } from "@/components/navigation/SiteHeader";
 import { SectionCards } from "@/components/dashboard/section-cards";
@@ -12,6 +14,8 @@ import { usePreferences } from "@/context/PreferencesContext";
 
 export default function Dashboard() {
     const { t } = usePreferences();
+
+    const [accountsRevision, setAccountsRevision] = useState(0);
 
     return (
         <SidebarProvider>
@@ -27,7 +31,11 @@ export default function Dashboard() {
                     <div className="mx-auto w-full max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
                         <TransactionActionMenu variant="responsive" />
 
-                        <SectionCards />
+                        <SectionCards
+                            onAccountDeleted={() =>
+                                setAccountsRevision((current) => current + 1)
+                            }
+                        />
 
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             <div className="lg:col-span-2">
@@ -39,7 +47,7 @@ export default function Dashboard() {
                             </div>
                         </div>
 
-                        <DataTable />
+                        <DataTable refreshVersion={accountsRevision} />
                     </div>
                 </main>
             </SidebarInset>

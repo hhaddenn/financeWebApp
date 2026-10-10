@@ -50,7 +50,7 @@ import { iconMap } from '@/lib/icons';
 import { TransactionDialog } from '@/components/transactions/TransactionDialog';
 import { usePreferences } from '@/context/PreferencesContext';
 
-export function DataTable() {
+export function DataTable({ refreshVersion }) {
 	const { language, t, translateCategory, translateSubcategory } =
 		usePreferences();
 
@@ -142,7 +142,7 @@ export function DataTable() {
 		};
 
 		loadTransactions();
-	}, [period, t]);
+	}, [period, t, refreshVersion]);
 
 	const handleEdit = (transaction) => {
 		setEditingTransaction(transaction);

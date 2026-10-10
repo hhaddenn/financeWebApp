@@ -107,7 +107,7 @@ const DEFAULT_FORM = {
 	icon: 'landmark',
 };
 
-export function SectionCards() {
+export function SectionCards({ onAccountDeleted }) {
 	const { language, t } = usePreferences();
 
 	const locale = language === 'pt' ? 'pt-PT' : 'en-US';
@@ -305,6 +305,8 @@ export function SectionCards() {
 			setAccountToDelete(null);
 
 			await loadAccounts();
+
+			onAccountDeleted?.();
 		} catch (error) {
 			showError(error);
 		} finally {
