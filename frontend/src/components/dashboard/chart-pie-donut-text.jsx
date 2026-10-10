@@ -36,9 +36,10 @@ export function ChartPieDonutText() {
 	const [categoryPreferences, setCategoryPreferences] = React.useState([]);
 	const [loading, setLoading] = React.useState(true);
 
-	// Janeiro = 0
-	const selectedYear = 2026;
-	const selectedMonth = 8;
+	const currentDate = new Date();
+
+	const selectedYear = currentDate.getFullYear();
+	const selectedMonth = currentDate.getMonth();
 
 	const locale = language === 'pt' ? 'pt-PT' : 'en-US';
 

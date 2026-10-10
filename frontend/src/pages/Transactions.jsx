@@ -134,6 +134,7 @@ export default function Transactions() {
 				/>
 				<main className="flex-1 bg-background">
 					<div className="mx-auto w-full max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
+						<TransactionActionMenu variant="inline" />
 						<TransactionsFilters
 							filters={filters}
 							onFiltersChange={setFilters}
@@ -149,7 +150,6 @@ export default function Transactions() {
 						/>
 					</div>
 				</main>
-				<TransactionActionMenu />
 			</SidebarInset>
 
 			{/* Edit transaction */}
