@@ -48,11 +48,52 @@ export function TransactionsFilters({
     const dateLocale = language === "pt" ? pt : enUS;
 
     const updateFilter = (key, value) => {
-        onFiltersChange((current) => ({
-            ...current,
-            [key]: value,
-            ...(key === "category" ? { subcategory: "" } : {}),
-        }));
+        onFiltersChange((current) => {
+            const updated = {
+                ...current,
+                [key]: value,
+            };
+
+            if (key === "category") {
+                updated.subcategory = "";
+            }
+
+            if (
+                key === "type" &&
+                ["income", "expense", "transfer"].includes(value)
+            ) {
+                const selectedCategory = categories.find(
+                    (category) =>
+                        String(category.id) === String(current.category),
+                );
+
+                const selectedSubcategory = subcategories.find(
+                    (subcategory) =>
+                        String(subcategory.id) === String(current.subcategory),
+                );
+
+                const subcategoryParent = categories.find(
+                    (category) =>
+                        String(category.id) ===
+                        String(selectedSubcategory?.category?.id),
+                );
+
+                if (
+                    current.category &&
+                    !selectedCategory?.transactionTypes?.includes(value)
+                ) {
+                    updated.category = "";
+                    updated.subcategory = "";
+                } else if (
+                    current.subcategory &&
+                    !subcategoryParent?.transactionTypes?.includes(value)
+                ) {
+                    updated.subcategory = "";
+                }
+            }
+
+            return updated;
+        });
     };
 
     const clearFilters = () => {
@@ -74,12 +115,26 @@ export function TransactionsFilters({
 
     const activeFiltersCount = Object.values(filters).filter(Boolean).length;
 
-    const visibleSubcategories = filters.category
-        ? subcategories.filter(
-              (subcategory) =>
-                  String(subcategory.category?.id) === String(filters.category),
-          )
-        : subcategories;
+    const visibleSubcategories = subcategories.filter((subcategory) => {
+        const categoryId = subcategory.category?.id;
+
+        if (filters.category) {
+            return String(categoryId) === String(filters.category);
+        }
+
+        if (["income", "expense", "transfer"].includes(filters.type)) {
+            const parentCategory = categories.find(
+                (category) => String(category.id) === String(categoryId),
+            );
+
+            return (
+                parentCategory?.transactionTypes?.includes(filters.type) ??
+                false
+            );
+        }
+
+        return true;
+    });
 
     const sortedVisibleSubcategories = [...visibleSubcategories].sort((a, b) =>
         translateSubcategory(a.name).localeCompare(
@@ -89,7 +144,15 @@ export function TransactionsFilters({
         ),
     );
 
-    const sortedCategories = [...categories].sort((a, b) =>
+    const visibleCategories = ["income", "expense", "transfer"].includes(
+        filters.type,
+    )
+        ? categories.filter((category) =>
+              category.transactionTypes?.includes(filters.type),
+          )
+        : categories;
+
+    const sortedCategories = [...visibleCategories].sort((a, b) =>
         translateCategory(a.name).localeCompare(
             translateCategory(b.name),
             language === "pt" ? "pt-PT" : "en-US",
