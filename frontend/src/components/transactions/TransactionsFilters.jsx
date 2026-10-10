@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { EntityIcon } from "@/components/transactions/EntityIcon";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -318,8 +320,20 @@ export function TransactionsFilters({
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue>
-                                            {selectedAccount?.name ||
-                                                t("transactions.allAccounts")}
+                                            {selectedAccount ? (
+                                                <span className="flex items-center gap-2">
+                                                    <EntityIcon
+                                                        name={
+                                                            selectedAccount.icon
+                                                        }
+                                                    />
+                                                    <span>
+                                                        {selectedAccount.name}
+                                                    </span>
+                                                </span>
+                                            ) : (
+                                                t("transactions.allAccounts")
+                                            )}
                                         </SelectValue>
                                     </SelectTrigger>
 
@@ -332,8 +346,14 @@ export function TransactionsFilters({
                                             <SelectItem
                                                 key={account.id}
                                                 value={String(account.id)}
+                                                textValue={account.name}
                                             >
-                                                {account.name}
+                                                <span className="flex items-center gap-2">
+                                                    <EntityIcon
+                                                        name={account.icon}
+                                                    />
+                                                    <span>{account.name}</span>
+                                                </span>
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -355,13 +375,22 @@ export function TransactionsFilters({
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue>
-                                            {selectedCategory
-                                                ? translateCategory(
-                                                      selectedCategory.name,
-                                                  )
-                                                : t(
-                                                      "transactions.allCategories",
-                                                  )}
+                                            {selectedCategory ? (
+                                                <span className="flex items-center gap-2">
+                                                    <EntityIcon
+                                                        name={
+                                                            selectedCategory.icon
+                                                        }
+                                                    />
+                                                    <span>
+                                                        {translateCategory(
+                                                            selectedCategory.name,
+                                                        )}
+                                                    </span>
+                                                </span>
+                                            ) : (
+                                                t("transactions.allCategories")
+                                            )}
                                         </SelectValue>
                                     </SelectTrigger>
 
@@ -374,10 +403,20 @@ export function TransactionsFilters({
                                             <SelectItem
                                                 key={category.id}
                                                 value={String(category.id)}
-                                            >
-                                                {translateCategory(
+                                                textValue={translateCategory(
                                                     category.name,
                                                 )}
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    <EntityIcon
+                                                        name={category.icon}
+                                                    />
+                                                    <span>
+                                                        {translateCategory(
+                                                            category.name,
+                                                        )}
+                                                    </span>
+                                                </span>
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
@@ -399,13 +438,24 @@ export function TransactionsFilters({
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue>
-                                            {selectedSubcategory
-                                                ? translateSubcategory(
-                                                      selectedSubcategory.name,
-                                                  )
-                                                : t(
-                                                      "transactions.allSubcategories",
-                                                  )}
+                                            {selectedSubcategory ? (
+                                                <span className="flex items-center gap-2">
+                                                    <EntityIcon
+                                                        name={
+                                                            selectedSubcategory.icon
+                                                        }
+                                                    />
+                                                    <span>
+                                                        {translateSubcategory(
+                                                            selectedSubcategory.name,
+                                                        )}
+                                                    </span>
+                                                </span>
+                                            ) : (
+                                                t(
+                                                    "transactions.allSubcategories",
+                                                )
+                                            )}
                                         </SelectValue>
                                     </SelectTrigger>
 
@@ -421,10 +471,22 @@ export function TransactionsFilters({
                                                     value={String(
                                                         subcategory.id,
                                                     )}
-                                                >
-                                                    {translateSubcategory(
+                                                    textValue={translateSubcategory(
                                                         subcategory.name,
                                                     )}
+                                                >
+                                                    <span className="flex items-center gap-2">
+                                                        <EntityIcon
+                                                            name={
+                                                                subcategory.icon
+                                                            }
+                                                        />
+                                                        <span>
+                                                            {translateSubcategory(
+                                                                subcategory.name,
+                                                            )}
+                                                        </span>
+                                                    </span>
                                                 </SelectItem>
                                             ),
                                         )}

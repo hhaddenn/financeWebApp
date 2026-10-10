@@ -39,7 +39,7 @@ import {
 
 import { getAccounts } from "@/api/accounts";
 
-import { iconMap } from "@/lib/icons";
+import { EntityIcon } from "@/components/transactions/EntityIcon";
 
 import { usePreferences } from "@/context/PreferencesContext";
 
@@ -50,16 +50,6 @@ const MAX_COUNTERPARTY_LENGTH = 255;
 const MAX_AMOUNT = 99999999.99;
 
 const TRANSACTION_TYPES = new Set(["income", "expense", "transfer"]);
-
-function CategoryIcon({ name, className }) {
-    const Icon = name ? iconMap[name] : null;
-
-    if (!Icon) {
-        return null;
-    }
-
-    return <Icon className={className} aria-hidden="true" />;
-}
 
 const getDefaultForm = () => ({
     date: format(new Date(), "yyyy-MM-dd"),
@@ -665,7 +655,7 @@ export function TransactionDialog({
                                         >
                                             {selectedAccount ? (
                                                 <>
-                                                    <CategoryIcon
+                                                    <EntityIcon
                                                         name={
                                                             selectedAccount.icon
                                                         }
@@ -702,7 +692,7 @@ export function TransactionDialog({
                                                     handleAccountSelect(account)
                                                 }
                                             >
-                                                <CategoryIcon
+                                                <EntityIcon
                                                     name={account.icon}
                                                     className="mr-3 size-5"
                                                 />
@@ -738,7 +728,7 @@ export function TransactionDialog({
                                             >
                                                 {selectedTransferAccount ? (
                                                     <>
-                                                        <CategoryIcon
+                                                        <EntityIcon
                                                             name={
                                                                 selectedTransferAccount.icon
                                                             }
@@ -780,7 +770,7 @@ export function TransactionDialog({
                                                             )
                                                         }
                                                     >
-                                                        <CategoryIcon
+                                                        <EntityIcon
                                                             name={account.icon}
                                                             className="mr-3 size-5"
                                                         />
@@ -951,7 +941,7 @@ export function TransactionDialog({
                                 <Label>{t("transactions.subcategory")}</Label>
 
                                 <div className="flex h-10 items-center rounded-md border bg-muted/50 px-3 text-sm">
-                                    <CategoryIcon
+                                    <EntityIcon
                                         name={internalTransferSubcategory?.icon}
                                         className="mr-2 size-4"
                                     />
@@ -994,7 +984,7 @@ export function TransactionDialog({
                                             >
                                                 {selectedSubcategory ? (
                                                     <>
-                                                        <CategoryIcon
+                                                        <EntityIcon
                                                             name={
                                                                 selectedCategory?.icon
                                                             }
@@ -1013,7 +1003,7 @@ export function TransactionDialog({
                                                             /
                                                         </span>
 
-                                                        <CategoryIcon
+                                                        <EntityIcon
                                                             name={
                                                                 selectedSubcategory.icon
                                                             }
@@ -1056,7 +1046,7 @@ export function TransactionDialog({
                                                                 )
                                                             }
                                                         >
-                                                            <CategoryIcon
+                                                            <EntityIcon
                                                                 name={
                                                                     category.icon
                                                                 }
@@ -1080,7 +1070,7 @@ export function TransactionDialog({
                                                     className="mb-1 justify-start rounded-none border-b"
                                                     onClick={resetCategoryMenu}
                                                 >
-                                                    <CategoryIcon
+                                                    <EntityIcon
                                                         name={
                                                             selectedCategory?.icon
                                                         }
@@ -1107,7 +1097,7 @@ export function TransactionDialog({
                                                                 )
                                                             }
                                                         >
-                                                            <CategoryIcon
+                                                            <EntityIcon
                                                                 name={
                                                                     subcategory.icon
                                                                 }
