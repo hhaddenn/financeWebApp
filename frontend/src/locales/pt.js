@@ -297,6 +297,7 @@ const pt = {
         thisWeek: "Esta semana",
         loading: "A carregar transações...",
         loadError: "Não foi possível carregar as transações.",
+        accountError: "Não foi possível carregar as contas.",
         deleteError: "Não foi possível eliminar a transação.",
         date: "Data",
         category: "Categoria",

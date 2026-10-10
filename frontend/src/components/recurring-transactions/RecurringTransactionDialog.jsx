@@ -70,7 +70,8 @@ export default function RecurringTransactionDialog({
     transaction = null,
     onSaved,
 }) {
-    const { t, translateCategory, translateSubcategory } = usePreferences();
+    const { t, translateCategory, translateSubcategory, language } =
+        usePreferences();
 
     const isEditing = Boolean(transaction);
 
@@ -173,7 +174,17 @@ export default function RecurringTransactionDialog({
                     return;
                 }
 
-                setAccounts(Array.isArray(accountsData) ? accountsData : []);
+                const sortLocale = language === "pt" ? "pt-PT" : "en-US";
+
+                const sortedAccounts = Array.isArray(accountsData)
+                    ? [...accountsData].sort((a, b) =>
+                          a.name.localeCompare(b.name, sortLocale, {
+                              sensitivity: "base",
+                          }),
+                      )
+                    : [];
+
+                setAccounts(sortedAccounts);
             } catch (requestError) {
                 if (cancelled) {
                     return;
@@ -190,7 +201,7 @@ export default function RecurringTransactionDialog({
         return () => {
             cancelled = true;
         };
-    }, [open]);
+    }, [open, language]);
 
     /*
      * Load categories for the selected transaction type,
@@ -280,6 +291,15 @@ export default function RecurringTransactionDialog({
     const filteredSubcategories = subcategories.filter(
         (subcategory) =>
             String(subcategory.category?.id) === String(selectedCategoryId),
+    );
+
+    const sortedFilteredSubcategories = [...filteredSubcategories].sort(
+        (a, b) =>
+            translateSubcategory(a.name).localeCompare(
+                translateSubcategory(b.name),
+                language === "pt" ? "pt-PT" : "en-US",
+                { sensitivity: "base" },
+            ),
     );
 
     const handleTransactionTypeChange = (type) => {
@@ -441,6 +461,14 @@ export default function RecurringTransactionDialog({
             setSaving(false);
         }
     };
+
+    const sortedCategories = [...categories].sort((a, b) =>
+        translateCategory(a.name).localeCompare(
+            translateCategory(b.name),
+            language === "pt" ? "pt-PT" : "en-US",
+            { sensitivity: "base" },
+        ),
+    );
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -668,30 +696,32 @@ export default function RecurringTransactionDialog({
                                 >
                                     {selectedCategoryId === null ? (
                                         <div className="grid max-h-60 gap-1 overflow-y-auto">
-                                            {categories.map((category) => (
-                                                <Button
-                                                    key={category.id}
-                                                    type="button"
-                                                    variant="ghost"
-                                                    className="w-full justify-start"
-                                                    onClick={() =>
-                                                        handleCategorySelect(
-                                                            category,
-                                                        )
-                                                    }
-                                                >
-                                                    <CategoryIcon
-                                                        name={category.icon}
-                                                        className="mr-3 size-5"
-                                                    />
+                                            {sortedCategories.map(
+                                                (category) => (
+                                                    <Button
+                                                        key={category.id}
+                                                        type="button"
+                                                        variant="ghost"
+                                                        className="w-full justify-start"
+                                                        onClick={() =>
+                                                            handleCategorySelect(
+                                                                category,
+                                                            )
+                                                        }
+                                                    >
+                                                        <CategoryIcon
+                                                            name={category.icon}
+                                                            className="mr-3 size-5"
+                                                        />
 
-                                                    <span className="flex-1 truncate text-left">
-                                                        {translateCategory(
-                                                            category.name,
-                                                        )}
-                                                    </span>
-                                                </Button>
-                                            ))}
+                                                        <span className="flex-1 truncate text-left">
+                                                            {translateCategory(
+                                                                category.name,
+                                                            )}
+                                                        </span>
+                                                    </Button>
+                                                ),
+                                            )}
                                         </div>
                                     ) : (
                                         <div className="grid max-h-60 gap-1 overflow-y-auto">
@@ -715,7 +745,7 @@ export default function RecurringTransactionDialog({
                                                     : null}
                                             </Button>
 
-                                            {filteredSubcategories.map(
+                                            {sortedFilteredSubcategories.map(
                                                 (subcategory) => (
                                                     <Button
                                                         key={subcategory.id}

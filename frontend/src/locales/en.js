@@ -293,6 +293,7 @@ const en = {
         thisWeek: "This Week",
         loading: "Loading transactions...",
         loadError: "Failed to load transactions.",
+        accountError: "Failed to load accounts.",
         deleteError: "Failed to delete transaction.",
         date: "Date",
         category: "Category",
