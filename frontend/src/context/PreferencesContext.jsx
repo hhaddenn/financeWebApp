@@ -1,175 +1,199 @@
 /* oxlint-disable react/only-export-components */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 
-import { getSettings, updateSettings } from '@/api/settings';
-import { useAuth } from '@/features/auth/AuthContext';
+import { getSettings, updateSettings } from "@/api/settings";
+import { useAuth } from "@/features/auth/AuthContext";
 
-import pt from '@/locales/pt';
-import en from '@/locales/en';
+import pt from "@/locales/pt";
+import en from "@/locales/en";
 
 const translations = {
-	pt,
-	en,
+    pt,
+    en,
 };
 
 const PreferencesContext = createContext(null);
 
 const normalizeTranslationKey = (name) => {
-	if (!name || typeof name !== 'string') {
-		return name;
-	}
+    if (!name || typeof name !== "string") {
+        return name;
+    }
 
-	return name.replace(/\s+/g, '');
+    return name.replace(/\s+/g, "");
 };
 
 export function PreferencesProvider({ children }) {
-	const { isLoggedIn, isLoading: authLoading } = useAuth();
+    const { isLoggedIn, isLoading: authLoading } = useAuth();
 
-	const [language, setLanguageState] = useState('pt');
-	const [theme, setThemeState] = useState('light');
-	const [loading, setLoading] = useState(true);
+    const [language, setLanguageState] = useState(() => {
+        const savedLanguage = localStorage.getItem("financeapp.language");
 
-	/* oxlint-disable react/set-state-in-effect */
-	useEffect(() => {
-		if (authLoading) {
-			return;
-		}
+        return ["pt", "en"].includes(savedLanguage) ? savedLanguage : "pt";
+    });
+    const [theme, setThemeState] = useState("light");
+    const [loading, setLoading] = useState(true);
 
-		if (!isLoggedIn) {
-			setLanguageState('pt');
-			setThemeState('light');
-			setLoading(false);
-			return;
-		}
+    /* oxlint-disable react/set-state-in-effect */
+    useEffect(() => {
+        if (authLoading) {
+            return;
+        }
 
-		const loadPreferences = async () => {
-			setLoading(true);
+        if (!isLoggedIn) {
+            setThemeState("light");
+            setLoading(false);
+            return;
+        }
 
-			try {
-				const settings = await getSettings();
+        const loadPreferences = async () => {
+            setLoading(true);
 
-				setLanguageState(settings.language || 'pt');
-				setThemeState(settings.theme || 'light');
-			} catch (error) {
-				console.error('Failed to load preferences:', error);
+            try {
+                const settings = await getSettings();
 
-				setLanguageState('pt');
-				setThemeState('light');
-			} finally {
-				setLoading(false);
-			}
-		};
+                setLanguageState(settings.language || "pt");
+                setThemeState(settings.theme || "light");
+            } catch (error) {
+                console.error("Failed to load preferences:", error);
 
-		loadPreferences();
-	}, [isLoggedIn, authLoading]);
-	/* oxlint-enable react/set-state-in-effect */
+                setLanguageState("pt");
+                setThemeState("light");
+            } finally {
+                setLoading(false);
+            }
+        };
 
-	useEffect(() => {
-		const root = document.documentElement;
+        loadPreferences();
+    }, [isLoggedIn, authLoading]);
+    /* oxlint-enable react/set-state-in-effect */
 
-		root.classList.remove('light', 'dark');
+    useEffect(() => {
+        const root = document.documentElement;
 
-		if (theme === 'system') {
-			const systemDark = window.matchMedia(
-				'(prefers-color-scheme: dark)',
-			).matches;
+        root.classList.remove("light", "dark");
 
-			root.classList.add(systemDark ? 'dark' : 'light');
+        if (theme === "system") {
+            const systemDark = window.matchMedia(
+                "(prefers-color-scheme: dark)",
+            ).matches;
 
-			return;
-		}
+            root.classList.add(systemDark ? "dark" : "light");
 
-		root.classList.add(theme);
-	}, [theme]);
+            return;
+        }
 
-	const setLanguage = async (newLanguage) => {
-		setLanguageState(newLanguage);
+        root.classList.add(theme);
+    }, [theme]);
 
-		try {
-			await updateSettings({
-				language: newLanguage,
-			});
-		} catch (error) {
-			console.error('Failed to update language:', error);
-		}
-	};
+    const setLanguage = useCallback(
+        async (newLanguage) => {
+            setLanguageState(newLanguage);
+            localStorage.setItem("financeapp.language", newLanguage);
 
-	const setTheme = async (newTheme) => {
-		setThemeState(newTheme);
+            if (isLoggedIn) {
+                try {
+                    await updateSettings({
+                        language: newLanguage,
+                    });
+                } catch (error) {
+                    console.error("Failed to update language:", error);
+                }
+            }
+        },
+        [isLoggedIn],
+    );
 
-		try {
-			await updateSettings({
-				theme: newTheme,
-			});
-		} catch (error) {
-			console.error('Failed to update theme:', error);
-		}
-	};
+    const setTheme = useCallback(async (newTheme) => {
+        setThemeState(newTheme);
 
-	const t = useCallback(
-		(path) => {
-			const value = path
-				.split('.')
-				.reduce((current, key) => current?.[key], translations[language]);
+        try {
+            await updateSettings({
+                theme: newTheme,
+            });
+        } catch (error) {
+            console.error("Failed to update theme:", error);
+        }
+    }, []);
 
-			return value ?? path;
-		},
-		[language],
-	);
+    const t = useCallback(
+        (path) => {
+            const value = path
+                .split(".")
+                .reduce(
+                    (current, key) => current?.[key],
+                    translations[language],
+                );
 
+            return value ?? path;
+        },
+        [language],
+    );
 
-	const translateCategory = useCallback(
-	   (name) => {
-	      const key = normalizeTranslationKey(name);
+    const translateCategory = useCallback(
+        (name) => {
+            const key = normalizeTranslationKey(name);
 
-	      return translations[language]?.categories?.[key] ?? name;
-	   },
-	   [language],
-        );
-	
-	const translateSubcategory = useCallback(
-	   (name) => {
-	      const key = normalizeTranslationKey(name);
+            return translations[language]?.categories?.[key] ?? name;
+        },
+        [language],
+    );
 
-	      return translations[language]?.subcategories?.[key] ?? name;
-	   },
-	   [language],
-        );
+    const translateSubcategory = useCallback(
+        (name) => {
+            const key = normalizeTranslationKey(name);
 
-	const value = useMemo(
-		() => ({
-			language,
-			theme,
-			loading,
-			setLanguage,
-			setTheme,
-			t,
-			translateCategory,
-			translateSubcategory,
-		}),
-		[
-                   language,
-		   theme,
-		   loading,
-		   t,
-		   translateCategory,
-		   translateSubcategory,
-		],
-	);
+            return translations[language]?.subcategories?.[key] ?? name;
+        },
+        [language],
+    );
 
-	return (
-		<PreferencesContext.Provider value={value}>
-			{children}
-		</PreferencesContext.Provider>
-	);
+    const value = useMemo(
+        () => ({
+            language,
+            theme,
+            loading,
+            setLanguage,
+            setTheme,
+            isLoggedIn,
+            t,
+            translateCategory,
+            translateSubcategory,
+        }),
+        [
+            language,
+            theme,
+            loading,
+            isLoggedIn,
+            setLanguage,
+            setTheme,
+            t,
+            translateCategory,
+            translateSubcategory,
+        ],
+    );
+
+    return (
+        <PreferencesContext.Provider value={value}>
+            {children}
+        </PreferencesContext.Provider>
+    );
 }
 
 export function usePreferences() {
-	const context = useContext(PreferencesContext);
+    const context = useContext(PreferencesContext);
 
-	if (!context) {
-		throw new Error('usePreferences must be used inside PreferencesProvider');
-	}
+    if (!context) {
+        throw new Error(
+            "usePreferences must be used inside PreferencesProvider",
+        );
+    }
 
-	return context;
+    return context;
 }
