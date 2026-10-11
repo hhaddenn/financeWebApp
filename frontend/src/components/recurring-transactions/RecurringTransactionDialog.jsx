@@ -79,6 +79,7 @@ function CategoryIcon({ name, className }) {
 }
 
 export default function RecurringTransactionDialog({
+	type = "expense",
 	open,
 	onOpenChange,
 	transaction = null,
@@ -88,6 +89,15 @@ export default function RecurringTransactionDialog({
 		usePreferences();
 
 	const isEditing = Boolean(transaction);
+	const categoryType = transaction?.transaction_type ?? type;
+
+	const dialogTitleKey = isEditing
+		? categoryType === "income"
+			? "recurringTransactions.dialog.editIncomeTitle"
+			: "recurringTransactions.dialog.editExpenseTitle"
+		: categoryType === "income"
+			? "recurringTransactions.dialog.addIncomeTitle"
+			: "recurringTransactions.dialog.addExpenseTitle";
 
 	const [form, setForm] = useState(getDefaultForm);
 	const [initialForm, setInitialForm] = useState(getDefaultForm);
@@ -158,12 +168,15 @@ export default function RecurringTransactionDialog({
 			return;
 		}
 
-		const initialValues = getDefaultForm();
+		const initialValues = {
+			...getDefaultForm(),
+			transaction_type: type,
+		};
 
 		setForm(initialValues);
 		setInitialForm(initialValues);
 		setSelectedCategoryId(null);
-	}, [open, transaction]);
+	}, [open, transaction, type]);
 
 	const isDirty =
 		JSON.stringify({ ...form, amount: String(form.amount) }) !==
@@ -246,7 +259,7 @@ export default function RecurringTransactionDialog({
 		const loadCategories = async () => {
 			try {
 				const [categoriesData, subcategoriesData] = await Promise.all([
-					getCategories(form.transaction_type),
+					getCategories(categoryType),
 					getSubcategories(),
 				]);
 
@@ -277,7 +290,7 @@ export default function RecurringTransactionDialog({
 		return () => {
 			cancelled = true;
 		};
-	}, [open, form.transaction_type]);
+	}, [open, categoryType]);
 
 	/*
 	 * When editing, recurring API may return subcategory as only an ID.
@@ -330,16 +343,6 @@ export default function RecurringTransactionDialog({
 				{ sensitivity: "base" },
 			),
 	);
-
-	const handleTransactionTypeChange = (type) => {
-		setForm((current) => ({
-			...current,
-			transaction_type: type,
-			subcategory_id: "",
-		}));
-
-		setSelectedCategoryId(null);
-	};
 
 	const handleAccountSelect = (account) => {
 		setForm((current) => ({
@@ -507,11 +510,7 @@ export default function RecurringTransactionDialog({
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<form onSubmit={handleSubmit} noValidate>
 					<DialogHeader>
-						<DialogTitle>
-							{isEditing
-								? t("recurringTransactions.dialog.editTitle")
-								: t("recurringTransactions.dialog.addTitle")}
-						</DialogTitle>
+						<DialogTitle>{t(dialogTitleKey)}</DialogTitle>
 
 						<DialogDescription>
 							{t("recurringTransactions.dialog.description")}
@@ -636,32 +635,6 @@ export default function RecurringTransactionDialog({
 									updateField("amount", event.target.value)
 								}
 							/>
-						</div>
-
-						{/* TYPE */}
-						<div className="grid gap-2">
-							<Label htmlFor="recurring-type">
-								{t("recurringTransactions.dialog.type")}
-							</Label>
-
-							<select
-								id="recurring-type"
-								className="border-input bg-background h-9 w-full rounded-md border px-3 text-sm"
-								value={form.transaction_type}
-								disabled={saving}
-								onChange={(event) =>
-									handleTransactionTypeChange(
-										event.target.value,
-									)
-								}>
-								<option value="expense">
-									{t("recurringTransactions.expense")}
-								</option>
-
-								<option value="income">
-									{t("recurringTransactions.income")}
-								</option>
-							</select>
 						</div>
 
 						{/* CATEGORY / SUBCATEGORY */}

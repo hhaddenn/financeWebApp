@@ -373,7 +373,7 @@ const en = {
 		description: "View and manage your recurring transactions.",
 		empty: "There are no recurring transactions yet.",
 
-		add: "Add recurring transaction",
+		add: "New recurring transaction",
 		edit: "Edit",
 		delete: "Delete",
 
@@ -425,6 +425,11 @@ const en = {
 		deleteWarning: "This action cannot be undone.",
 		deleting: "Deleting...",
 
+		addExpense: "Recurring expense",
+		addIncome: "Recurring income",
+		expenseDescription: "Recurring payment",
+		incomeDescription: "Recurring income payment",
+
 		dialog: {
 			addTitle: "Add recurring transaction",
 			editTitle: "Edit recurring transaction",
@@ -463,6 +468,11 @@ const en = {
 			amountPlaceholder: "Ex.: 29.99",
 			incomeCounterpartyPlaceholder: "Ex.: Employer, client...",
 			expenseCounterpartyPlaceholder: "Ex.: Netflix, gym...",
+
+			addExpenseTitle: "New recurring expense",
+			addIncomeTitle: "New recurring income",
+			editExpenseTitle: "Edit recurring expense",
+			editIncomeTitle: "Edit recurring income",
 		},
 	},
 

@@ -377,7 +377,7 @@ const pt = {
 		description: "Consulta e gere as tuas transações recorrentes.",
 		empty: "Ainda não existem transações recorrentes.",
 
-		add: "Adicionar transação recorrente",
+		add: "Nova transação recorrente",
 		edit: "Editar",
 		delete: "Eliminar",
 
@@ -429,6 +429,11 @@ const pt = {
 		deleteWarning: "Esta ação não pode ser anulada.",
 		deleting: "A eliminar...",
 
+		addExpense: "Despesa recorrente",
+		addIncome: "Receita recorrente",
+		expenseDescription: "Pagamento periódico",
+		incomeDescription: "Recebimento periódico",
+
 		dialog: {
 			addTitle: "Adicionar transação recorrente",
 			editTitle: "Editar transação recorrente",
@@ -468,6 +473,11 @@ const pt = {
 			amountPlaceholder: "Ex.: 29,99",
 			incomeCounterpartyPlaceholder: "Ex.: Empresa, cliente...",
 			expenseCounterpartyPlaceholder: "Ex.: Netflix, ginásio...",
+
+			addExpenseTitle: "Nova despesa recorrente",
+			addIncomeTitle: "Nova receita recorrente",
+			editExpenseTitle: "Editar despesa recorrente",
+			editIncomeTitle: "Editar receita recorrente",
 		},
 	},
 
