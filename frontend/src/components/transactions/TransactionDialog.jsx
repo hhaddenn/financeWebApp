@@ -1,7 +1,7 @@
 /* oxlint-disable react/set-state-in-effect */
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 
 import {
 	Dialog,
@@ -10,66 +10,67 @@ import {
 	DialogTitle,
 	DialogDescription,
 	DialogFooter,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
-import { Calendar } from '@/components/ui/calendar';
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+import { Calendar } from "@/components/ui/calendar";
 
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 
-import { format } from 'date-fns';
-import { enUS, pt } from 'date-fns/locale';
+import { format } from "date-fns";
+import { enUS, pt } from "date-fns/locale";
 
-import { createTransaction, updateTransaction } from '@/api/transactions';
+import { createTransaction, updateTransaction } from "@/api/transactions";
 
-import { getCategories, getSubcategories } from '@/api/categories';
+import { getCategories, getSubcategories } from "@/api/categories";
 
 import {
 	getCategoryPreferences,
 	getSubcategoryPreferences,
-} from '@/api/settings';
+} from "@/api/settings";
 
-import { getAccounts } from '@/api/accounts';
+import { getAccounts } from "@/api/accounts";
 
-import { iconMap } from '@/lib/icons';
+import { EntityIcon } from "@/components/transactions/EntityIcon";
 
-import { usePreferences } from '@/context/PreferencesContext';
+import { usePreferences } from "@/context/PreferencesContext";
 
-import { buildTransactionPayload } from '@/utils/transactionPayload';
+import { buildTransactionPayload } from "@/utils/transactionPayload";
 
 const MAX_NAME_LENGTH = 50;
 const MAX_COUNTERPARTY_LENGTH = 255;
 const MAX_AMOUNT = 99999999.99;
 
-const TRANSACTION_TYPES = new Set(['income', 'expense', 'transfer']);
-
-function CategoryIcon({ name, className }) {
-	const Icon = name ? iconMap[name] : null;
-
-	if (!Icon) {
-		return null;
-	}
-
-	return <Icon className={className} aria-hidden="true" />;
-}
+const TRANSACTION_TYPES = new Set(["income", "expense", "transfer"]);
 
 const getDefaultForm = () => ({
-	date: format(new Date(), 'yyyy-MM-dd'),
-	name: '',
+	date: format(new Date(), "yyyy-MM-dd"),
+	name: "",
 	amount: 0,
 	amount_to_receive: 0,
-	counterparty: '',
-	account_id: '',
-	transfer_account_id: '',
-	subcategory_id: '',
+	counterparty: "",
+	account_id: "",
+	transfer_account_id: "",
+	subcategory_id: "",
 	checked: true,
 });
 
@@ -85,20 +86,20 @@ export function TransactionDialog({
 
 	const isEditing = Boolean(transaction);
 
-	const dateLocale = language === 'pt' ? pt : enUS;
+	const dateLocale = language === "pt" ? pt : enUS;
 
 	const titles = {
 		income: isEditing
-			? t('transactions.editIncome')
-			: t('transactions.addIncome'),
+			? t("transactions.editIncome")
+			: t("transactions.addIncome"),
 
 		expense: isEditing
-			? t('transactions.editExpense')
-			: t('transactions.addExpense'),
+			? t("transactions.editExpense")
+			: t("transactions.addExpense"),
 
 		transfer: isEditing
-			? t('transactions.editTransfer')
-			: t('transactions.makeTransfer'),
+			? t("transactions.editTransfer")
+			: t("transactions.makeTransfer"),
 	};
 
 	const [saving, setSaving] = useState(false);
@@ -118,15 +119,18 @@ export function TransactionDialog({
 	const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
 	const [form, setForm] = useState(getDefaultForm);
+	const [initialForm, setInitialForm] = useState(getDefaultForm);
+	const [discardConfirmationOpen, setDiscardConfirmationOpen] =
+		useState(false);
 
-	const [error, setError] = useState('');
+	const [error, setError] = useState("");
 
 	/*
 	 * Reset error whenever the dialog opens/closes.
 	 */
 	useEffect(() => {
 		if (open) {
-			setError('');
+			setError("");
 		}
 	}, [open]);
 
@@ -158,14 +162,18 @@ export function TransactionDialog({
 					return;
 				}
 
-				setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+				setCategories(
+					Array.isArray(categoriesData) ? categoriesData : [],
+				);
 
 				setSubcategories(
 					Array.isArray(subcategoriesData) ? subcategoriesData : [],
 				);
 
 				setCategoryPreferences(
-					Array.isArray(categoryPreferencesData) ? categoryPreferencesData : [],
+					Array.isArray(categoryPreferencesData)
+						? categoryPreferencesData
+						: [],
 				);
 
 				setSubcategoryPreferences(
@@ -178,9 +186,9 @@ export function TransactionDialog({
 					return;
 				}
 
-				console.error('Failed to load transaction data', requestError);
+				console.error("Failed to load transaction data", requestError);
 
-				setError(t('transactions.loadError'));
+				setError(t("transactions.loadError"));
 			}
 		};
 
@@ -209,15 +217,25 @@ export function TransactionDialog({
 					return;
 				}
 
-				setAccounts(Array.isArray(accountsData) ? accountsData : []);
+				const sortLocale = language === "pt" ? "pt-PT" : "en-US";
+
+				const sortedAccounts = Array.isArray(accountsData)
+					? [...accountsData].sort((a, b) =>
+							a.name.localeCompare(b.name, sortLocale, {
+								sensitivity: "base",
+							}),
+						)
+					: [];
+
+				setAccounts(sortedAccounts);
 			} catch (requestError) {
 				if (cancelled) {
 					return;
 				}
 
-				console.error('Failed to load accounts', requestError);
+				console.error("Failed to load accounts", requestError);
 
-				setError(t('transactions.loadError'));
+				setError(t("transactions.accountError"));
 			}
 		};
 
@@ -226,7 +244,7 @@ export function TransactionDialog({
 		return () => {
 			cancelled = true;
 		};
-	}, [open, t]);
+	}, [open, t, language]);
 
 	/*
 	 * Populate form when creating/editing.
@@ -236,44 +254,50 @@ export function TransactionDialog({
 			return;
 		}
 
-		setError('');
+		setError("");
 
 		if (transaction) {
-			setForm({
-				date: transaction.date ? transaction.date.split('T')[0] : '',
+			const initialValues = {
+				date: transaction.date ? transaction.date.split("T")[0] : "",
 
-				name: transaction.name ?? '',
+				name: transaction.name ?? "",
 
 				amount:
-					transaction.amount !== null && transaction.amount !== undefined
+					transaction.amount !== null &&
+					transaction.amount !== undefined
 						? String(transaction.amount)
-						: '',
+						: "",
 
 				amount_to_receive:
 					transaction.amount_to_receive !== null &&
 					transaction.amount_to_receive !== undefined
 						? String(transaction.amount_to_receive)
-						: '',
+						: "",
 
-				counterparty: transaction.counterparty ?? '',
+				counterparty: transaction.counterparty ?? "",
 
 				account_id: transaction.account?.id
 					? String(transaction.account.id)
-					: '',
+					: "",
 
 				transfer_account_id: transaction.transfer_account?.id
 					? String(transaction.transfer_account.id)
-					: '',
+					: "",
 
 				subcategory_id: transaction.subcategory?.id
 					? String(transaction.subcategory.id)
-					: '',
+					: "",
 
 				checked: transaction.checked ?? true,
-			});
+			};
+
+			setForm(initialValues);
+			setInitialForm(initialValues);
 
 			if (transaction.subcategory?.category?.id) {
-				setSelectedCategoryId(String(transaction.subcategory.category.id));
+				setSelectedCategoryId(
+					String(transaction.subcategory.category.id),
+				);
 			} else {
 				setSelectedCategoryId(null);
 			}
@@ -281,10 +305,22 @@ export function TransactionDialog({
 			return;
 		}
 
-		setForm(getDefaultForm());
+		const initialValues = getDefaultForm();
+
+		setForm(initialValues);
+		setInitialForm(initialValues);
 		setSelectedCategoryId(null);
 	}, [open, transaction]);
 
+	const normalizeForm = (values) => ({
+		...values,
+		amount: String(values.amount),
+		amount_to_receive: String(values.amount_to_receive),
+	});
+
+	const isDirty =
+		JSON.stringify(normalizeForm(form)) !==
+		JSON.stringify(normalizeForm(initialForm));
 	/*
 	 * Create lookup maps.
 	 */
@@ -303,7 +339,10 @@ export function TransactionDialog({
 			Object.fromEntries(
 				subcategoryPreferences
 					.filter((preference) => preference?.subcategory?.id)
-					.map((preference) => [preference.subcategory.id, preference]),
+					.map((preference) => [
+						preference.subcategory.id,
+						preference,
+					]),
 			),
 		[subcategoryPreferences],
 	);
@@ -321,6 +360,14 @@ export function TransactionDialog({
 		[categories, categoryPreferencesMap],
 	);
 
+	const sortedVisibleCategories = [...visibleCategories].sort((a, b) =>
+		translateCategory(a.name).localeCompare(
+			translateCategory(b.name),
+			language === "pt" ? "pt-PT" : "en-US",
+			{ sensitivity: "base" },
+		),
+	);
+
 	/*
 	 * Visible subcategories.
 	 */
@@ -330,9 +377,13 @@ export function TransactionDialog({
 				const categoryPreference =
 					categoryPreferencesMap[subcategory.category?.id];
 
-				const subcategoryPreference = subcategoryPreferencesMap[subcategory.id];
+				const subcategoryPreference =
+					subcategoryPreferencesMap[subcategory.id];
 
-				return !categoryPreference?.hidden && !subcategoryPreference?.hidden;
+				return (
+					!categoryPreference?.hidden &&
+					!subcategoryPreference?.hidden
+				);
 			}),
 		[subcategories, categoryPreferencesMap, subcategoryPreferencesMap],
 	);
@@ -344,7 +395,7 @@ export function TransactionDialog({
 		() =>
 			subcategories.find(
 				(subcategory) =>
-					subcategory.name?.toLowerCase() === 'internal transfer',
+					subcategory.name?.toLowerCase() === "internal transfer",
 			),
 		[subcategories],
 	);
@@ -353,13 +404,27 @@ export function TransactionDialog({
 	 * Keep Internal Transfer selected for transfers.
 	 */
 	useEffect(() => {
-		if (type === 'transfer' && !isEditing && internalTransferSubcategory) {
-			setForm((current) => ({
-				...current,
-				subcategory_id: String(internalTransferSubcategory.id),
-			}));
+		if (
+			!open ||
+			type !== "transfer" ||
+			isEditing ||
+			!internalTransferSubcategory
+		) {
+			return;
 		}
-	}, [type, isEditing, internalTransferSubcategory]);
+
+		const subcategoryId = String(internalTransferSubcategory.id);
+
+		setForm((current) => ({
+			...current,
+			subcategory_id: subcategoryId,
+		}));
+
+		setInitialForm((current) => ({
+			...current,
+			subcategory_id: subcategoryId,
+		}));
+	}, [open, type, isEditing, internalTransferSubcategory]);
 
 	/*
 	 * Selected objects.
@@ -389,6 +454,15 @@ export function TransactionDialog({
 			String(subcategory.category?.id) === String(selectedCategoryId),
 	);
 
+	const sortedFilteredSubcategories = [...filteredSubcategories].sort(
+		(a, b) =>
+			translateSubcategory(a.name).localeCompare(
+				translateSubcategory(b.name),
+				language === "pt" ? "pt-PT" : "en-US",
+				{ sensitivity: "base" },
+			),
+	);
+
 	const availableTransferAccounts = accounts.filter(
 		(account) => String(account.id) !== String(form.account_id),
 	);
@@ -398,72 +472,75 @@ export function TransactionDialog({
 	 */
 	const validateForm = () => {
 		if (!TRANSACTION_TYPES.has(type)) {
-			return t('transactions.invalidType');
+			return t("transactions.invalidType");
 		}
 
 		if (!form.date) {
-			return t('transactions.dateRequired');
+			return t("transactions.dateRequired");
 		}
 
 		if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date)) {
-			return t('transactions.invalidDate');
+			return t("transactions.invalidDate");
 		}
 
 		const name = form.name.trim();
 
 		if (name.length > MAX_NAME_LENGTH) {
-			return t('transactions.nameTooLong');
+			return t("transactions.nameTooLong");
 		}
 
 		if (!form.account_id) {
-			return t('transactions.accountRequired');
+			return t("transactions.accountRequired");
 		}
 
 		const amount = Number(form.amount);
 
 		if (!Number.isFinite(amount) || amount <= 0 || amount > MAX_AMOUNT) {
-			return t('transactions.invalidAmount');
+			return t("transactions.invalidAmount");
 		}
 
-		if (type === 'transfer' && !form.transfer_account_id) {
-			return t('transactions.transferAccountRequired');
+		if (type === "transfer" && !form.transfer_account_id) {
+			return t("transactions.transferAccountRequired");
 		}
 
 		if (
-			type === 'transfer' &&
+			type === "transfer" &&
 			String(form.account_id) === String(form.transfer_account_id)
 		) {
-			return t('transactions.sameTransferAccount');
+			return t("transactions.sameTransferAccount");
 		}
 
-		if (type !== 'transfer') {
+		if (type !== "transfer") {
 			const counterparty = form.counterparty.trim();
 
 			if (counterparty.length > MAX_COUNTERPARTY_LENGTH) {
-				return t('transactions.counterpartyTooLong');
+				return t("transactions.counterpartyTooLong");
 			}
 		}
 
-		if (type === 'expense') {
+		if (type === "expense") {
 			const amountToReceive =
-				form.amount_to_receive === '' ? 0 : Number(form.amount_to_receive);
+				form.amount_to_receive === ""
+					? 0
+					: Number(form.amount_to_receive);
 
 			if (
 				!Number.isFinite(amountToReceive) ||
 				amountToReceive < 0 ||
 				amountToReceive > amount
 			) {
-				return t('transactions.invalidAmountToReceive');
+				return t("transactions.invalidAmountToReceive");
 			}
 		}
 
-		if (type !== 'transfer' && form.subcategory_id) {
+		if (type !== "transfer" && form.subcategory_id) {
 			const validSubcategory = visibleSubcategories.some(
-				(subcategory) => String(subcategory.id) === String(form.subcategory_id),
+				(subcategory) =>
+					String(subcategory.id) === String(form.subcategory_id),
 			);
 
 			if (!validSubcategory) {
-				return t('transactions.invalidSubcategory');
+				return t("transactions.invalidSubcategory");
 			}
 		}
 
@@ -489,7 +566,7 @@ export function TransactionDialog({
 
 		try {
 			setSaving(true);
-			setError('');
+			setError("");
 
 			const payload = buildTransactionPayload(
 				form,
@@ -509,7 +586,7 @@ export function TransactionDialog({
 				await onCreated();
 			}
 		} catch (requestError) {
-			console.error('Failed to save transaction', requestError);
+			console.error("Failed to save transaction", requestError);
 
 			/*
 			 * Do not expose backend/internal errors directly.
@@ -519,13 +596,13 @@ export function TransactionDialog({
 			if (status >= 400 && status < 500 && requestError?.response?.data) {
 				const data = requestError.response.data;
 
-				if (typeof data.detail === 'string') {
+				if (typeof data.detail === "string") {
 					setError(data.detail);
 				} else {
-					setError(t('transactions.saveError'));
+					setError(t("transactions.saveError"));
 				}
 			} else {
-				setError(t('transactions.saveError'));
+				setError(t("transactions.saveError"));
 			}
 		} finally {
 			setSaving(false);
@@ -538,7 +615,7 @@ export function TransactionDialog({
 			account_id: String(account.id),
 			transfer_account_id:
 				String(account.id) === String(current.transfer_account_id)
-					? ''
+					? ""
 					: current.transfer_account_id,
 		}));
 
@@ -572,7 +649,7 @@ export function TransactionDialog({
 
 		setForm((current) => ({
 			...current,
-			subcategory_id: '',
+			subcategory_id: "",
 		}));
 	};
 
@@ -581,31 +658,43 @@ export function TransactionDialog({
 			return;
 		}
 
+		if (!nextOpen && isDirty) {
+			setDiscardConfirmationOpen(true);
+			return;
+		}
+
 		onOpenChange(nextOpen);
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={handleDialogChange}>
-			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-106.25">
+		<Dialog
+			open={open}
+			onOpenChange={handleDialogChange}
+			disablePointerDismissal>
+			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<form onSubmit={handleSubmit} noValidate>
 					<DialogHeader>
 						<DialogTitle>
-							{type ? titles[type] : t('transactions.transaction')}
+							{type
+								? titles[type]
+								: t("transactions.transaction")}
 						</DialogTitle>
 
 						<DialogDescription>
 							{isEditing
-								? t('transactions.editDescription')
-								: t('transactions.createDescription')}
+								? t("transactions.editDescription")
+								: t("transactions.createDescription")}
 						</DialogDescription>
 					</DialogHeader>
 
 					<div className="grid gap-5 py-6">
 						{/* ACCOUNT */}
 						<div className="grid gap-2">
-							<Label>{t('transactions.account')}</Label>
+							<Label>{t("transactions.account")}</Label>
 
-							<Popover open={accountOpen} onOpenChange={setAccountOpen}>
+							<Popover
+								open={accountOpen}
+								onOpenChange={setAccountOpen}>
 								<PopoverTrigger
 									render={
 										<Button
@@ -615,8 +704,10 @@ export function TransactionDialog({
 											disabled={saving}>
 											{selectedAccount ? (
 												<>
-													<CategoryIcon
-														name={selectedAccount.icon}
+													<EntityIcon
+														name={
+															selectedAccount.icon
+														}
 														className="mr-2 size-4"
 													/>
 
@@ -626,14 +717,18 @@ export function TransactionDialog({
 												</>
 											) : (
 												<span className="text-muted-foreground">
-													{t('transactions.selectAccount')}
+													{t(
+														"transactions.selectAccount",
+													)}
 												</span>
 											)}
 										</Button>
 									}
 								/>
 
-								<PopoverContent className="w-64 p-2" align="start">
+								<PopoverContent
+									className="w-64 p-2"
+									align="start">
 									<div className="grid max-h-60 gap-1 overflow-y-auto">
 										{accounts.map((account) => (
 											<Button
@@ -641,8 +736,10 @@ export function TransactionDialog({
 												type="button"
 												variant="ghost"
 												className="w-full justify-start"
-												onClick={() => handleAccountSelect(account)}>
-												<CategoryIcon
+												onClick={() =>
+													handleAccountSelect(account)
+												}>
+												<EntityIcon
 													name={account.icon}
 													className="mr-3 size-5"
 												/>
@@ -658,9 +755,11 @@ export function TransactionDialog({
 						</div>
 
 						{/* TRANSFER DESTINATION */}
-						{type === 'transfer' && (
+						{type === "transfer" && (
 							<div className="grid gap-2">
-								<Label>{t('transactions.transferAccount')}</Label>
+								<Label>
+									{t("transactions.transferAccount")}
+								</Label>
 
 								<Popover
 									open={transferAccountOpen}
@@ -674,43 +773,57 @@ export function TransactionDialog({
 												disabled={saving}>
 												{selectedTransferAccount ? (
 													<>
-														<CategoryIcon
-															name={selectedTransferAccount.icon}
+														<EntityIcon
+															name={
+																selectedTransferAccount.icon
+															}
 															className="mr-2 size-4"
 														/>
 
 														<span className="truncate">
-															{selectedTransferAccount.name}
+															{
+																selectedTransferAccount.name
+															}
 														</span>
 													</>
 												) : (
 													<span className="text-muted-foreground">
-														{t('transactions.selectDestinationAccount')}
+														{t(
+															"transactions.selectDestinationAccount",
+														)}
 													</span>
 												)}
 											</Button>
 										}
 									/>
 
-									<PopoverContent className="w-64 p-2" align="start">
+									<PopoverContent
+										className="w-64 p-2"
+										align="start">
 										<div className="grid max-h-60 gap-1 overflow-y-auto">
-											{availableTransferAccounts.map((account) => (
-												<Button
-													key={account.id}
-													type="button"
-													variant="ghost"
-													className="w-full justify-start"
-													onClick={() => handleTransferAccountSelect(account)}>
-													<CategoryIcon
-														name={account.icon}
-														className="mr-3 size-5"
-													/>
+											{availableTransferAccounts.map(
+												(account) => (
+													<Button
+														key={account.id}
+														type="button"
+														variant="ghost"
+														className="w-full justify-start"
+														onClick={() =>
+															handleTransferAccountSelect(
+																account,
+															)
+														}>
+														<EntityIcon
+															name={account.icon}
+															className="mr-3 size-5"
+														/>
 
-													<span className="flex-1 truncate text-left">
-														{account.name}
-													</span>
-												</Button>
-											))}
+														<span className="flex-1 truncate text-left">
+															{account.name}
+														</span>
+													</Button>
+												),
+											)}
 										</div>
 									</PopoverContent>
 								</Popover>
@@ -721,7 +834,7 @@ export function TransactionDialog({
 						<div className="grid gap-2">
 							<div className="flex items-center justify-between">
 								<Label htmlFor="transaction-name">
-									{t('transactions.name')}
+									{t("transactions.name")}
 								</Label>
 
 								<span className="text-xs text-muted-foreground">
@@ -734,11 +847,17 @@ export function TransactionDialog({
 								name="transaction-name"
 								maxLength={MAX_NAME_LENGTH}
 								placeholder={
-									type === 'transfer'
-										? t('transactions.transferNamePlaceholder')
-										: type === 'income'
-											? t('transactions.incomeNamePlaceholder')
-											: t('transactions.expenseNamePlaceholder')
+									type === "transfer"
+										? t(
+												"transactions.transferNamePlaceholder",
+											)
+										: type === "income"
+											? t(
+													"transactions.incomeNamePlaceholder",
+												)
+											: t(
+													"transactions.expenseNamePlaceholder",
+												)
 								}
 								value={form.name}
 								disabled={saving}
@@ -748,13 +867,14 @@ export function TransactionDialog({
 										name: event.target.value,
 									}))
 								}
-								required
 							/>
 						</div>
 
 						{/* AMOUNT */}
 						<div className="grid gap-2">
-							<Label htmlFor="amount">{t('transactions.amount')}</Label>
+							<Label htmlFor="amount">
+								{t("transactions.amount")}
+							</Label>
 
 							<Input
 								id="amount"
@@ -777,10 +897,10 @@ export function TransactionDialog({
 						</div>
 
 						{/* EXPENSE AMOUNT TO RECEIVE */}
-						{type === 'expense' && (
+						{type === "expense" && (
 							<div className="grid gap-2">
 								<Label htmlFor="amount-to-receive">
-									{t('transactions.amountToReceive')}
+									{t("transactions.amountToReceive")}
 								</Label>
 
 								<Input
@@ -796,7 +916,8 @@ export function TransactionDialog({
 									onChange={(event) =>
 										setForm((current) => ({
 											...current,
-											amount_to_receive: event.target.value,
+											amount_to_receive:
+												event.target.value,
 										}))
 									}
 									required
@@ -806,7 +927,9 @@ export function TransactionDialog({
 
 						{/* DATE */}
 						<div className="grid gap-2">
-							<Label htmlFor="transaction-date">{t('transactions.date')}</Label>
+							<Label htmlFor="transaction-date">
+								{t("transactions.date")}
+							</Label>
 
 							<Popover>
 								<PopoverTrigger
@@ -818,15 +941,17 @@ export function TransactionDialog({
 											className="justify-start font-normal"
 											disabled={saving}>
 											{selectedDate
-												? format(selectedDate, 'PPP', {
+												? format(selectedDate, "PPP", {
 														locale: dateLocale,
 													})
-												: t('transactions.pickDate')}
+												: t("transactions.pickDate")}
 										</Button>
 									}
 								/>
 
-								<PopoverContent className="w-auto p-0" align="start">
+								<PopoverContent
+									className="w-auto p-0"
+									align="start">
 									<Calendar
 										mode="single"
 										selected={selectedDate}
@@ -837,7 +962,10 @@ export function TransactionDialog({
 
 											setForm((current) => ({
 												...current,
-												date: format(date, 'yyyy-MM-dd'),
+												date: format(
+													date,
+													"yyyy-MM-dd",
+												),
 											}));
 										}}
 										defaultMonth={selectedDate}
@@ -848,39 +976,37 @@ export function TransactionDialog({
 						</div>
 
 						{/* TRANSFER SUBCATEGORY */}
-						{type === 'transfer' && (
+						{type === "transfer" && (
 							<div className="grid gap-2">
-								<Label>{t('transactions.subcategory')}</Label>
+								<Label>{t("transactions.subcategory")}</Label>
 
 								<div className="flex h-10 items-center rounded-md border bg-muted/50 px-3 text-sm">
-									<CategoryIcon
+									<EntityIcon
 										name={internalTransferSubcategory?.icon}
 										className="mr-2 size-4"
 									/>
 
 									<span>
 										{internalTransferSubcategory
-											? translateSubcategory(internalTransferSubcategory.name)
-											: t('transactions.internalTransfer')}
+											? translateSubcategory(
+													internalTransferSubcategory.name,
+												)
+											: t(
+													"transactions.internalTransfer",
+												)}
 									</span>
 								</div>
 							</div>
 						)}
 
 						{/* CATEGORY */}
-						{type !== 'transfer' && (
+						{type !== "transfer" && (
 							<div className="grid gap-2">
-								<Label>{t('transactions.category')}</Label>
+								<Label>{t("transactions.category")}</Label>
 
 								<Popover
 									open={categoryOpen}
-									onOpenChange={(isOpen) => {
-										setCategoryOpen(isOpen);
-
-										if (!isOpen) {
-											resetCategoryMenu();
-										}
-									}}>
+									onOpenChange={setCategoryOpen}>
 									<PopoverTrigger
 										render={
 											<Button
@@ -890,14 +1016,18 @@ export function TransactionDialog({
 												disabled={saving}>
 												{selectedSubcategory ? (
 													<>
-														<CategoryIcon
-															name={selectedCategory?.icon}
+														<EntityIcon
+															name={
+																selectedCategory?.icon
+															}
 															className="mr-2 size-4"
 														/>
 
 														<span className="truncate">
 															{selectedCategory
-																? translateCategory(selectedCategory.name)
+																? translateCategory(
+																		selectedCategory.name,
+																	)
 																: null}
 														</span>
 
@@ -905,44 +1035,62 @@ export function TransactionDialog({
 															/
 														</span>
 
-														<CategoryIcon
-															name={selectedSubcategory.icon}
+														<EntityIcon
+															name={
+																selectedSubcategory.icon
+															}
 															className="mr-2 size-4"
 														/>
 
 														<span className="truncate">
-															{translateSubcategory(selectedSubcategory.name)}
+															{translateSubcategory(
+																selectedSubcategory.name,
+															)}
 														</span>
 													</>
 												) : (
 													<span className="text-muted-foreground">
-														{t('transactions.selectCategory')}
+														{t(
+															"transactions.selectCategory",
+														)}
 													</span>
 												)}
 											</Button>
 										}
 									/>
 
-									<PopoverContent className="w-64 p-2" align="start">
+									<PopoverContent
+										className="w-64 p-2"
+										align="start">
 										{selectedCategoryId === null ? (
 											<div className="grid max-h-60 gap-1 overflow-y-auto">
-												{visibleCategories.map((category) => (
-													<Button
-														key={category.id}
-														type="button"
-														variant="ghost"
-														className="w-full justify-start"
-														onClick={() => handleCategorySelect(category)}>
-														<CategoryIcon
-															name={category.icon}
-															className="mr-3 size-5"
-														/>
+												{sortedVisibleCategories.map(
+													(category) => (
+														<Button
+															key={category.id}
+															type="button"
+															variant="ghost"
+															className="w-full justify-start"
+															onClick={() =>
+																handleCategorySelect(
+																	category,
+																)
+															}>
+															<EntityIcon
+																name={
+																	category.icon
+																}
+																className="mr-3 size-5"
+															/>
 
-														<span className="flex-1 truncate text-left">
-															{translateCategory(category.name)}
-														</span>
-													</Button>
-												))}
+															<span className="flex-1 truncate text-left">
+																{translateCategory(
+																	category.name,
+																)}
+															</span>
+														</Button>
+													),
+												)}
 											</div>
 										) : (
 											<div className="grid max-h-60 gap-1 overflow-y-auto">
@@ -951,35 +1099,47 @@ export function TransactionDialog({
 													variant="ghost"
 													className="mb-1 justify-start rounded-none border-b"
 													onClick={resetCategoryMenu}>
-													<CategoryIcon
-														name={selectedCategory?.icon}
+													<EntityIcon
+														name={
+															selectedCategory?.icon
+														}
 														className="mr-2 size-4"
 													/>
 
 													{selectedCategory
-														? translateCategory(selectedCategory.name)
+														? translateCategory(
+																selectedCategory.name,
+															)
 														: null}
 												</Button>
 
-												{filteredSubcategories.map((subcategory) => (
-													<Button
-														key={subcategory.id}
-														type="button"
-														variant="ghost"
-														className="w-full justify-start"
-														onClick={() =>
-															handleSubcategorySelect(subcategory)
-														}>
-														<CategoryIcon
-															name={subcategory.icon}
-															className="mr-3 size-5"
-														/>
+												{sortedFilteredSubcategories.map(
+													(subcategory) => (
+														<Button
+															key={subcategory.id}
+															type="button"
+															variant="ghost"
+															className="w-full justify-start"
+															onClick={() =>
+																handleSubcategorySelect(
+																	subcategory,
+																)
+															}>
+															<EntityIcon
+																name={
+																	subcategory.icon
+																}
+																className="mr-3 size-5"
+															/>
 
-														<span className="truncate">
-															{translateSubcategory(subcategory.name)}
-														</span>
-													</Button>
-												))}
+															<span className="truncate">
+																{translateSubcategory(
+																	subcategory.name,
+																)}
+															</span>
+														</Button>
+													),
+												)}
 											</div>
 										)}
 									</PopoverContent>
@@ -988,17 +1148,18 @@ export function TransactionDialog({
 						)}
 
 						{/* COUNTERPARTY */}
-						{type !== 'transfer' && (
+						{type !== "transfer" && (
 							<div className="grid gap-2">
 								<div className="flex items-center justify-between">
 									<Label htmlFor="counterparty-name">
-										{type === 'income'
-											? t('transactions.from')
-											: t('transactions.to')}
+										{type === "income"
+											? t("transactions.from")
+											: t("transactions.to")}
 									</Label>
 
 									<span className="text-xs text-muted-foreground">
-										{form.counterparty.length}/{MAX_COUNTERPARTY_LENGTH}
+										{form.counterparty.length}/
+										{MAX_COUNTERPARTY_LENGTH}
 									</span>
 								</div>
 
@@ -1007,9 +1168,13 @@ export function TransactionDialog({
 									name="counterparty"
 									maxLength={MAX_COUNTERPARTY_LENGTH}
 									placeholder={
-										type === 'income'
-											? t('transactions.incomeCounterpartyPlaceholder')
-											: t('transactions.expenseCounterpartyPlaceholder')
+										type === "income"
+											? t(
+													"transactions.incomeCounterpartyPlaceholder",
+												)
+											: t(
+													"transactions.expenseCounterpartyPlaceholder",
+												)
 									}
 									value={form.counterparty}
 									disabled={saving}
@@ -1036,7 +1201,7 @@ export function TransactionDialog({
 						{/* CHECKED */}
 						<div className="flex items-center justify-between border-t pt-4">
 							<Label htmlFor="transaction-checked">
-								{t('transactions.paid')}
+								{t("transactions.paid")}
 							</Label>
 
 							<Switch
@@ -1057,9 +1222,9 @@ export function TransactionDialog({
 						<Button
 							type="button"
 							variant="outline"
-							onClick={() => handleDialogChange(false)}
+							onClick={() => onOpenChange(false)}
 							disabled={saving}>
-							{t('common.cancel')}
+							{t("common.cancel")}
 						</Button>
 
 						<Button
@@ -1067,17 +1232,47 @@ export function TransactionDialog({
 							disabled={
 								saving ||
 								!form.account_id ||
-								(type === 'transfer' && !form.transfer_account_id)
+								(type === "transfer" &&
+									!form.transfer_account_id)
 							}>
 							{saving
-								? t('transactions.saving')
+								? t("transactions.saving")
 								: isEditing
-									? t('transactions.saveChanges')
-									: t('transactions.createTransaction')}
+									? t("transactions.saveChanges")
+									: t("transactions.createTransaction")}
 						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>
+			<AlertDialog
+				open={discardConfirmationOpen}
+				onOpenChange={setDiscardConfirmationOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							{t("common.unsavedChanges.title")}
+						</AlertDialogTitle>
+
+						<AlertDialogDescription>
+							{t("common.unsavedChanges.description")}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+
+					<AlertDialogFooter>
+						<AlertDialogCancel>
+							{t("common.unsavedChanges.continueEditing")}
+						</AlertDialogCancel>
+
+						<AlertDialogAction
+							onClick={() => {
+								setDiscardConfirmationOpen(false);
+								onOpenChange(false);
+							}}>
+							{t("common.unsavedChanges.discard")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</Dialog>
 	);
 }

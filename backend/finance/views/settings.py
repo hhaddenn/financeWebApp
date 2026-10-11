@@ -1,10 +1,7 @@
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
-from ..models import (
-    UserCategoryPreference,
-    UserSubcategoryPreference,
-)
+from ..models import UserCategoryPreference, UserSettings, UserSubcategoryPreference
 from ..serializers import (
     UserCategoryPreferenceSerializer,
     UserSettingsSerializer,
@@ -17,7 +14,11 @@ class UserSettingsView(generics.RetrieveUpdateAPIView):
     permission_classes = (IsAuthenticated,)
 
     def get_object(self):
-        return self.request.user.settings
+        settings, _ = UserSettings.objects.get_or_create(
+            user=self.request.user
+        )
+
+        return settings
 
 
 class UserCategoryPreferencesView(generics.ListAPIView):

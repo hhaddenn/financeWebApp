@@ -109,18 +109,22 @@ class RecurringTransactionAPITests(APITestCase):
     def test_user_can_create_recurring_transaction(self):
         url = reverse("recurring-transaction-create-view")
 
-        response = self.client.post(
-            url,
-            {
-                "account": self.account.id,
-                "name": "Netflix",
-                "transaction_type": "expense",
-                "frequency": "monthly",
-                "day_of_month": 10,
-                "amount": "12.99",
-            },
-            format="json",
-        )
+        with patch(
+			"finance.services.timezone.localdate",
+			return_value=date(2026, 10, 6),
+		):
+            response = self.client.post(
+				url,
+				{
+					"account": self.account.id,
+					"name": "Netflix",
+					"transaction_type": "expense",
+					"frequency": "monthly",
+					"day_of_month": 10,
+					"amount": "12.99",
+				},
+				format="json",
+			)
 
         self.assertEqual(response.status_code, 201)
 
@@ -140,8 +144,6 @@ class RecurringTransactionAPITests(APITestCase):
             recurring_transaction.next_run_at,
             date(2026, 10, 10),
         )
-
-        self.assertIsNotNone(recurring_transaction.next_run_at)
 
     def test_calculate_next_monthly_run_in_current_month(self):
         recurring_transaction = RecurringTransaction.objects.create(

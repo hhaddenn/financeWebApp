@@ -1,5 +1,12 @@
 /* oxlint-disable react/only-export-components */
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 
 import { getSettings, updateSettings } from '@/api/settings';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -25,8 +32,21 @@ const normalizeTranslationKey = (name) => {
 export function PreferencesProvider({ children }) {
 	const { isLoggedIn, isLoading: authLoading } = useAuth();
 
-	const [language, setLanguageState] = useState('pt');
-	const [theme, setThemeState] = useState('light');
+	const [language, setLanguageState] = useState(() => {
+		const savedLanguage = localStorage.getItem('financeapp.language');
+
+		return ['pt', 'en'].includes(savedLanguage) ? savedLanguage : 'pt';
+	});
+	const [theme, setThemeState] = useState(() => {
+		const savedTheme = localStorage.getItem('financeapp.theme');
+
+		return ['light', 'dark', 'system'].includes(savedTheme)
+			? savedTheme
+			: 'system';
+	});
+	const [systemDark, setSystemDark] = useState(
+		() => window.matchMedia('(prefers-color-scheme: dark)').matches,
+	);
 	const [loading, setLoading] = useState(true);
 
 	/* oxlint-disable react/set-state-in-effect */
@@ -36,8 +56,6 @@ export function PreferencesProvider({ children }) {
 		}
 
 		if (!isLoggedIn) {
-			setLanguageState('pt');
-			setThemeState('light');
 			setLoading(false);
 			return;
 		}
@@ -47,14 +65,31 @@ export function PreferencesProvider({ children }) {
 
 			try {
 				const settings = await getSettings();
+				const savedTheme = localStorage.getItem('financeapp.theme');
+				const localTheme = ['light', 'dark', 'system'].includes(savedTheme)
+					? savedTheme
+					: 'system';
 
-				setLanguageState(settings.language || 'pt');
-				setThemeState(settings.theme || 'light');
+				const savedLanguage = localStorage.getItem('financeapp.language');
+				const localLanguage = ['pt', 'en'].includes(savedLanguage)
+					? savedLanguage
+					: 'pt';
+				const backendTheme = ['light', 'dark', 'system'].includes(
+					settings.theme,
+				)
+					? settings.theme
+					: 'system';
+				const backendLanguage = ['pt', 'en'].includes(settings.language)
+					? settings.language
+					: 'pt';
+				if (localTheme !== backendTheme || localLanguage !== backendLanguage) {
+					await updateSettings({
+						theme: localTheme,
+						language: localLanguage,
+					});
+				}
 			} catch (error) {
 				console.error('Failed to load preferences:', error);
-
-				setLanguageState('pt');
-				setThemeState('light');
 			} finally {
 				setLoading(false);
 			}
@@ -70,41 +105,64 @@ export function PreferencesProvider({ children }) {
 		root.classList.remove('light', 'dark');
 
 		if (theme === 'system') {
-			const systemDark = window.matchMedia(
-				'(prefers-color-scheme: dark)',
-			).matches;
+			const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-			root.classList.add(systemDark ? 'dark' : 'light');
+			const handleChange = (event) => {
+				root.classList.remove('light', 'dark');
+				root.classList.add(event.matches ? 'dark' : 'light');
+				setSystemDark(event.matches);
+			};
 
-			return;
+			root.classList.add(mediaQuery.matches ? 'dark' : 'light');
+
+			mediaQuery.addEventListener('change', handleChange);
+
+			return () => {
+				mediaQuery.removeEventListener('change', handleChange);
+			};
 		}
 
 		root.classList.add(theme);
 	}, [theme]);
 
-	const setLanguage = async (newLanguage) => {
-		setLanguageState(newLanguage);
+	const resolvedTheme =
+		theme === 'system' ? (systemDark ? 'dark' : 'light') : theme;
 
-		try {
-			await updateSettings({
-				language: newLanguage,
-			});
-		} catch (error) {
-			console.error('Failed to update language:', error);
-		}
-	};
+	const setLanguage = useCallback(
+		async (newLanguage) => {
+			setLanguageState(newLanguage);
+			localStorage.setItem('financeapp.language', newLanguage);
 
-	const setTheme = async (newTheme) => {
-		setThemeState(newTheme);
+			if (isLoggedIn) {
+				try {
+					await updateSettings({
+						language: newLanguage,
+					});
+				} catch (error) {
+					console.error('Failed to update language:', error);
+				}
+			}
+		},
+		[isLoggedIn],
+	);
 
-		try {
-			await updateSettings({
-				theme: newTheme,
-			});
-		} catch (error) {
-			console.error('Failed to update theme:', error);
-		}
-	};
+	const setTheme = useCallback(
+		async (newTheme) => {
+			setThemeState(newTheme);
+			localStorage.setItem('financeapp.theme', newTheme);
+
+			if (isLoggedIn) {
+				try {
+					await updateSettings({
+						theme: newTheme,
+					});
+				} catch (error) {
+					console.error('Failed to update theme:', error);
+				}
+			}
+		},
+		[isLoggedIn],
+	);
 
 	const t = useCallback(
 		(path) => {
@@ -117,24 +175,23 @@ export function PreferencesProvider({ children }) {
 		[language],
 	);
 
-
 	const translateCategory = useCallback(
-	   (name) => {
-	      const key = normalizeTranslationKey(name);
+		(name) => {
+			const key = normalizeTranslationKey(name);
 
-	      return translations[language]?.categories?.[key] ?? name;
-	   },
-	   [language],
-        );
-	
+			return translations[language]?.categories?.[key] ?? name;
+		},
+		[language],
+	);
+
 	const translateSubcategory = useCallback(
-	   (name) => {
-	      const key = normalizeTranslationKey(name);
+		(name) => {
+			const key = normalizeTranslationKey(name);
 
-	      return translations[language]?.subcategories?.[key] ?? name;
-	   },
-	   [language],
-        );
+			return translations[language]?.subcategories?.[key] ?? name;
+		},
+		[language],
+	);
 
 	const value = useMemo(
 		() => ({
@@ -143,17 +200,23 @@ export function PreferencesProvider({ children }) {
 			loading,
 			setLanguage,
 			setTheme,
+			isLoggedIn,
 			t,
 			translateCategory,
 			translateSubcategory,
+			resolvedTheme,
 		}),
 		[
-                   language,
-		   theme,
-		   loading,
-		   t,
-		   translateCategory,
-		   translateSubcategory,
+			language,
+			theme,
+			loading,
+			isLoggedIn,
+			setLanguage,
+			setTheme,
+			t,
+			translateCategory,
+			translateSubcategory,
+			resolvedTheme,
 		],
 	);
 

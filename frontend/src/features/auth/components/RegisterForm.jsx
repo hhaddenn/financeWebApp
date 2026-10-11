@@ -25,13 +25,15 @@ import {
 
 import { Input } from '@/components/ui/input';
 
+import PasswordInput from '@/components/common/PasswordInput';
+
 const MAX_USERNAME_LENGTH = 150;
 const MAX_EMAIL_LENGTH = 254;
 const MAX_PASSWORD_LENGTH = 128;
 
 export default function RegisterForm({ className, ...props }) {
 	const navigate = useNavigate();
-	const { t } = usePreferences();
+	const { t, theme, language } = usePreferences();
 
 	const [state, formAction, isPending] = useActionState(
 		async (previousState, formData) => {
@@ -99,7 +101,7 @@ export default function RegisterForm({ className, ...props }) {
 			}
 
 			try {
-				await register(username, email, password);
+				await register(username, email, password, theme, language);
 
 				navigate('/login', {
 					replace: true,
@@ -203,10 +205,10 @@ export default function RegisterForm({ className, ...props }) {
 											{t('auth.password')}
 										</FieldLabel>
 
-										<Input
+										<PasswordInput
 											id="password"
 											name="password"
-											type="password"
+											placeholder={t('auth.password')}
 											autoComplete="new-password"
 											maxLength={MAX_PASSWORD_LENGTH}
 											required
@@ -219,10 +221,10 @@ export default function RegisterForm({ className, ...props }) {
 											{t('auth.confirmPassword')}
 										</FieldLabel>
 
-										<Input
+										<PasswordInput
 											id="confirmPassword"
 											name="confirmPassword"
-											type="password"
+											placeholder={t('auth.confirmPassword')}
 											autoComplete="new-password"
 											maxLength={MAX_PASSWORD_LENGTH}
 											required
