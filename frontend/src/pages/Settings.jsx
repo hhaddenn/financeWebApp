@@ -59,15 +59,8 @@ function CategoryIcon({ name, className }) {
 }
 
 export default function Settings() {
-    const {
-        language,
-        theme,
-        setLanguage,
-        setTheme,
-        t,
-        translateCategory,
-        translateSubcategory,
-    } = usePreferences();
+    const { language, t, translateCategory, translateSubcategory } =
+        usePreferences();
 
     const [incomeColor, setIncomeColor] = useState("");
     const [expenseColor, setExpenseColor] = useState("");
@@ -259,107 +252,6 @@ export default function Settings() {
                             {/* GENERAL */}
 
                             <TabsContent value="general" className="space-y-6">
-                                {/* Language */}
-
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>
-                                            {t("settings.language")}
-                                        </CardTitle>
-
-                                        <CardDescription>
-                                            {t("settings.languageDescription")}
-                                        </CardDescription>
-                                    </CardHeader>
-
-                                    <CardContent>
-                                        <div className="flex flex-wrap gap-3">
-                                            <Button
-                                                variant={
-                                                    language === "pt"
-                                                        ? "default"
-                                                        : "outline"
-                                                }
-                                                onClick={() =>
-                                                    setLanguage("pt")
-                                                }
-                                            >
-                                                🇵🇹 Português
-                                            </Button>
-
-                                            <Button
-                                                variant={
-                                                    language === "en"
-                                                        ? "default"
-                                                        : "outline"
-                                                }
-                                                onClick={() =>
-                                                    setLanguage("en")
-                                                }
-                                            >
-                                                🇬🇧 English
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
-                                {/* Appearance */}
-
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle>
-                                            {t("settings.appearance")}
-                                        </CardTitle>
-
-                                        <CardDescription>
-                                            {t(
-                                                "settings.appearanceDescription",
-                                            )}
-                                        </CardDescription>
-                                    </CardHeader>
-
-                                    <CardContent>
-                                        <div className="flex flex-wrap gap-3">
-                                            <Button
-                                                variant={
-                                                    theme === "light"
-                                                        ? "default"
-                                                        : "outline"
-                                                }
-                                                onClick={() =>
-                                                    setTheme("light")
-                                                }
-                                            >
-                                                ☀️ {t("settings.light")}
-                                            </Button>
-
-                                            <Button
-                                                variant={
-                                                    theme === "dark"
-                                                        ? "default"
-                                                        : "outline"
-                                                }
-                                                onClick={() => setTheme("dark")}
-                                            >
-                                                🌙 {t("settings.dark")}
-                                            </Button>
-
-                                            <Button
-                                                variant={
-                                                    theme === "system"
-                                                        ? "default"
-                                                        : "outline"
-                                                }
-                                                onClick={() =>
-                                                    setTheme("system")
-                                                }
-                                            >
-                                                💻 {t("settings.system")}
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-
                                 {/* Transaction colors */}
 
                                 <Card>

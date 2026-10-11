@@ -159,6 +159,8 @@ const pt = {
         subcategoryDescription:
             "Escolhe quais as subcategorias que devem estar visíveis.",
         hiddenBecauseCategory: "Oculto porque a categoria está oculta.",
+        switchToLight:"Mudar para tema claro",
+        switchToDark:"Mudar para tema escuro",
     },
 
     categories: {

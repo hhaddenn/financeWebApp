@@ -347,7 +347,7 @@ class UserSettings(models.Model):
             ("dark", "Dark"),
             ("system", "System"),
         ],
-        default="light",
+        default="system",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

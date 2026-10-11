@@ -155,6 +155,8 @@ const en = {
             "Customize the colors and visibility of this category.",
         subcategoryDescription: "Choose which subcategories should be visible.",
         hiddenBecauseCategory: "Hidden because its category is hidden.",
+        switchToLight:"Switch to light theme",
+        switchToDark:"Switch to dark theme",
     },
 
     categories: {

@@ -37,7 +37,16 @@ export function PreferencesProvider({ children }) {
 
         return ["pt", "en"].includes(savedLanguage) ? savedLanguage : "pt";
     });
-    const [theme, setThemeState] = useState("light");
+    const [theme, setThemeState] = useState(() => {
+        const savedTheme = localStorage.getItem("financeapp.theme");
+
+        return ["light", "dark", "system"].includes(savedTheme)
+            ? savedTheme
+            : "system";
+    });
+    const [systemDark, setSystemDark] = useState(
+        () => window.matchMedia("(prefers-color-scheme: dark)").matches,
+    );
     const [loading, setLoading] = useState(true);
 
     /* oxlint-disable react/set-state-in-effect */
@@ -47,7 +56,6 @@ export function PreferencesProvider({ children }) {
         }
 
         if (!isLoggedIn) {
-            setThemeState("light");
             setLoading(false);
             return;
         }
@@ -57,14 +65,21 @@ export function PreferencesProvider({ children }) {
 
             try {
                 const settings = await getSettings();
+                const backendTheme = ["light", "dark", "system"].includes(
+                    settings.theme,
+                )
+                    ? settings.theme
+                    : "system";
+                const backendLanguage = ["pt", "en"].includes(settings.language)
+                    ? settings.language
+                    : "pt";
 
-                setLanguageState(settings.language || "pt");
-                setThemeState(settings.theme || "light");
+                setLanguageState(backendLanguage);
+                localStorage.setItem("financeapp.language", backendLanguage);
+                setThemeState(backendTheme);
+                localStorage.setItem("financeapp.theme", backendTheme);
             } catch (error) {
                 console.error("Failed to load preferences:", error);
-
-                setLanguageState("pt");
-                setThemeState("light");
             } finally {
                 setLoading(false);
             }
@@ -80,17 +95,30 @@ export function PreferencesProvider({ children }) {
         root.classList.remove("light", "dark");
 
         if (theme === "system") {
-            const systemDark = window.matchMedia(
+            const mediaQuery = window.matchMedia(
                 "(prefers-color-scheme: dark)",
-            ).matches;
+            );
 
-            root.classList.add(systemDark ? "dark" : "light");
+            const handleChange = (event) => {
+                root.classList.remove("light", "dark");
+                root.classList.add(event.matches ? "dark" : "light");
+                setSystemDark(event.matches);
+            };
 
-            return;
+            root.classList.add(mediaQuery.matches ? "dark" : "light");
+
+            mediaQuery.addEventListener("change", handleChange);
+
+            return () => {
+                mediaQuery.removeEventListener("change", handleChange);
+            };
         }
 
         root.classList.add(theme);
     }, [theme]);
+
+    const resolvedTheme =
+        theme === "system" ? (systemDark ? "dark" : "light") : theme;
 
     const setLanguage = useCallback(
         async (newLanguage) => {
@@ -110,17 +138,24 @@ export function PreferencesProvider({ children }) {
         [isLoggedIn],
     );
 
-    const setTheme = useCallback(async (newTheme) => {
-        setThemeState(newTheme);
+    const setTheme = useCallback(
+        async (newTheme) => {
+            setThemeState(newTheme);
 
-        try {
-            await updateSettings({
-                theme: newTheme,
-            });
-        } catch (error) {
-            console.error("Failed to update theme:", error);
-        }
-    }, []);
+            localStorage.setItem("financeapp.theme", newTheme);
+
+            if (isLoggedIn) {
+                try {
+                    await updateSettings({
+                        theme: newTheme,
+                    });
+                } catch (error) {
+                    console.error("Failed to update theme:", error);
+                }
+            }
+        },
+        [isLoggedIn],
+    );
 
     const t = useCallback(
         (path) => {
@@ -165,6 +200,7 @@ export function PreferencesProvider({ children }) {
             t,
             translateCategory,
             translateSubcategory,
+            resolvedTheme,
         }),
         [
             language,
@@ -176,6 +212,7 @@ export function PreferencesProvider({ children }) {
             t,
             translateCategory,
             translateSubcategory,
+            resolvedTheme,
         ],
     );
 
