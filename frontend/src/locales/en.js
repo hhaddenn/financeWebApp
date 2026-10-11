@@ -94,6 +94,8 @@ const en = {
         loginSucceeded: "Login succeeded!",
         noAccount: "Don't have an account?",
         signUp: "Sign up",
+        showPassword: "Show password",
+        hidePassword: "Hide password",
     },
 
     settings: {
@@ -489,6 +491,8 @@ const en = {
             money: "Money",
             investment: "Investment",
         },
+        hideBalance:"Hide Balance.",
+        showBalance:"Show Balance.",
     },
 };
 

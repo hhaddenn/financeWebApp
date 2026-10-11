@@ -5,14 +5,12 @@ import {
     Banknote,
     ChartNoAxesCombined,
     CreditCard,
-    EllipsisVerticalIcon,
     Landmark,
     PiggyBank,
     Plus,
     Wallet,
 } from "lucide-react";
 
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,13 +35,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import AccountCard from "./AccountCard";
 
 import {
     getAccounts,
@@ -331,85 +323,17 @@ export function SectionCards({ onAccountDeleted }) {
     return (
         <>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                {sortedAccounts.map((account) => {
-                    const Icon = accountIcons[account.icon] || Landmark;
-
-                    return (
-                        <Card key={account.id} className="shadow-none">
-                            <CardHeader className="pb-2">
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex min-w-0 items-center gap-2">
-                                        <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted">
-                                            <Icon
-                                                className="size-5 text-muted-foreground"
-                                                aria-hidden="true"
-                                            />
-                                        </div>
-
-                                        <p
-                                            className="truncate text-sm text-muted-foreground"
-                                            title={account.name}
-                                        >
-                                            {account.name}
-                                        </p>
-                                    </div>
-
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger
-                                            render={
-                                                <Button
-                                                    variant="ghost"
-                                                    className="size-8 shrink-0 text-muted-foreground"
-                                                    size="icon"
-                                                >
-                                                    <EllipsisVerticalIcon aria-hidden="true" />
-
-                                                    <span className="sr-only">
-                                                        {t("accounts.openMenu")}
-                                                    </span>
-                                                </Button>
-                                            }
-                                        />
-
-                                        <DropdownMenuContent
-                                            align="end"
-                                            className="w-32"
-                                        >
-                                            <DropdownMenuItem
-                                                onClick={() =>
-                                                    handleOpenEdit(account)
-                                                }
-                                                disabled={deleting || saving}
-                                            >
-                                                {t("common.edit")}
-                                            </DropdownMenuItem>
-
-                                            <DropdownMenuSeparator />
-
-                                            <DropdownMenuItem
-                                                variant="destructive"
-                                                disabled={deleting || saving}
-                                                onClick={() =>
-                                                    handleDeleteRequest(account)
-                                                }
-                                            >
-                                                {t("common.delete")}
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                            </CardHeader>
-
-                            <CardContent>
-                                <p className="text-2xl font-semibold tracking-tight tabular-nums">
-                                    {formattedCurrency.format(
-                                        Number(account.balance) || 0,
-                                    )}
-                                </p>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+                {sortedAccounts.map((account) => (
+                    <AccountCard
+                        key={account.id}
+                        account={account}
+                        balanceText={formattedCurrency.format(Number(account.balance) || 0)}
+                        onEdit={() => handleOpenEdit(account)}
+                        onDelete={() => handleDeleteRequest(account)}
+                        actionsDisabled={saving || deleting}
+                        t={t}
+                    />
+                ))}
 
                 <button
                     type="button"

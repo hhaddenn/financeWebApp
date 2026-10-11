@@ -96,6 +96,8 @@ const pt = {
         loginSucceeded: "Sessão iniciada com sucesso!",
         noAccount: "Ainda não tens uma conta?",
         signUp: "Criar conta",
+        showPassword: "Mostrar palavra-passe",
+        hidePassword: "Ocultar palavra-passe",
     },
 
     settings: {
@@ -494,6 +496,8 @@ const pt = {
             money: "Dinheiro",
             investment: "Investimento",
         },
+        hideBalance:"Ocultar Balanço.",
+        showBalance:"Mostrar Balanço.",
     },
 };
 

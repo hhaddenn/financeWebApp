@@ -6,7 +6,8 @@ import { usePreferences } from '@/context/PreferencesContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field, FieldDescription, FieldGroup, FieldLabel } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
+
+import PasswordInput from '@/components/common/PasswordInput';
 
 export default function ResetPassword() {
 	const { uid, token } = useParams();
@@ -58,10 +59,10 @@ export default function ResetPassword() {
 							<FieldGroup>
 								<Field>
 									<FieldLabel htmlFor="password">{t('auth.newPassword')}</FieldLabel>
-									<Input
+									<PasswordInput
 										id="password"
 										name="password"
-										type="password"
+										placeholder={t("auth.newPassword")}
 										autoComplete="new-password"
 										required
 										disabled={isPending}
@@ -71,10 +72,10 @@ export default function ResetPassword() {
 									<FieldLabel htmlFor="confirmPassword">
 										{t('auth.confirmPassword')}
 									</FieldLabel>
-									<Input
+									<PasswordInput
 										id="confirmPassword"
 										name="confirmPassword"
-										type="password"
+										placeholder={t("auth.confirmNewPassword")}
 										autoComplete="new-password"
 										required
 										disabled={isPending}
