@@ -33,11 +33,19 @@ export const verifyLogin = async (challengeId, code) => {
 	return response.data;
 };
 
-export const register = async (username, email, password) => {
+export const register = async (
+	username,
+	email,
+	password,
+	theme = 'system',
+	language = 'pt',
+) => {
 	const response = await api.post('/auth/register/', {
 		username,
 		email,
 		password,
+		theme,
+		language,
 	});
 
 	return response.data;

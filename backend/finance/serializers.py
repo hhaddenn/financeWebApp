@@ -76,9 +76,21 @@ class RegisterSerializer(serializers.ModelSerializer):
         validators=[validate_password],
     )
 
+    theme = serializers.ChoiceField(
+        choices=["light", "dark", "system"],
+        default="system",
+        write_only=True,
+    )
+
+    language = serializers.ChoiceField(
+		choices=["pt", "en"],
+		default="pt",
+		write_only=True,
+	)
+
     class Meta:
         model = User
-        fields = ("username", "email", "password")
+        fields = ("username", "email", "password", "theme", "language")
 
     def validate_username(self, value):
         value = value.strip()
@@ -129,6 +141,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        theme = validated_data.pop("theme", "system")
+        language = validated_data.pop("language", "pt")
         user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data["email"],
@@ -137,7 +151,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
         # General settings
-        UserSettings.objects.create(user=user)
+        UserSettings.objects.create(
+			user=user,
+			theme=theme,
+			language=language,
+		)
 
         # Category preferences
         categories = Category.objects.all()
