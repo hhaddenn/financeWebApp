@@ -18,6 +18,37 @@ class NewsAdmin(admin.ModelAdmin):
     list_display = ("title", "action_label", "created_at")
     search_fields = ("title", "description", "action_label", "action_url")
     ordering = ("-created_at",)
+    fieldsets = (
+    (
+        "English",
+        {
+            "fields": (
+                "title",
+                "description",
+                "action_label",
+            ),
+        },
+    ),
+    (
+        "Português",
+        {
+            "fields": (
+                "title_pt",
+                "description_pt",
+                "action_label_pt",
+            ),
+        },
+    ),
+    (
+        "Imagem e ligação",
+        {
+            "fields": (
+                "image",
+                "action_url",
+            ),
+        },
+    ),
+)
 
 # ---------------------------------------------------------------------------
 # User

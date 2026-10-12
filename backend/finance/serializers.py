@@ -45,15 +45,18 @@ class NewsSerializer(serializers.ModelSerializer):
     class Meta:
         model = News
         fields = (
-            "id",
-            "title",
-            "description",
-            "image_url",
-            "action_label",
-            "action_url",
-            "created_at",
-            "is_read",
-        )
+			"id",
+			"title",
+			"title_pt",
+			"description",
+			"description_pt",
+			"image_url",
+			"action_label",
+			"action_label_pt",
+			"action_url",
+			"created_at",
+			"is_read",
+		)
         read_only_fields = fields
 
     def get_is_read(self, obj):

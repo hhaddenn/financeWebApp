@@ -37,6 +37,12 @@ class EmailChangeRequest(models.Model):
 class News(models.Model):
     title = models.CharField(max_length=120)
     description = models.TextField()
+
+    # Portuguese translations
+    title_pt = models.CharField(max_length=120, blank=True)
+    description_pt = models.TextField(blank=True)
+    action_label_pt = models.CharField(max_length=80, blank=True)
+
     image = models.FileField(upload_to="news/", blank=True)
     action_label = models.CharField(max_length=80, blank=True)
     action_url = models.CharField(max_length=255, blank=True)
