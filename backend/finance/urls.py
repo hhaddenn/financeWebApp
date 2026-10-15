@@ -59,6 +59,8 @@ urlpatterns = [
         views.SubcategoriesList.as_view(),
         name="subcategories-view",
     ),
+    # Dashboard
+    path("dashboard/summary/", views.DashboardMonthlySummary.as_view(), name="dashboard-monthly-summary"),
     # Transactions
     path(
         "transactions/",

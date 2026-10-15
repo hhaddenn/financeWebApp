@@ -278,6 +278,12 @@ const pt = {
 		incomeAndExpenses: "Receitas e despesas de",
 		monthlyTotals: "Totais mensais das transações",
 		monthlyCategoryTotals: "Total das despesas deste mês por categoria",
+		incomeExpenses: "Receitas e despesas",
+		year: "Ano",
+		month: "Mês",
+		week: "Semana",
+		weeklyTotals: "Totais semanais das transações",
+		dailyTotals: "Totais diários das transações",
 	},
 
 	transactions: {

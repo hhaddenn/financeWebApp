@@ -24,6 +24,7 @@ from .categories import (
     CategoriesList,
     SubcategoriesList,
 )
+from .dashboard import DashboardMonthlySummary
 from .feedback import (
     FeedbackView,
 )

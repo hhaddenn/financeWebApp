@@ -275,6 +275,12 @@ const en = {
 		incomeAndExpenses: "Income and expenses for",
 		monthlyTotals: "Monthly transaction totals",
 		monthlyCategoryTotals: "Total spending this month by category",
+		incomeExpenses: "Income and expenses",
+		year: "Year",
+		month: "Month",
+		week: "Week",
+		weeklyTotals: "Weekly transaction totals",
+		dailyTotals: "Daily transaction totals",
 	},
 
 	transactions: {
@@ -427,6 +433,7 @@ const en = {
 
 		addExpense: "Recurring expense",
 		addIncome: "Recurring income",
+		incomeExpenses: "Income and expenses",
 		expenseDescription: "Recurring payment",
 		incomeDescription: "Recurring income payment",
 
