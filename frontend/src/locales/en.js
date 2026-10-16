@@ -281,6 +281,10 @@ const en = {
 		week: "Week",
 		weeklyTotals: "Weekly transaction totals",
 		dailyTotals: "Daily transaction totals",
+		categoryIncome: "Income by category",
+		noCategoryData: "No data for this period",
+		yearlyCategoryTotals: "Yearly totals by category",
+		weeklyCategoryTotals: "Weekly totals by category",
 	},
 
 	transactions: {

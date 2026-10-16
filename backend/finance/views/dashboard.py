@@ -1,4 +1,7 @@
+from calendar import monthrange
 from datetime import timedelta
+from decimal import Decimal
+from math import ceil
 
 from django.db.models import Sum
 from django.db.models.functions import ExtractMonth
@@ -7,9 +10,6 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from calendar import monthrange
-from math import ceil
-from decimal import Decimal
 
 from ..models import Transaction
 
@@ -40,13 +40,11 @@ class DashboardMonthlySummary(APIView):
 				for week in range(1, week_count + 1)
 			]
 
-			transactions = (
-				Transaction.objects.filter(
-					account__user=request.user,
-					date__year=date.year,
-					date__month=date.month,
-					transaction_type__in=("income", "expense"),
-				)
+			transactions = Transaction.objects.filter(
+				account__user=request.user,
+				date__year=date.year,
+				date__month=date.month,
+				transaction_type__in=("income", "expense"),
 			)
 
 			for transaction in transactions:
@@ -73,15 +71,13 @@ class DashboardMonthlySummary(APIView):
 					"income": Decimal("0.00"),
 					"expense": Decimal("0.00"),
 				}
-				for offset in range(0, 7)
+				for offset in range(7)
 			]
 
-			transactions = (
-				Transaction.objects.filter(
-					account__user=request.user,
-					date__range=(monday, sunday),
-					transaction_type__in=("income", "expense"),
-				)
+			transactions = Transaction.objects.filter(
+				account__user=request.user,
+				date__range=(monday, sunday),
+				transaction_type__in=("income", "expense"),
 			)
 
 			for transaction in transactions:
@@ -95,11 +91,8 @@ class DashboardMonthlySummary(APIView):
 
 			return Response({"days": days})
 
-
 		# YEAR FILTER
-		year_param = request.query_params.get(
-			"year", str(timezone.localdate().year)
-		)
+		year_param = request.query_params.get("year", str(timezone.localdate().year))
 
 		try:
 			year = int(year_param)
@@ -141,7 +134,69 @@ class DashboardMonthlySummary(APIView):
 
 			months[month_index][transaction_type] = str(row["total"])
 
-		return Response({
-			"year": year,
-			"months": months,
-		})
+		return Response(
+			{
+				"year": year,
+				"months": months,
+			}
+		)
+
+
+class DashboardCategorySummary(APIView):
+	permission_classes = (IsAuthenticated,)
+
+	def get(self, request):
+		period = request.query_params.get("period", "month")
+		transaction_type = request.query_params.get("transaction_type", "expense")
+
+		if period not in ("year", "month", "week"):
+			return Response(
+				{"period": "Invalid period."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		if transaction_type not in ("income", "expense"):
+			return Response(
+				{"transaction_type": "Invalid transaction type."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		today = timezone.localdate()
+		base_transactions = Transaction.objects.filter(
+			account__user=request.user,
+			transaction_type=transaction_type,
+		)
+
+		if period == "month":
+			transactions = base_transactions.filter(
+				date__year=today.year,
+				date__month=today.month,
+			)
+
+		elif period == "year":
+			transactions = base_transactions.filter(date__year=today.year)
+
+		elif period == "week":
+			monday = today - timedelta(days=today.weekday())
+			sunday = monday + timedelta(days=6)
+
+			transactions = base_transactions.filter(date__range=(monday, sunday))
+
+		totals = (
+			transactions.filter(subcategory__category__isnull=False)
+			.values("subcategory__category", "subcategory__category__name")
+			.annotate(total=Sum("amount"))
+		)
+
+		categories = []
+
+		for row in totals:
+			categories.append(
+				{
+					"category_id": row["subcategory__category"],
+					"category_name": row["subcategory__category__name"],
+					"total": str(row["total"]),
+				}
+			)
+
+		return Response({"categories": categories})

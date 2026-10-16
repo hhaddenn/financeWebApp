@@ -284,6 +284,10 @@ const pt = {
 		week: "Semana",
 		weeklyTotals: "Totais semanais das transações",
 		dailyTotals: "Totais diários das transações",
+		categoryIncome: "Receitas por categoria",
+		noCategoryData: "Sem dados para este período",
+		yearlyCategoryTotals: "Totais anuais por categoria",
+		weeklyCategoryTotals: "Totais semanais por categoria",
 	},
 
 	transactions: {

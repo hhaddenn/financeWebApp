@@ -1,52 +1,52 @@
 from .accounts import (
-    AccountCreate,
-    AccountDetail,
-    AccountsList,
+	AccountCreate,
+	AccountDetail,
+	AccountsList,
 )
 from .auth import (
-    AccountView,
-    CookieTokenObtainPairView,
-    CookieTokenRefreshView,
-    CsrfTokenView,
-    EmailChangeConfirmView,
-    EmailChangeRequestView,
-    LogoutAllView,
-    LogoutView,
-    MeView,
-    PasswordChangeView,
-    PasswordResetConfirmView,
-    PasswordResetRequestView,
-    RegisterView,
-    VerifyEmailView,
-    VerifyLoginView,
+	AccountView,
+	CookieTokenObtainPairView,
+	CookieTokenRefreshView,
+	CsrfTokenView,
+	EmailChangeConfirmView,
+	EmailChangeRequestView,
+	LogoutAllView,
+	LogoutView,
+	MeView,
+	PasswordChangeView,
+	PasswordResetConfirmView,
+	PasswordResetRequestView,
+	RegisterView,
+	VerifyEmailView,
+	VerifyLoginView,
 )
 from .categories import (
-    CategoriesList,
-    SubcategoriesList,
+	CategoriesList,
+	SubcategoriesList,
 )
-from .dashboard import DashboardMonthlySummary
+from .dashboard import DashboardCategorySummary, DashboardMonthlySummary
 from .feedback import (
-    FeedbackView,
+	FeedbackView,
 )
 from .news import (
-    NewsDetail,
-    NewsList,
-    NewsMarkRead,
+	NewsDetail,
+	NewsList,
+	NewsMarkRead,
 )
 from .recurring_transactions import (
-    RecurringTransactionCreate,
-    RecurringTransactionDetail,
-    RecurringTransactionsList,
+	RecurringTransactionCreate,
+	RecurringTransactionDetail,
+	RecurringTransactionsList,
 )
 from .settings import (
-    UserCategoryPreferenceDetail,
-    UserCategoryPreferencesView,
-    UserSettingsView,
-    UserSubcategoryPreferenceDetail,
-    UserSubcategoryPreferencesView,
+	UserCategoryPreferenceDetail,
+	UserCategoryPreferencesView,
+	UserSettingsView,
+	UserSubcategoryPreferenceDetail,
+	UserSubcategoryPreferencesView,
 )
 from .transactions import (
-    TransactionCreate,
-    TransactionDetail,
-    TransactionsList,
+	TransactionCreate,
+	TransactionDetail,
+	TransactionsList,
 )
