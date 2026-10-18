@@ -33,6 +33,7 @@ export function ChartBarMultiple() {
 	const [expenseColor, setExpenseColor] = useState("#ef4444");
 	const [loading, setLoading] = useState(true);
 	const [period, setPeriod] = useState("year");
+	const [settingsLoaded, setSettingsLoaded] = useState(false);
 
 	const currentYear = new Date().getFullYear();
 	const currentMonths = useMemo(() => {
@@ -48,17 +49,29 @@ export function ChartBarMultiple() {
 	}, [language]);
 
 	useEffect(() => {
+		const loadSettings = async () => {
+			try {
+				const settings = await getSettings();
+
+				setIncomeColor(settings.income_color || "#22c55e");
+				setExpenseColor(settings.expense_color || "#ef4444");
+				setPeriod(settings.dashboard_bar_period);
+			} catch (error) {
+				console.error("Failed to fetch dashboard settings:", error);
+			} finally {
+				setSettingsLoaded(true);
+			}
+		};
+		loadSettings();
+	}, []);
+
+	useEffect(() => {
+		if (!settingsLoaded) return;
 		const fetchData = async () => {
 			try {
 				setLoading(true);
 
-				const [summary, settings] = await Promise.all([
-					getDashboardSummary(period),
-					getSettings(),
-				]);
-
-				setIncomeColor(settings.income_color || "#22c55e");
-				setExpenseColor(settings.expense_color || "#ef4444");
+				const summary = await getDashboardSummary(period);
 
 				let data = [];
 
@@ -95,7 +108,7 @@ export function ChartBarMultiple() {
 		};
 
 		fetchData();
-	}, [currentYear, language, currentMonths, period]);
+	}, [currentYear, language, currentMonths, period, settingsLoaded]);
 
 	const chartConfig = {
 		expense: {

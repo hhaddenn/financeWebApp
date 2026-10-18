@@ -164,6 +164,12 @@ const en = {
 		hiddenBecauseCategory: "Hidden because its category is hidden.",
 		switchToLight: "Switch to light theme",
 		switchToDark: "Switch to dark theme",
+		dashboardCharts: "Dashboard charts",
+		dashboardChartsDescription:
+			"Choose the filters shown when opening the Dashboard.",
+		dashboardBarPeriod: "Default bar chart period",
+		dashboardDonutType: "Default donut chart transaction type",
+		dashboardDonutPeriod: "Default donut chart period",
 	},
 
 	categories: {

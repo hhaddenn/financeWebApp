@@ -168,6 +168,12 @@ const pt = {
 		hiddenBecauseCategory: "Oculto porque a categoria está oculta.",
 		switchToLight: "Mudar para tema claro",
 		switchToDark: "Mudar para tema escuro",
+		dashboardCharts: "Gráficos do Dashboard",
+		dashboardChartsDescription:
+			"Escolhe os filtros apresentados ao abrir o Dashboard.",
+		dashboardBarPeriod: "Período inicial do gráfico de barras",
+		dashboardDonutType: "Tipo de transação inicial do gráfico de donut",
+		dashboardDonutPeriod: "Período inicial do gráfico de donut",
 	},
 
 	categories: {

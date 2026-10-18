@@ -19,7 +19,7 @@ import {
 	ChartTooltipContent,
 } from "@/components/ui/chart";
 
-import { getCategoryPreferences } from "@/api/settings";
+import { getSettings, getCategoryPreferences } from "@/api/settings";
 import { getDashboardCategorySummary } from "@/api/dashboard";
 import { usePreferences } from "@/context/PreferencesContext";
 
@@ -37,6 +37,7 @@ export function ChartPieDonutText() {
 	const [transactionType, setTransactionType] = React.useState("expense");
 	const [period, setPeriod] = React.useState("month");
 	const [categoryTotals, setCategoryTotals] = React.useState([]);
+	const [settingsLoaded, setSettingsLoaded] = React.useState(false);
 
 	const currentDate = new Date();
 
@@ -46,17 +47,37 @@ export function ChartPieDonutText() {
 	const locale = language === "pt" ? "pt-PT" : "en-US";
 
 	React.useEffect(() => {
+		const loadSettings = async () => {
+			try {
+				const [settings, categoryPreferences] = await Promise.all([
+					getSettings(),
+					getCategoryPreferences(),
+				]);
+				setTransactionType(settings.dashboard_donut_type);
+				setPeriod(settings.dashboard_donut_period);
+				setCategoryPreferences(categoryPreferences);
+			} catch (error) {
+				console.error("Failed to load donut settings:", error);
+			} finally {
+				setSettingsLoaded(true);
+			}
+		};
+
+		loadSettings();
+	}, []);
+
+	React.useEffect(() => {
 		const loadData = async () => {
+			if (!settingsLoaded) return;
 			try {
 				setLoading(true);
 
-				const [summary, categoryPreferencesData] = await Promise.all([
-					getDashboardCategorySummary(transactionType, period),
-					getCategoryPreferences(),
-				]);
+				const summary = await getDashboardCategorySummary(
+					transactionType,
+					period,
+				);
 
 				setCategoryTotals(summary.categories);
-				setCategoryPreferences(categoryPreferencesData);
 			} catch (error) {
 				console.error("Failed to load chart data:", error);
 			} finally {
@@ -65,7 +86,7 @@ export function ChartPieDonutText() {
 		};
 
 		loadData();
-	}, [transactionType, period]);
+	}, [transactionType, period, settingsLoaded]);
 
 	const categoryPreferencesMap = React.useMemo(() => {
 		return categoryPreferences.reduce((map, preference) => {
@@ -144,8 +165,7 @@ export function ChartPieDonutText() {
 							onChange={(event) =>
 								setTransactionType(event.target.value)
 							}
-							className="rounded-md border bg-background px-3 py-2 text-sm"
-						>
+							className="rounded-md border bg-background px-3 py-2 text-sm">
 							<option value="expense">
 								{t("dashboard.expenses")}
 							</option>
@@ -156,8 +176,7 @@ export function ChartPieDonutText() {
 						<select
 							value={period}
 							onChange={(event) => setPeriod(event.target.value)}
-							className="rounded-md border bg-background px-3 py-2 text-sm"
-						>
+							className="rounded-md border bg-background px-3 py-2 text-sm">
 							<option value="year">{t("dashboard.year")}</option>
 							<option value="month">
 								{t("dashboard.month")}
@@ -196,8 +215,7 @@ export function ChartPieDonutText() {
 						onChange={(event) =>
 							setTransactionType(event.target.value)
 						}
-						className="rounded-md border bg-background px-3 py-2 text-sm"
-					>
+						className="rounded-md border bg-background px-3 py-2 text-sm">
 						<option value="expense">
 							{t("dashboard.expenses")}
 						</option>
@@ -206,8 +224,7 @@ export function ChartPieDonutText() {
 					<select
 						value={period}
 						onChange={(event) => setPeriod(event.target.value)}
-						className="rounded-md border bg-background px-3 py-2 text-sm"
-					>
+						className="rounded-md border bg-background px-3 py-2 text-sm">
 						<option value="year">{t("dashboard.year")}</option>
 						<option value="month">{t("dashboard.month")}</option>
 						<option value="week">{t("dashboard.week")}</option>
@@ -227,8 +244,7 @@ export function ChartPieDonutText() {
 				) : (
 					<ChartContainer
 						config={chartConfig}
-						className="mx-auto w-full max-w-70 aspect-square"
-					>
+						className="mx-auto w-full max-w-70 aspect-square">
 						<PieChart>
 							<ChartTooltip
 								cursor={false}
@@ -240,8 +256,7 @@ export function ChartPieDonutText() {
 								dataKey="total"
 								nameKey="category"
 								innerRadius={60}
-								strokeWidth={5}
-							>
+								strokeWidth={5}>
 								<Label
 									content={({ viewBox }) => {
 										if (
@@ -254,13 +269,11 @@ export function ChartPieDonutText() {
 													x={viewBox.cx}
 													y={viewBox.cy}
 													textAnchor="middle"
-													dominantBaseline="middle"
-												>
+													dominantBaseline="middle">
 													<tspan
 														x={viewBox.cx}
 														y={viewBox.cy - 4}
-														className="fill-foreground text-2xl font-bold"
-													>
+														className="fill-foreground text-2xl font-bold">
 														€{formattedTotal}
 													</tspan>
 
@@ -270,8 +283,7 @@ export function ChartPieDonutText() {
 															(viewBox.cy || 0) +
 															20
 														}
-														className="fill-muted-foreground text-[11px]"
-													>
+														className="fill-muted-foreground text-[11px]">
 														{transactionType ===
 														"expense"
 															? t(
@@ -309,8 +321,7 @@ export function ChartPieDonutText() {
 							return (
 								<div
 									key={item.categoryId}
-									className="flex items-center justify-between gap-2"
-								>
+									className="flex items-center justify-between gap-2">
 									<div className="flex min-w-0 items-center gap-2">
 										<div
 											className="h-3 w-3 shrink-0 rounded-sm"
