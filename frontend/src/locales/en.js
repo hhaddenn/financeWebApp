@@ -164,6 +164,18 @@ const en = {
 		hiddenBecauseCategory: "Hidden because its category is hidden.",
 		switchToLight: "Switch to light theme",
 		switchToDark: "Switch to dark theme",
+		dashboardCharts: "Dashboard charts",
+		dashboardChartsDescription:
+			"Choose the filters shown when opening the Dashboard.",
+		dashboardBarPeriod: "Default bar chart period",
+		dashboardDonutType: "Default donut chart transaction type",
+		dashboardDonutPeriod: "Default donut chart period",
+		showBalanceByDefault: "Show balances by default",
+		showBalanceByDefaultDescription:
+			"Automatically display account balances when opening the Dashboard.",
+		balanceVisibility: "Balance visibility",
+		balanceVisibilityDescription:
+			"Choose how balances appear when opening the application.",
 	},
 
 	categories: {
@@ -275,6 +287,16 @@ const en = {
 		incomeAndExpenses: "Income and expenses for",
 		monthlyTotals: "Monthly transaction totals",
 		monthlyCategoryTotals: "Total spending this month by category",
+		incomeExpenses: "Income and expenses",
+		year: "Year",
+		month: "Month",
+		week: "Week",
+		weeklyTotals: "Weekly transaction totals",
+		dailyTotals: "Daily transaction totals",
+		categoryIncome: "Income by category",
+		noCategoryData: "No data for this period",
+		yearlyCategoryTotals: "Yearly totals by category",
+		weeklyCategoryTotals: "Weekly totals by category",
 	},
 
 	transactions: {
@@ -427,6 +449,7 @@ const en = {
 
 		addExpense: "Recurring expense",
 		addIncome: "Recurring income",
+		incomeExpenses: "Income and expenses",
 		expenseDescription: "Recurring payment",
 		incomeDescription: "Recurring income payment",
 

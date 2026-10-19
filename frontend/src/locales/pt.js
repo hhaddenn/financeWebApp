@@ -168,6 +168,18 @@ const pt = {
 		hiddenBecauseCategory: "Oculto porque a categoria está oculta.",
 		switchToLight: "Mudar para tema claro",
 		switchToDark: "Mudar para tema escuro",
+		dashboardCharts: "Gráficos do Dashboard",
+		dashboardChartsDescription:
+			"Escolhe os filtros apresentados ao abrir o Dashboard.",
+		dashboardBarPeriod: "Período inicial do gráfico de barras",
+		dashboardDonutType: "Tipo de transação inicial do gráfico de donut",
+		dashboardDonutPeriod: "Período inicial do gráfico de donut",
+		showBalanceByDefault: "Mostrar saldos por defeito",
+		showBalanceByDefaultDescription:
+			"Apresentar os saldos das contas automaticamente ao abrir o Dashboard.",
+		balanceVisibility: "Visibilidade dos saldos",
+		balanceVisibilityDescription:
+			"Define como os saldos são apresentados ao abrir a aplicação.",
 	},
 
 	categories: {
@@ -278,6 +290,16 @@ const pt = {
 		incomeAndExpenses: "Receitas e despesas de",
 		monthlyTotals: "Totais mensais das transações",
 		monthlyCategoryTotals: "Total das despesas deste mês por categoria",
+		incomeExpenses: "Receitas e despesas",
+		year: "Ano",
+		month: "Mês",
+		week: "Semana",
+		weeklyTotals: "Totais semanais das transações",
+		dailyTotals: "Totais diários das transações",
+		categoryIncome: "Receitas por categoria",
+		noCategoryData: "Sem dados para este período",
+		yearlyCategoryTotals: "Totais anuais por categoria",
+		weeklyCategoryTotals: "Totais semanais por categoria",
 	},
 
 	transactions: {

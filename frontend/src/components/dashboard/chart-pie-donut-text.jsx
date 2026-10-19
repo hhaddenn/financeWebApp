@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 
-import { Pie, PieChart, Label } from 'recharts';
+import { Pie, PieChart, Label } from "recharts";
 
 import {
 	Card,
@@ -11,60 +11,82 @@ import {
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from '@/components/ui/card';
+} from "@/components/ui/card";
 
 import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
-} from '@/components/ui/chart';
+} from "@/components/ui/chart";
 
-import { getTransactions } from '@/api/transactions';
-import { getCategoryPreferences } from '@/api/settings';
-import { usePreferences } from '@/context/PreferencesContext';
+import { getSettings, getCategoryPreferences } from "@/api/settings";
+import { getDashboardCategorySummary } from "@/api/dashboard";
+import { usePreferences } from "@/context/PreferencesContext";
 
 const chartConfig = {
-	expenses: {
-		label: 'Expenses',
+	total: {
+		label: "Total",
 	},
 };
 
 export function ChartPieDonutText() {
 	const { language, t, translateCategory } = usePreferences();
 
-	const [transactions, setTransactions] = React.useState([]);
 	const [categoryPreferences, setCategoryPreferences] = React.useState([]);
 	const [loading, setLoading] = React.useState(true);
+	const [transactionType, setTransactionType] = React.useState("expense");
+	const [period, setPeriod] = React.useState("month");
+	const [categoryTotals, setCategoryTotals] = React.useState([]);
+	const [settingsLoaded, setSettingsLoaded] = React.useState(false);
 
 	const currentDate = new Date();
 
 	const selectedYear = currentDate.getFullYear();
 	const selectedMonth = currentDate.getMonth();
 
-	const locale = language === 'pt' ? 'pt-PT' : 'en-US';
+	const locale = language === "pt" ? "pt-PT" : "en-US";
+
+	React.useEffect(() => {
+		const loadSettings = async () => {
+			try {
+				const [settings, categoryPreferences] = await Promise.all([
+					getSettings(),
+					getCategoryPreferences(),
+				]);
+				setTransactionType(settings.dashboard_donut_type);
+				setPeriod(settings.dashboard_donut_period);
+				setCategoryPreferences(categoryPreferences);
+			} catch (error) {
+				console.error("Failed to load donut settings:", error);
+			} finally {
+				setSettingsLoaded(true);
+			}
+		};
+
+		loadSettings();
+	}, []);
 
 	React.useEffect(() => {
 		const loadData = async () => {
+			if (!settingsLoaded) return;
 			try {
 				setLoading(true);
 
-				const [transactionsResponse, categoryPreferencesData] =
-					await Promise.all([getTransactions(), getCategoryPreferences()]);
+				const summary = await getDashboardCategorySummary(
+					transactionType,
+					period,
+				);
 
-				const transactionsData =
-					transactionsResponse.results ?? transactionsResponse;
-
-				setTransactions(transactionsData);
-				setCategoryPreferences(categoryPreferencesData);
+				setCategoryTotals(summary.categories);
 			} catch (error) {
-				console.error('Failed to load chart data:', error);
+				console.error("Failed to load chart data:", error);
 			} finally {
 				setLoading(false);
 			}
 		};
 
 		loadData();
-	}, []);
+	}, [transactionType, period, settingsLoaded]);
 
 	const categoryPreferencesMap = React.useMemo(() => {
 		return categoryPreferences.reduce((map, preference) => {
@@ -74,83 +96,54 @@ export function ChartPieDonutText() {
 	}, [categoryPreferences]);
 
 	const chartData = React.useMemo(() => {
-		const categories = {};
+		return categoryTotals
+			.filter((item) => !categoryPreferencesMap[item.category_id]?.hidden)
+			.map((item) => ({
+				categoryId: item.category_id,
+				categoryName: item.category_name,
+				category: translateCategory(item.category_name),
+				total: Number(item.total),
+				fill:
+					categoryPreferencesMap[item.category_id]?.color ||
+					"#64748b",
+			}))
+			.sort((itemA, itemB) =>
+				itemA.category.localeCompare(itemB.category, locale),
+			);
+	}, [categoryTotals, categoryPreferencesMap, translateCategory, locale]);
 
-		transactions.forEach((transaction) => {
-			// Apenas despesas
-			if (transaction.transaction_type !== 'expense') {
-				return;
-			}
-
-			const date = new Date(transaction.date);
-
-			// Apenas o mês selecionado
-			if (
-				date.getFullYear() !== selectedYear ||
-				date.getMonth() !== selectedMonth
-			) {
-				return;
-			}
-
-			const category = transaction.subcategory?.category;
-
-			if (!category) {
-				return;
-			}
-
-			const preference = categoryPreferencesMap[category.id];
-
-			// Categoria escondida nas definições
-			if (preference?.hidden) {
-				return;
-			}
-
-			const amount = Number(transaction.amount);
-
-			if (!categories[category.id]) {
-				categories[category.id] = {
-					categoryId: category.id,
-
-					// Nome original para referência
-					categoryName: category.name,
-
-					// Nome traduzido apenas para apresentação
-					category: translateCategory(category.name),
-
-					expenses: 0,
-
-					fill: preference?.color || '#64748b',
-				};
-			}
-
-			categories[category.id].expenses += amount;
-		});
-
-		// Maior para menor
-		return Object.values(categories).sort(
-			(itemA, itemB) => itemB.expenses - itemA.expenses,
-		);
-	}, [
-		transactions,
-		categoryPreferencesMap,
-		selectedYear,
-		selectedMonth,
-		translateCategory,
-	]);
-
-	const totalExpenses = React.useMemo(() => {
-		return chartData.reduce((total, item) => total + item.expenses, 0);
+	const totalAmount = React.useMemo(() => {
+		return chartData.reduce((total, item) => total + item.total, 0);
 	}, [chartData]);
 
 	const monthName = new Date(selectedYear, selectedMonth).toLocaleDateString(
 		locale,
 		{
-			month: 'long',
-			year: 'numeric',
+			month: "long",
+			year: "numeric",
 		},
 	);
 
-	const formattedTotal = totalExpenses.toLocaleString(locale, {
+	const monday = new Date(selectedYear, selectedMonth, currentDate.getDate());
+
+	const daysSinceMonday = (monday.getDay() + 6) % 7;
+
+	monday.setDate(monday.getDate() - daysSinceMonday);
+
+	const sunday = new Date(monday);
+
+	sunday.setDate(sunday.getDate() + 6);
+
+	const weekDescription = `${monday.toLocaleDateString(locale)} – ${sunday.toLocaleDateString(locale)}`;
+
+	const periodDescription =
+		period === "year"
+			? String(selectedYear)
+			: period === "month"
+				? monthName
+				: weekDescription;
+
+	const formattedTotal = totalAmount.toLocaleString(locale, {
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2,
 	});
@@ -158,15 +151,48 @@ export function ChartPieDonutText() {
 	if (loading) {
 		return (
 			<Card>
-				<CardHeader>
-					<CardTitle>{t('dashboard.categoryExpenses')}</CardTitle>
+				<CardHeader className="pb-0">
+					<div className="flex items-center justify-between gap-3">
+						<CardTitle>
+							{transactionType === "expense"
+								? t("dashboard.categoryExpenses")
+								: t("dashboard.categoryIncome")}
+						</CardTitle>
+					</div>
+					<div className="flex items-center gap-2">
+						<select
+							value={transactionType}
+							onChange={(event) =>
+								setTransactionType(event.target.value)
+							}
+							className="rounded-md border bg-background px-3 py-2 text-sm">
+							<option value="expense">
+								{t("dashboard.expenses")}
+							</option>
+							<option value="income">
+								{t("dashboard.income")}
+							</option>
+						</select>
+						<select
+							value={period}
+							onChange={(event) => setPeriod(event.target.value)}
+							className="rounded-md border bg-background px-3 py-2 text-sm">
+							<option value="year">{t("dashboard.year")}</option>
+							<option value="month">
+								{t("dashboard.month")}
+							</option>
+							<option value="week">{t("dashboard.week")}</option>
+						</select>
+					</div>
 
-					<CardDescription>{monthName}</CardDescription>
+					<CardDescription className="capitalize">
+						{periodDescription}
+					</CardDescription>
 				</CardHeader>
 
 				<CardContent>
 					<div className="flex h-62.5 items-center justify-center text-sm text-muted-foreground">
-						{t('common.loading')}
+						{t("common.loading")}
 					</div>
 				</CardContent>
 			</Card>
@@ -175,16 +201,45 @@ export function ChartPieDonutText() {
 
 	return (
 		<Card className="flex flex-col">
-			<CardHeader className="items-center pb-0">
-				<CardTitle>{t('dashboard.categoryExpenses')}</CardTitle>
+			<CardHeader className="pb-0">
+				<div className="flex items-center justify-between gap-3">
+					<CardTitle>
+						{transactionType === "expense"
+							? t("dashboard.categoryExpenses")
+							: t("dashboard.categoryIncome")}
+					</CardTitle>
+				</div>
+				<div className="flex items-center gap-2">
+					<select
+						value={transactionType}
+						onChange={(event) =>
+							setTransactionType(event.target.value)
+						}
+						className="rounded-md border bg-background px-3 py-2 text-sm">
+						<option value="expense">
+							{t("dashboard.expenses")}
+						</option>
+						<option value="income">{t("dashboard.income")}</option>
+					</select>
+					<select
+						value={period}
+						onChange={(event) => setPeriod(event.target.value)}
+						className="rounded-md border bg-background px-3 py-2 text-sm">
+						<option value="year">{t("dashboard.year")}</option>
+						<option value="month">{t("dashboard.month")}</option>
+						<option value="week">{t("dashboard.week")}</option>
+					</select>
+				</div>
 
-				<CardDescription className="capitalize">{monthName}</CardDescription>
+				<CardDescription className="capitalize">
+					{periodDescription}
+				</CardDescription>
 			</CardHeader>
 
 			<CardContent className="flex-1 pb-0">
 				{chartData.length === 0 ? (
 					<div className="flex h-62.5 items-center justify-center text-sm text-muted-foreground">
-						{t('dashboard.noExpensesThisMonth')}
+						{t("dashboard.noCategoryData")}
 					</div>
 				) : (
 					<ChartContainer
@@ -198,13 +253,17 @@ export function ChartPieDonutText() {
 
 							<Pie
 								data={chartData}
-								dataKey="expenses"
+								dataKey="total"
 								nameKey="category"
 								innerRadius={60}
 								strokeWidth={5}>
 								<Label
 									content={({ viewBox }) => {
-										if (viewBox && 'cx' in viewBox && 'cy' in viewBox) {
+										if (
+											viewBox &&
+											"cx" in viewBox &&
+											"cy" in viewBox
+										) {
 											return (
 												<text
 													x={viewBox.cx}
@@ -220,9 +279,19 @@ export function ChartPieDonutText() {
 
 													<tspan
 														x={viewBox.cx}
-														y={(viewBox.cy || 0) + 20}
+														y={
+															(viewBox.cy || 0) +
+															20
+														}
 														className="fill-muted-foreground text-[11px]">
-														{t('dashboard.expenses')}
+														{transactionType ===
+														"expense"
+															? t(
+																	"dashboard.expenses",
+																)
+															: t(
+																	"dashboard.income",
+																)}
 													</tspan>
 												</text>
 											);
@@ -242,8 +311,11 @@ export function ChartPieDonutText() {
 					<div className="grid w-full grid-cols-2 gap-3">
 						{chartData.map((item) => {
 							const percentage =
-								totalExpenses > 0
-									? ((item.expenses / totalExpenses) * 100).toFixed(0)
+								totalAmount > 0
+									? (
+											(item.total / totalAmount) *
+											100
+										).toFixed(0)
 									: 0;
 
 							return (
@@ -265,10 +337,10 @@ export function ChartPieDonutText() {
 
 									<div className="shrink-0 text-sm text-muted-foreground">
 										€
-										{item.expenses.toLocaleString(locale, {
+										{item.total.toLocaleString(locale, {
 											minimumFractionDigits: 2,
 											maximumFractionDigits: 2,
-										})}{' '}
+										})}{" "}
 										({percentage}%)
 									</div>
 								</div>
@@ -277,7 +349,11 @@ export function ChartPieDonutText() {
 					</div>
 
 					<div className="text-xs text-muted-foreground">
-						{t('dashboard.monthlyCategoryTotals')}
+						{period === "year"
+							? t("dashboard.yearlyCategoryTotals")
+							: period === "month"
+								? t("dashboard.monthlyCategoryTotals")
+								: t("dashboard.weeklyCategoryTotals")}
 					</div>
 				</CardFooter>
 			)}
