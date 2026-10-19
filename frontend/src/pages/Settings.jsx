@@ -73,6 +73,7 @@ export default function Settings() {
 	const [dashboardBarPeriod, setDashboardBarPeriod] = useState("year");
 	const [dashboardDonutType, setDashboardDonutType] = useState("expense");
 	const [dashboardDonutPeriod, setDashboardDonutPeriod] = useState("month");
+	const [showBalanceByDefault, setShowBalanceByDefault] = useState(false);
 
 	useEffect(() => {
 		const loadSettings = async () => {
@@ -95,6 +96,7 @@ export default function Settings() {
 				setDashboardBarPeriod(settingsData.dashboard_bar_period);
 				setDashboardDonutType(settingsData.dashboard_donut_type);
 				setDashboardDonutPeriod(settingsData.dashboard_donut_period);
+				setShowBalanceByDefault(settingsData.show_balance_by_default);
 				setCategories(categoryPreferences);
 				setSubcategories(subcategoryPreferences);
 			} catch (error) {
@@ -152,6 +154,7 @@ export default function Settings() {
 				dashboard_bar_period: dashboardBarPeriod,
 				dashboard_donut_type: dashboardDonutType,
 				dashboard_donut_period: dashboardDonutPeriod,
+				show_balance_by_default: showBalanceByDefault,
 			});
 
 			await Promise.all([
@@ -349,6 +352,36 @@ export default function Settings() {
 													/>
 												</div>
 											</div>
+										</div>
+									</CardContent>
+								</Card>
+								<Card>
+									<CardHeader>
+										<CardTitle>
+											{t("settings.balanceVisibility")}
+										</CardTitle>
+										<CardDescription>
+											{t(
+												"settings.balanceVisibilityDescription",
+											)}
+										</CardDescription>
+									</CardHeader>
+
+									<CardContent>
+										<div className="flex items-center justify-between gap-4">
+											<Label htmlFor="show-balance-default">
+												{t(
+													"settings.showBalanceByDefault",
+												)}
+											</Label>
+
+											<Switch
+												id="show-balance-default"
+												checked={showBalanceByDefault}
+												onCheckedChange={
+													setShowBalanceByDefault
+												}
+											/>
 										</div>
 									</CardContent>
 								</Card>

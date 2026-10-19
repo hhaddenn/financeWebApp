@@ -777,6 +777,7 @@ class UserSettingsSerializer(serializers.ModelSerializer):
 			"dashboard_bar_period",
 			"dashboard_donut_type",
 			"dashboard_donut_period",
+			"show_balance_by_default",
 		)
 
 

@@ -174,6 +174,12 @@ const pt = {
 		dashboardBarPeriod: "Período inicial do gráfico de barras",
 		dashboardDonutType: "Tipo de transação inicial do gráfico de donut",
 		dashboardDonutPeriod: "Período inicial do gráfico de donut",
+		showBalanceByDefault: "Mostrar saldos por defeito",
+		showBalanceByDefaultDescription:
+			"Apresentar os saldos das contas automaticamente ao abrir o Dashboard.",
+		balanceVisibility: "Visibilidade dos saldos",
+		balanceVisibilityDescription:
+			"Define como os saldos são apresentados ao abrir a aplicação.",
 	},
 
 	categories: {

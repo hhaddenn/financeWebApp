@@ -61,3 +61,24 @@ class UserSettingsAPITests(APITestCase):
 
 		self.assertEqual(settings.dashboard_donut_type, "income")
 		self.assertEqual(settings.dashboard_donut_period, "week")
+
+	def test_account_visibility_is_saved(self):
+		url = reverse("user-settings-view")
+
+		initial_response = self.client.get(url)
+
+		self.assertEqual(initial_response.status_code, 200)
+		self.assertFalse(initial_response.data["show_balance_by_default"])
+
+		response = self.client.patch(url, {"show_balance_by_default": True})
+
+		self.assertEqual(response.status_code, 200)
+
+		settings = UserSettings.objects.get(user=self.user)
+
+		self.assertTrue(settings.show_balance_by_default)
+
+		final_response = self.client.get(url)
+
+		self.assertEqual(final_response.status_code, 200)
+		self.assertTrue(final_response.data["show_balance_by_default"])

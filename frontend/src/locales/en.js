@@ -170,6 +170,12 @@ const en = {
 		dashboardBarPeriod: "Default bar chart period",
 		dashboardDonutType: "Default donut chart transaction type",
 		dashboardDonutPeriod: "Default donut chart period",
+		showBalanceByDefault: "Show balances by default",
+		showBalanceByDefaultDescription:
+			"Automatically display account balances when opening the Dashboard.",
+		balanceVisibility: "Balance visibility",
+		balanceVisibilityDescription:
+			"Choose how balances appear when opening the application.",
 	},
 
 	categories: {

@@ -387,6 +387,8 @@ class UserSettings(models.Model):
 		default="month",
 	)
 
+	show_balance_by_default = models.BooleanField(default=False)
+
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
