@@ -389,6 +389,11 @@ const en = {
 
 		saveChanges: "Save Changes",
 		createTransaction: "Create Transaction",
+
+		page: "Page",
+		of: "of",
+		previous: "Previous",
+		next: "Next",
 	},
 
 	recurringTransactions: {

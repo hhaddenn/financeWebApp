@@ -393,6 +393,11 @@ const pt = {
 
 		saveChanges: "Guardar alterações",
 		createTransaction: "Criar transação",
+
+		page: "Página",
+		of: "de",
+		previous: "Anterior",
+		next: "Seguinte",
 	},
 
 	recurringTransactions: {
