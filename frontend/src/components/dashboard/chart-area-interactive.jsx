@@ -65,6 +65,8 @@ export function ChartBarMultiple() {
 		loadSettings();
 	}, []);
 
+	const weekLabel = t("dashboard.week");
+
 	useEffect(() => {
 		if (!settingsLoaded) return;
 		const fetchData = async () => {
@@ -83,7 +85,7 @@ export function ChartBarMultiple() {
 					}));
 				} else if (period === "month") {
 					data = summary.weeks.map((item) => ({
-						label: `${t("dashboard.week")} ${item.week}`,
+						label: `${weekLabel} ${item.week}`,
 						income: Number(item.income),
 						expense: Number(item.expense),
 					}));
@@ -108,7 +110,14 @@ export function ChartBarMultiple() {
 		};
 
 		fetchData();
-	}, [currentYear, language, currentMonths, period, settingsLoaded]);
+	}, [
+		currentYear,
+		language,
+		currentMonths,
+		period,
+		settingsLoaded,
+		weekLabel,
+	]);
 
 	const chartConfig = {
 		expense: {
