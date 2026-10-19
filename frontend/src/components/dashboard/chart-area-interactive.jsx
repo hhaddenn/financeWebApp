@@ -35,6 +35,24 @@ export function ChartBarMultiple() {
 	const [period, setPeriod] = useState("year");
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 
+	const [isMobile, setIsMobile] = useState(false);
+
+	useEffect(() => {
+		const mediaQuery = window.matchMedia("(max-width: 640px)");
+
+		const updateMobile = () => {
+			setIsMobile(mediaQuery.matches);
+		};
+
+		updateMobile();
+
+		mediaQuery.addEventListener("change", updateMobile);
+
+		return () => {
+			mediaQuery.removeEventListener("change", updateMobile);
+		};
+	}, []);
+
 	const currentYear = new Date().getFullYear();
 	const currentMonths = useMemo(() => {
 		const locale = language === "pt" ? "pt-PT" : "en-GB";
@@ -209,9 +227,33 @@ export function ChartBarMultiple() {
 							tickLine={false}
 							tickMargin={10}
 							axisLine={false}
-							tickFormatter={(value) =>
-								period === "year" ? value.slice(0, 3) : value
-							}
+							interval={0}
+							tick={{
+								fontSize: isMobile
+									? period === "year"
+										? 9
+										: 10
+									: 12,
+							}}
+							tickFormatter={(value) => {
+								if (!isMobile) {
+									return period === "year"
+										? value.slice(0, 3)
+										: value;
+								}
+
+								if (period === "year") {
+									return value.slice(0, 3);
+								}
+
+								if (period === "month") {
+									const weekNumber = value.match(/\d+$/)?.[0];
+
+									return `${language === "pt" ? "S" : "W"}${weekNumber ?? ""}`;
+								}
+
+								return value.slice(0, 3);
+							}}
 						/>
 
 						<ChartTooltip
