@@ -289,7 +289,7 @@ const pt = {
 		noExpensesThisMonth: "Não existem despesas este mês.",
 		incomeAndExpenses: "Receitas e despesas de",
 		monthlyTotals: "Totais mensais das transações",
-		monthlyCategoryTotals: "Total das despesas deste mês por categoria",
+		monthlyCategoryTotals: "Total mensais por categoria",
 		incomeExpenses: "Receitas e despesas",
 		year: "Ano",
 		month: "Mês",

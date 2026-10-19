@@ -286,7 +286,7 @@ const en = {
 		noExpensesThisMonth: "No expenses this month.",
 		incomeAndExpenses: "Income and expenses for",
 		monthlyTotals: "Monthly transaction totals",
-		monthlyCategoryTotals: "Total spending this month by category",
+		monthlyCategoryTotals: "Monthly totals by category",
 		incomeExpenses: "Income and expenses",
 		year: "Year",
 		month: "Month",
