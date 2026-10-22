@@ -52,3 +52,32 @@ mv "$TEMP_FILE" "$BACKUP_FILE"
 echo "Backup completed successfully!"
 echo "File: $BACKUP_FILE"
 echo "Size: $(du -h "$BACKUP_FILE" | cut -f1)"
+
+
+# Preview backups older than the retention period.
+RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
+
+case "$RETENTION_DAYS" in
+    ''|*[!0-9]*)
+        echo "ERROR: Invalid retention period." >&2
+        exit 1
+        ;;
+esac
+
+if [ "$RETENTION_DAYS" -lt 1 ]; then
+    echo "ERROR: Retention must be at least 1 day." >&2
+    exit 1
+fi
+
+
+echo "Removing backups older than $RETENTION_DAYS days..."
+
+find "$BACKUP_DIR" \
+    -maxdepth 1 \
+    -type f \
+    -name 'financeapp-*.dump' \
+    -mtime "+$((RETENTION_DAYS - 1))" \
+    -print \
+    -exec rm -f -- {} \;
+
+echo "Backup retention completed."
