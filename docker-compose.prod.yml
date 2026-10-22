@@ -19,6 +19,27 @@ services:
         volumes:
             - redis_data:/data
 
+    init:
+        image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
+        profiles:
+            - tools
+        restart: "no"
+        env_file:
+            - ./backend/.env
+        environment:
+            DB_HOST: db
+            REDIS_URL: redis://redis:6379/0
+            CELERY_BROKER_URL: redis://redis:6379/0
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_started
+        volumes:
+            - media_data:/app/backend/media
+            - static_data:/app/backend/staticfiles
+        command: ["true"]
+
     backend:
         image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
         restart: unless-stopped
@@ -38,6 +59,7 @@ services:
             - static_data:/app/backend/staticfiles
         ports:
             - "127.0.0.1:8000:8000"
+        entrypoint: []
         command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60
 
     celery:
@@ -56,6 +78,7 @@ services:
                 condition: service_started
         volumes:
             - media_data:/app/backend/media
+        entrypoint: []
         command: celery -A backend worker --loglevel=INFO
 
     celery-beat:
@@ -72,6 +95,7 @@ services:
                 condition: service_healthy
             redis:
                 condition: service_started
+        entrypoint: []
         command: celery -A backend beat --loglevel=INFO
 
     frontend:
