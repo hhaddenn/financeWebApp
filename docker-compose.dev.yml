@@ -64,6 +64,7 @@ services:
         volumes:
             - ./scripts/backup.sh:/scripts/backup.sh:ro
             - ${FINANCEAPP_BACKUP_DIR:-./.local/backups}:/backups
+            - ./backend/media:/media:ro
         entrypoint: ["/bin/sh", "/scripts/backup.sh"]
 
 volumes:

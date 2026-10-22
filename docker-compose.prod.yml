@@ -107,6 +107,12 @@ services:
               target: /backups
               bind:
                   create_host_path: false
+
+            - type: volume
+              source: media_data
+              target: /media
+              read_only: true
+
         entrypoint: ["/bin/sh", "/scripts/backup.sh"]
 
 volumes:
