@@ -53,31 +53,33 @@ echo "Backup completed successfully!"
 echo "File: $BACKUP_FILE"
 echo "Size: $(du -h "$BACKUP_FILE" | cut -f1)"
 
+# Remove old backups only when retention is explicitly enabled.
+if [ "${BACKUP_RETENTION_ENABLED:-false}" = "true" ]; then
+    RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
 
-# Preview backups older than the retention period.
-RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
+    case "$RETENTION_DAYS" in
+        ''|*[!0-9]*)
+            echo "ERROR: Invalid retention period." >&2
+            exit 1
+            ;;
+    esac
 
-case "$RETENTION_DAYS" in
-    ''|*[!0-9]*)
-        echo "ERROR: Invalid retention period." >&2
+    if [ "$RETENTION_DAYS" -lt 1 ]; then
+        echo "ERROR: Retention must be at least 1 day." >&2
         exit 1
-        ;;
-esac
+    fi
 
-if [ "$RETENTION_DAYS" -lt 1 ]; then
-    echo "ERROR: Retention must be at least 1 day." >&2
-    exit 1
+    echo "Removing backups older than $RETENTION_DAYS days..."
+
+    find "$BACKUP_DIR" \
+        -maxdepth 1 \
+        -type f \
+        -name 'financeapp-*.dump' \
+        -mtime "+$((RETENTION_DAYS - 1))" \
+        -print \
+        -exec rm -f -- {} \;
+
+    echo "Backup retention completed."
+else
+    echo "Backup retention disabled."
 fi
-
-
-echo "Removing backups older than $RETENTION_DAYS days..."
-
-find "$BACKUP_DIR" \
-    -maxdepth 1 \
-    -type f \
-    -name 'financeapp-*.dump' \
-    -mtime "+$((RETENTION_DAYS - 1))" \
-    -print \
-    -exec rm -f -- {} \;
-
-echo "Backup retention completed."
