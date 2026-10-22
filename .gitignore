@@ -58,3 +58,5 @@ backups/
 docker-compose.override.yml
 
 celerybeat-schedule*
+
+/.local/
