@@ -103,7 +103,7 @@ services:
                   create_host_path: false
 
             - type: bind
-              source: /home/pi/FinanceApp-Backups/prod
+              source: ${FINANCEAPP_BACKUP_DIR:-/var/backups/financeapp}
               target: /backups
               bind:
                   create_host_path: false
