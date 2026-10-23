@@ -18,6 +18,9 @@ services:
         build:
             context: .
             dockerfile: backend/Dockerfile
+            args:
+                INSTALL_TRANSLATIONS: "true"
+        user: "${DEV_UID:-1000}:10001"
         entrypoint: []
         command: python manage.py runserver 0.0.0.0:8000
         ports:

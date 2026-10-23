@@ -10,6 +10,48 @@ This document outlines the manual deployment and recovery procedures for Finance
 4. Verify that a recent, recoverable PostgreSQL and media backup is available.
 5. Review pending database migrations for backward compatibility.
 
+## One-Time Volume Ownership Migration
+
+The updated backend image is configured to run as UID/GID `10001:10001` instead of root.
+
+New Docker volumes can inherit the ownership configured in the backend
+image. Existing volumes retain their previous ownership and may require
+a one-time migration before deploying the non-root backend.
+
+This migration is a manual maintenance operation. It must not run
+automatically during deployment or rollback.
+
+Before migrating existing volumes:
+
+1. Schedule a maintenance window and prevent new application writes.
+   Stop the web backend, Celery workers, and any initialization processes
+   that could write to the affected volumes. Prevent automatic restarts
+   during maintenance.
+2. Identify the actual Docker volume names used by the deployment.
+   Do not assume they match the logical names in the Compose file.
+3. Create fresh PostgreSQL and media backups while application writes
+   are paused. Verify the backups and confirm that recovery is possible.
+4. Audit the media and static volumes using:
+
+    `sh scripts/audit-volume-ownership.sh VOLUME_NAME`
+
+5. If necessary, perform an explicit, controlled ownership migration
+   of the confirmed media and static volumes to UID/GID `10001:10001`.
+   Never apply this operation to PostgreSQL or Redis volumes, unrelated
+   volumes, or the host project directory.
+6. Repeat the ownership audit, verify existing media files, and confirm
+   that the application can write to the required directories.
+7. Complete application initialization and restart the services only
+   after all checks succeed.
+
+If verification fails, do not proceed with the deployment. Investigate
+the failure and follow a reviewed recovery procedure.
+
+The ownership migration must not be added to `prepare-deploy.sh` or
+to the backend container entrypoint.
+
+Rollback to an older image may require another permissions review.
+
 ## Deployment
 
 1. Configure the target image versions in the deployment environment.

@@ -1,0 +1,5 @@
+# Optional dependencies for the check_translations management command.
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+argostranslate==1.11.0
+torch==2.14.0+cpu
