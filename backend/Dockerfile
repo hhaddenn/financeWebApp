@@ -16,6 +16,11 @@ RUN if [ "$INSTALL_TRANSLATIONS" = "true" ]; then \
         pip install --no-cache-dir -r /app/requirements-translations.txt; \
     fi
 
+# pip is needed during the build, but not at production runtime.
+RUN if [ "$INSTALL_TRANSLATIONS" = "false" ]; then \
+        python -m pip uninstall --yes pip; \
+    fi
+
 COPY backend /app/backend
 
 RUN groupadd --gid 10001 app \
