@@ -18,6 +18,12 @@ services:
         restart: unless-stopped
         volumes:
             - redis_data:/data
+        healthcheck:
+            test: ["CMD-SHELL", "redis-cli ping | grep -qx PONG"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
 
     init:
         image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
@@ -34,7 +40,7 @@ services:
             db:
                 condition: service_healthy
             redis:
-                condition: service_started
+                condition: service_healthy
         volumes:
             - media_data:/app/backend/media
             - static_data:/app/backend/staticfiles
@@ -53,7 +59,7 @@ services:
             db:
                 condition: service_healthy
             redis:
-                condition: service_started
+                condition: service_healthy
         volumes:
             - media_data:/app/backend/media
             - static_data:/app/backend/staticfiles
@@ -61,6 +67,16 @@ services:
             - "127.0.0.1:8000:8000"
         entrypoint: []
         command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60
+        healthcheck:
+            test:
+                - CMD
+                - python
+                - -c
+                - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=3).close()"
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 30s
 
     celery:
         image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
@@ -75,7 +91,7 @@ services:
             db:
                 condition: service_healthy
             redis:
-                condition: service_started
+                condition: service_healthy
         volumes:
             - media_data:/app/backend/media
         entrypoint: []
@@ -94,7 +110,7 @@ services:
             db:
                 condition: service_healthy
             redis:
-                condition: service_started
+                condition: service_healthy
         entrypoint: []
         command: celery -A backend beat --loglevel=INFO --schedule=/tmp/financeapp-celerybeat-schedule
 
@@ -102,7 +118,8 @@ services:
         image: ghcr.io/hhaddenn/financewebapp-frontend:${FRONTEND_IMAGE_TAG:-latest}
         restart: unless-stopped
         depends_on:
-            - backend
+            backend:
+                condition: service_healthy
         ports:
             - "127.0.0.1:8080:8080"
 

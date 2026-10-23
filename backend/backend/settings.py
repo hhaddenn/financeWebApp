@@ -52,6 +52,10 @@ ALLOWED_HOSTS = [
     host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()
 ]
 
+# Allow internal container health checks over the loopback interface.
+if "127.0.0.1" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("127.0.0.1")
+
 CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
@@ -69,6 +73,8 @@ CORS_ALLOW_CREDENTIALS = True
 COOKIE_SECURE = env_bool("COOKIE_SECURE", not DEBUG)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", not DEBUG)
+# The container health check connects directly to Gunicorn over HTTP.
+SECURE_REDIRECT_EXEMPT = [r"^health/$"]
 SECURE_HSTS_SECONDS = int(
     os.getenv("SECURE_HSTS_SECONDS", "0" if DEBUG else "31536000")
 )
