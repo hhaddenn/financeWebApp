@@ -36,6 +36,36 @@ If a deployment fails:
 
 If the previous application version is incompatible with the database schema, investigate a controlled recovery procedure before proceeding.
 
+### Rollback Preparation
+
+Rollback requires an explicit change to the pre-deployment command.
+
+For a normal deployment:
+
+```bash
+sh scripts/prepare-deploy.sh
+```
+
+For a rollback:
+
+```bash
+sh scripts/prepare-deploy.sh --rollback
+```
+
+Before initiating a rollback:
+
+1. Verify that the previous application version is compatible with the current database schema.
+2. Select the previously deployed backend and frontend image versions.
+3. Configure the deployment process to use the rollback command instead of the normal command.
+4. Confirm that only one pre-deployment command will run.
+5. Initiate the rollback manually.
+6. Verify application functionality.
+7. Restore the normal pre-deployment command after recovery.
+
+Rollback mode creates a backup and pulls the selected images, but skips Django initialization.
+
+Never run initialization with older application code without first reviewing database compatibility.
+
 ## Release Version Tracking
 
 Before each deployment, privately record:

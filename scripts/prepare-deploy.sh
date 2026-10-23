@@ -6,6 +6,20 @@ set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 cd "$(dirname "$SCRIPT_DIR")"
 
+# Rollback must be explicitly requested.
+case "${1:-}" in
+    "")
+        ROLLBACK=false
+        ;;
+    --rollback)
+        ROLLBACK=true
+        ;;
+    *)
+        echo "ERROR: Unknown argument: $1" >&2
+        echo "Usage: prepare-deploy.sh [--rollback]" >&2
+        exit 2
+        ;;
+esac
 
 # Read the effective image reference resolved by Docker Compose.
 BACKEND_IMAGE="$(
@@ -53,6 +67,11 @@ echo "Pre-deploy backup completed."
 
 echo "Pulling application images..."
 docker compose -f docker-compose.prod.yml pull backend frontend
+
+if [ "$ROLLBACK" = "true" ]; then
+    echo "Rollback mode: skipping Django initialization."
+    exit 0
+fi
 
 echo "Running Django initialization..."
 docker compose -f docker-compose.prod.yml --profile tools run --rm --pull never init
