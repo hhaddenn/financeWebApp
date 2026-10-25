@@ -65,6 +65,53 @@ Rollback to an older image may require another permissions review.
 
 **Note:** The pre-deployment procedure must be configured and validated before being enabled in production.
 
+## Manual Service Activation
+
+Run these commands only after the pre-deployment preparation has
+completed successfully and the target image tags have been verified.
+
+Keep the previous backend and frontend image tags recorded so that
+a rollback remains possible.
+
+### Backend Update
+
+When the backend image changes, update the web service first:
+
+```bash
+docker compose -f docker-compose.prod.yml \
+    up -d --no-deps --wait --wait-timeout 120 backend
+```
+
+### Background Workers Update
+
+```bash
+docker compose -f docker-compose.prod.yml \
+    up -d --no-deps --wait --wait-timeout 120 celery
+```
+
+```bash
+docker compose -f docker-compose.prod.yml \
+    up -d --no-deps --wait --wait-timeout 120 celery-beat
+```
+
+Celery Beat and Celery worker do not have healthchecks, so their logs should be verified after the update.
+
+```bash
+docker compose -f docker-compose.prod.yml \
+    logs --tail=50 celery celery-beat
+```
+
+### Frontend Update
+
+The frontend should be updated when its image changes.
+
+```bash
+docker compose -f docker-compose.prod.yml \
+    up -d --no-deps --wait --wait-timeout 120 frontend
+```
+
+The frontend has no healthcheck, so verify the HTTP response and core application functionality after the update.
+
 ## Rollback
 
 If a deployment fails:
@@ -105,6 +152,13 @@ Before initiating a rollback:
 7. Restore the normal pre-deployment command after recovery.
 
 Rollback mode creates a backup and pulls the selected images, but skips Django initialization.
+
+The rollback preparation script does not automatically recreate or
+restart the application containers.
+
+After verifying database compatibility, the affected services
+(`backend`, `celery`, `celery-beat`, and `frontend`) must be manually
+activated using the previously deployed image versions.
 
 Never run initialization with older application code without first reviewing database compatibility.
 

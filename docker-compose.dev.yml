@@ -1,3 +1,4 @@
+name: financewebapp-dev
 services:
     db:
         image: postgres:17-alpine
