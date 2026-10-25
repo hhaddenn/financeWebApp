@@ -32,7 +32,6 @@ class Command(BaseCommand):
                 defaults={
                     "icon": category_data["icon"],
                     "category_type": category_data["category_type"],
-                    "description": "",
                 },
             )
 

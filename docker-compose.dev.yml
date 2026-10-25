@@ -1,53 +1,75 @@
+name: financewebapp-dev
 services:
-  db:
-    image: postgres:17-alpine
-    env_file:
-      - ./backend/.env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U financewebapp -d financewebapp"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    db:
+        image: postgres:17-alpine
+        env_file:
+            - ./backend/.env
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U financewebapp -d financewebapp"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
-  redis:
-    image: redis:7-alpine
+    redis:
+        image: redis:7-alpine
 
-  backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    entrypoint: []
-    command: python manage.py runserver 0.0.0.0:8000
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app/backend
-    env_file:
-      - ./backend/.env
-    environment:
-      DEBUG: "true"
-      DB_HOST: db
-      DB_PORT: 5432
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
+    backend:
+        build:
+            context: .
+            dockerfile: backend/Dockerfile
+            args:
+                INSTALL_TRANSLATIONS: "true"
+        user: "${DEV_UID:-1000}:10001"
+        entrypoint: []
+        command: python manage.py runserver 0.0.0.0:8000
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./backend:/app/backend
+        env_file:
+            - ./backend/.env
+        environment:
+            DEBUG: "true"
+            DB_HOST: db
+            DB_PORT: 5432
+            REDIS_URL: redis://redis:6379/0
+            CELERY_BROKER_URL: redis://redis:6379/0
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_started
 
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile.dev
-    command: npm run dev -- --host 0.0.0.0
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    frontend:
+        build:
+            context: .
+            dockerfile: frontend/Dockerfile.dev
+        command: npm run dev -- --host 0.0.0.0
+        ports:
+            - "5173:5173"
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+
+    backup:
+        image: postgres:17-alpine
+        profiles:
+            - tools
+        env_file:
+            - ./backend/.env
+        environment:
+            PGHOST: db
+            PGPORT: "5432"
+        depends_on:
+            db:
+                condition: service_healthy
+        volumes:
+            - ./scripts/backup.sh:/scripts/backup.sh:ro
+            - ${FINANCEAPP_BACKUP_DIR:-./.local/backups}:/backups
+            - ./backend/media:/media:ro
+        entrypoint: ["/bin/sh", "/scripts/backup.sh"]
 
 volumes:
-  postgres_data:
+    postgres_data:

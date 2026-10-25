@@ -1,0 +1,20 @@
+
+[Unit]
+Description=FinanceApp PostgreSQL Backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+
+# Replace these values when installing on the server.
+User=REPLACE_USER
+WorkingDirectory=REPLACE_PROJECT_PATH
+
+# Private configuration stored outside the Git repository.
+EnvironmentFile=/etc/financeapp/backup.env
+
+# Run the backup without starting or recreating dependencies.
+ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml --profile tools run --rm --no-deps backup
+
+TimeoutStartSec=15min

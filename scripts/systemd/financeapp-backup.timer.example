@@ -1,0 +1,19 @@
+[Unit]
+Description=FinanceApp Daily PostgreSQL Backup
+
+[Timer]
+# Execute diariamente às 03:00 (hora local do servidor).
+OnCalendar=*-*-* 03:00:00
+
+# Executar um backup caso o servidor estivesse desligado
+# durante o horário programado.
+Persistent=true
+
+# Serviço que executa o backup.
+Unit=financeapp-backup.service
+
+# Precisão do agendamento.
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target

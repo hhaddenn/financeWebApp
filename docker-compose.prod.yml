@@ -1,88 +1,166 @@
 services:
-  db:
-    image: postgres:17-alpine
-    restart: unless-stopped
-    env_file:
-      - ./backend/.env
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    db:
+        image: postgres:17-alpine
+        restart: unless-stopped
+        env_file:
+            - ./backend/.env
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test:
+                ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
 
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    volumes:
-      - redis_data:/data
+    redis:
+        image: redis:7-alpine
+        restart: unless-stopped
+        volumes:
+            - redis_data:/data
+        healthcheck:
+            test: ["CMD-SHELL", "redis-cli ping | grep -qx PONG"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
 
-  backend:
-    image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
-    restart: unless-stopped
-    env_file:
-      - ./backend/.env
-    environment:
-      DB_HOST: db
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    volumes:
-      - media_data:/app/backend/media
-      - static_data:/app/backend/staticfiles
-    ports:
-      - "127.0.0.1:8000:8000"
-    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60
+    init:
+        image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
+        profiles:
+            - tools
+        restart: "no"
+        env_file:
+            - ./backend/.env
+        environment:
+            DB_HOST: db
+            REDIS_URL: redis://redis:6379/0
+            CELERY_BROKER_URL: redis://redis:6379/0
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        volumes:
+            - media_data:/app/backend/media
+            - static_data:/app/backend/staticfiles
+        command: ["true"]
 
-  celery:
-    image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
-    restart: unless-stopped
-    env_file:
-      - ./backend/.env
-    environment:
-      DB_HOST: db
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    volumes:
-      - media_data:/app/backend/media
-    command: celery -A backend worker --loglevel=INFO
+    backend:
+        image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
+        restart: unless-stopped
+        stop_grace_period: 45s
+        env_file:
+            - ./backend/.env
+        environment:
+            DB_HOST: db
+            REDIS_URL: redis://redis:6379/0
+            CELERY_BROKER_URL: redis://redis:6379/0
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        volumes:
+            - media_data:/app/backend/media
+            - static_data:/app/backend/staticfiles
+        ports:
+            - "127.0.0.1:8000:8000"
+        entrypoint: []
+        command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60
+        healthcheck:
+            test:
+                - CMD
+                - python
+                - -c
+                - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=3).close()"
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 30s
 
-  celery-beat:
-    image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
-    restart: unless-stopped
-    env_file:
-      - ./backend/.env
-    environment:
-      DB_HOST: db
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/0
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    command: celery -A backend beat --loglevel=INFO
+    celery:
+        image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
+        restart: unless-stopped
+        stop_grace_period: 120s
+        env_file:
+            - ./backend/.env
+        environment:
+            DB_HOST: db
+            REDIS_URL: redis://redis:6379/0
+            CELERY_BROKER_URL: redis://redis:6379/0
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        volumes:
+            - media_data:/app/backend/media
+        entrypoint: []
+        command: celery -A backend worker --loglevel=INFO
 
-  frontend:
-    image: ghcr.io/hhaddenn/financewebapp-frontend:${FRONTEND_IMAGE_TAG:-latest}
-    restart: unless-stopped
-    depends_on:
-      - backend
-    ports:
-      - "127.0.0.1:8080:80"
+    celery-beat:
+        image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_IMAGE_TAG:-latest}
+        restart: unless-stopped
+        stop_grace_period: 30s
+        env_file:
+            - ./backend/.env
+        environment:
+            DB_HOST: db
+            REDIS_URL: redis://redis:6379/0
+            CELERY_BROKER_URL: redis://redis:6379/0
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        entrypoint: []
+        command: celery -A backend beat --loglevel=INFO --schedule=/tmp/financeapp-celerybeat-schedule
+
+    frontend:
+        image: ghcr.io/hhaddenn/financewebapp-frontend:${FRONTEND_IMAGE_TAG:-latest}
+        restart: unless-stopped
+        depends_on:
+            backend:
+                condition: service_healthy
+        ports:
+            - "127.0.0.1:8080:8080"
+
+    backup:
+        image: postgres:17-alpine
+        profiles:
+            - tools
+        env_file:
+            - ./backend/.env
+        environment:
+            PGHOST: db
+            PGPORT: "5432"
+        depends_on:
+            db:
+                condition: service_healthy
+        volumes:
+            - type: bind
+              source: ./scripts/backup.sh
+              target: /scripts/backup.sh
+              read_only: true
+              bind:
+                  create_host_path: false
+
+            - type: bind
+              source: ${FINANCEAPP_BACKUP_DIR:-/var/backups/financeapp}
+              target: /backups
+              bind:
+                  create_host_path: false
+
+            - type: volume
+              source: media_data
+              target: /media
+              read_only: true
+
+        entrypoint: ["/bin/sh", "/scripts/backup.sh"]
 
 volumes:
-  postgres_data:
-  redis_data:
-  media_data:
-  static_data:
+    postgres_data:
+    redis_data:
+    media_data:
+    static_data:
