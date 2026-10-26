@@ -21,8 +21,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import (
-    BlacklistedToken,
-    OutstandingToken,
+	BlacklistedToken,
+	OutstandingToken,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -35,432 +35,444 @@ User = get_user_model()
 
 
 def _token_response(user, remember_me=False):
-    refresh_token = RefreshToken.for_user(user)
+	refresh_token = RefreshToken.for_user(user)
 
-    if remember_me:
-        refresh_token.set_exp(lifetime=timedelta(days=30))
+	if remember_me:
+		refresh_token.set_exp(lifetime=timedelta(days=30))
 
-    response = Response({"access": str(refresh_token.access_token)})
-    cookie_options = {
-        "key": "refresh_token",
-        "value": str(refresh_token),
-        "httponly": True,
-        "secure": settings.COOKIE_SECURE,
-        "samesite": "Lax",
-        "path": "/api/auth/",
-    }
+	response = Response({"access": str(refresh_token.access_token)})
+	cookie_options = {
+		"key": "refresh_token",
+		"value": str(refresh_token),
+		"httponly": True,
+		"secure": settings.COOKIE_SECURE,
+		"samesite": "Lax",
+		"path": "/api/auth/",
+	}
 
-    if remember_me:
-        cookie_options["max_age"] = 30 * 24 * 60 * 60
+	if remember_me:
+		cookie_options["max_age"] = 30 * 24 * 60 * 60
 
-    response.set_cookie(**cookie_options)
-    return response
+	response.set_cookie(**cookie_options)
+	return response
 
 
 @method_decorator(csrf_protect, name="dispatch")
 class CookieTokenObtainPairView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
+	permission_classes = (AllowAny,)
 
-    def post(self, request, *args, **kwargs):
-        username = request.data.get("username", "")
-        password = request.data.get("password", "")
-        remember_me = bool(request.data.get("remember_me", False))
-        user = authenticate(request, username=username, password=password)
+	def post(self, request, *args, **kwargs):
+		username = request.data.get("username", "")
+		password = request.data.get("password", "")
+		remember_me = bool(request.data.get("remember_me", False))
+		user = authenticate(request, username=username, password=password)
 
-        if user is None:
-            inactive_user = User.objects.filter(username__iexact=username).first()
-            if inactive_user and inactive_user.check_password(password):
-                return Response(
-                    {"detail": "Email verification required."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-            return Response(
-                {"detail": "Invalid username or password."},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+		if user is None:
+			inactive_user = User.objects.filter(username__iexact=username).first()
+			if inactive_user and inactive_user.check_password(password):
+				return Response(
+					{"detail": "Email verification required."},
+					status=status.HTTP_403_FORBIDDEN,
+				)
+			return Response(
+				{"detail": "Invalid username or password."},
+				status=status.HTTP_401_UNAUTHORIZED,
+			)
 
-        code = f"{secrets.randbelow(1_000_000):06d}"
-        challenge = LoginChallenge.objects.create(
-            user=user,
-            code_hash=make_password(code),
-            expires_at=timezone.now() + timedelta(minutes=10),
-            remember_me=remember_me,
-        )
+		code = f"{secrets.randbelow(1_000_000):06d}"
+		challenge = LoginChallenge.objects.create(
+			user=user,
+			code_hash=make_password(code),
+			expires_at=timezone.now() + timedelta(minutes=10),
+			remember_me=remember_me,
+		)
 
-        send_mail(
-            subject="Your login verification code",
-            message=f"Your login verification code is {code}. It expires in 10 minutes.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+		send_mail(
+			subject="Your login verification code",
+			message=f"Your login verification code is {code}. It expires in 10 minutes.",
+			from_email=settings.DEFAULT_FROM_EMAIL,
+			recipient_list=[user.email],
+			fail_silently=False,
+		)
 
-        return Response(
-            {"challenge_id": str(challenge.id)},
-            status=status.HTTP_202_ACCEPTED,
-        )
+		return Response(
+			{"challenge_id": str(challenge.id)},
+			status=status.HTTP_202_ACCEPTED,
+		)
 
 
 @method_decorator(csrf_protect, name="dispatch")
 class VerifyLoginView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
+	permission_classes = (AllowAny,)
 
-    @transaction.atomic
-    def post(self, request, *args, **kwargs):
-        challenge_id = request.data.get("challenge_id")
-        code = str(request.data.get("code", ""))
+	@transaction.atomic
+	def post(self, request, *args, **kwargs):
+		challenge_id = request.data.get("challenge_id")
+		code = str(request.data.get("code", ""))
 
-        try:
-            challenge = LoginChallenge.objects.select_for_update().select_related("user").get(
-                pk=challenge_id
-            )
-        except (LoginChallenge.DoesNotExist, ValueError, TypeError):
-            return Response(
-                {"detail": "Invalid or expired login code."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+		try:
+			challenge = (
+				LoginChallenge.objects.select_for_update()
+				.select_related("user")
+				.get(pk=challenge_id)
+			)
+		except (LoginChallenge.DoesNotExist, ValueError, TypeError):
+			return Response(
+				{"detail": "Invalid or expired login code."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
 
-        if (
-            challenge.used
-            or challenge.attempts >= 5
-            or challenge.expires_at <= timezone.now()
-        ):
-            return Response(
-                {"detail": "Invalid or expired login code."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+		if (
+			challenge.used
+			or challenge.attempts >= 5
+			or challenge.expires_at <= timezone.now()
+		):
+			return Response(
+				{"detail": "Invalid or expired login code."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
 
-        challenge.attempts += 1
-        challenge.save(update_fields=["attempts"])
+		challenge.attempts += 1
+		challenge.save(update_fields=["attempts"])
 
-        if not check_password(code, challenge.code_hash):
-            return Response(
-                {"detail": "Invalid or expired login code."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+		if not check_password(code, challenge.code_hash):
+			return Response(
+				{"detail": "Invalid or expired login code."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
 
-        challenge.used = True
-        challenge.save(update_fields=["used"])
-        challenge.user.last_login = timezone.now()
-        challenge.user.save(update_fields=["last_login"])
-        return _token_response(challenge.user, challenge.remember_me)
+		challenge.used = True
+		challenge.save(update_fields=["used"])
+		challenge.user.last_login = timezone.now()
+		challenge.user.save(update_fields=["last_login"])
+		return _token_response(challenge.user, challenge.remember_me)
 
 
 @method_decorator(csrf_protect, name="dispatch")
 class CookieTokenRefreshView(TokenRefreshView):
-    permission_classes = (AllowAny,)
+	permission_classes = (AllowAny,)
 
-    def post(self, request, *args, **kwargs):
-        refresh_token = request.COOKIES.get("refresh_token")
+	def post(self, request, *args, **kwargs):
+		refresh_token = request.COOKIES.get("refresh_token")
 
-        if not refresh_token:
-            return Response(
-                {"refresh": ["Refresh token cookie not found."]},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+		if not refresh_token:
+			return Response(
+				{"refresh": ["Refresh token cookie not found."]},
+				status=status.HTTP_401_UNAUTHORIZED,
+			)
 
-        serializer = self.get_serializer(data={"refresh": refresh_token})
-        try:
-            serializer.is_valid(raise_exception=True)
-        except TokenError:
-            return Response(
-                {"refresh": ["Invalid or blacklisted refresh token."]},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+		serializer = self.get_serializer(data={"refresh": refresh_token})
+		try:
+			serializer.is_valid(raise_exception=True)
+		except TokenError:
+			return Response(
+				{"refresh": ["Invalid or blacklisted refresh token."]},
+				status=status.HTTP_401_UNAUTHORIZED,
+			)
 
-        return Response(serializer.validated_data)
+		return Response(serializer.validated_data)
 
 
 @method_decorator(csrf_protect, name="dispatch")
 class LogoutView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
+	permission_classes = (AllowAny,)
 
-    def post(self, request):
-        refresh_token = request.COOKIES.get("refresh_token")
+	def post(self, request):
+		refresh_token = request.COOKIES.get("refresh_token")
 
-        if refresh_token:
-            try:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
-            except TokenError:
-                logger.warning("Invalid refresh token during logout", exc_info=True)
+		if refresh_token:
+			try:
+				token = RefreshToken(refresh_token)
+				token.blacklist()
+			except TokenError:
+				logger.warning("Invalid refresh token during logout", exc_info=True)
 
-        response = Response(
-            {"detail": "Successfully logged out."},
-            status=status.HTTP_205_RESET_CONTENT,
-        )
+		response = Response(
+			{"detail": "Successfully logged out."},
+			status=status.HTTP_205_RESET_CONTENT,
+		)
 
-        response.delete_cookie(
-            "refresh_token",
-            path="/api/auth/",
-        )
+		response.delete_cookie(
+			"refresh_token",
+			path="/api/auth/",
+		)
 
-        return response
+		return response
 
 
 class RegisterView(generics.CreateAPIView):
-    serializer_class = RegisterSerializer
-    permission_classes = (AllowAny,)
+	serializer_class = RegisterSerializer
+	permission_classes = (AllowAny,)
 
-    def perform_create(self, serializer):
-        user = serializer.save()
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = default_token_generator.make_token(user)
-        verification_url = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
+	def perform_create(self, serializer):
+		user = serializer.save()
+		uid = urlsafe_base64_encode(force_bytes(user.pk))
+		token = default_token_generator.make_token(user)
+		verification_url = f"{settings.FRONTEND_URL}/verify-email/{uid}/{token}"
 
-        send_mail(
-            subject="Confirm your email address",
-            message=(
-                "Confirm your email address by opening this link:\n\n"
-                f"{verification_url}\n\n"
-                "This link expires when your account security state changes."
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
+		send_mail(
+			subject="Confirm your email address",
+			message=(
+				"Confirm your email address by opening this link:\n\n"
+				f"{verification_url}\n\n"
+				"This link expires when your account security state changes."
+			),
+			from_email=settings.DEFAULT_FROM_EMAIL,
+			recipient_list=[user.email],
+			fail_silently=False,
+		)
 
 
 class VerifyEmailView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
+	permission_classes = (AllowAny,)
 
-    def get(self, request, uid, token):
-        try:
-            user_id = force_str(urlsafe_base64_decode(uid))
-            user = User.objects.get(pk=user_id)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            return Response(
-                {"detail": "Invalid or expired verification link."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+	def get(self, request, uid, token):
+		try:
+			user_id = force_str(urlsafe_base64_decode(uid))
+			user = User.objects.get(pk=user_id)
+		except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+			return Response(
+				{"detail": "Invalid or expired verification link."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
 
-        if user.is_active or not default_token_generator.check_token(user, token):
-            return Response(
-                {"detail": "Invalid or expired verification link."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+		if user.is_active or not default_token_generator.check_token(user, token):
+			return Response(
+				{"detail": "Invalid or expired verification link."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
 
-        user.is_active = True
-        user.save(update_fields=["is_active"])
+		user.is_active = True
+		user.save(update_fields=["is_active"])
 
-        return Response({"detail": "Email verified successfully."})
+		return Response({"detail": "Email verified successfully."})
 
 
 @method_decorator(csrf_protect, name="dispatch")
 class PasswordResetRequestView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
+	permission_classes = (AllowAny,)
 
-    def post(self, request, *args, **kwargs):
-        email = str(request.data.get("email", "")).strip().lower()
-        user = User.objects.filter(email__iexact=email, is_active=True).first()
+	def post(self, request, *args, **kwargs):
+		email = str(request.data.get("email", "")).strip().lower()
+		user = User.objects.filter(email__iexact=email, is_active=True).first()
 
-        if user:
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-            reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
-            send_mail(
-                subject="Reset your password",
-                message=(
-                    "Reset your password by opening this link:\n\n"
-                    f"{reset_url}\n\n"
-                    "If you did not request this, you can ignore this email."
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                fail_silently=False,
-            )
+		if user:
+			uid = urlsafe_base64_encode(force_bytes(user.pk))
+			token = default_token_generator.make_token(user)
+			reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}"
+			send_mail(
+				subject="Reset your password",
+				message=(
+					"Reset your password by opening this link:\n\n"
+					f"{reset_url}\n\n"
+					"If you did not request this, you can ignore this email."
+				),
+				from_email=settings.DEFAULT_FROM_EMAIL,
+				recipient_list=[user.email],
+				fail_silently=False,
+			)
 
-        return Response(
-            {"detail": "If an account exists for that email, a reset link was sent."}
-        )
+		return Response(
+			{"detail": "If an account exists for that email, a reset link was sent."}
+		)
 
 
 def _get_user_from_token(uid, token):
-    try:
-        user_id = force_str(urlsafe_base64_decode(uid))
-        user = User.objects.get(pk=user_id)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        return None
+	try:
+		user_id = force_str(urlsafe_base64_decode(uid))
+		user = User.objects.get(pk=user_id)
+	except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+		return None
 
-    if not user.is_active or not default_token_generator.check_token(user, token):
-        return None
+	if not user.is_active or not default_token_generator.check_token(user, token):
+		return None
 
-    return user
+	return user
 
 
 @method_decorator(csrf_protect, name="dispatch")
 class PasswordResetConfirmView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
+	permission_classes = (AllowAny,)
 
-    def post(self, request, uid, token, *args, **kwargs):
-        user = _get_user_from_token(uid, token)
-        password = str(request.data.get("password", ""))
+	def post(self, request, uid, token, *args, **kwargs):
+		user = _get_user_from_token(uid, token)
+		password = str(request.data.get("password", ""))
 
-        if user is None:
-            return Response(
-                {"detail": "Invalid or expired password reset link."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+		if user is None:
+			return Response(
+				{"detail": "Invalid or expired password reset link."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
 
-        try:
-            validate_password(password, user)
-        except ValidationError as error:
-            return Response(
-                {"password": list(error.messages)},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+		try:
+			validate_password(password, user)
+		except ValidationError as error:
+			return Response(
+				{"password": list(error.messages)},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
 
-        user.set_password(password)
-        user.save(update_fields=["password"])
+		user.set_password(password)
+		user.save(update_fields=["password"])
 
-        for outstanding_token in OutstandingToken.objects.filter(user=user):
-            BlacklistedToken.objects.get_or_create(token=outstanding_token)
+		for outstanding_token in OutstandingToken.objects.filter(user=user):
+			BlacklistedToken.objects.get_or_create(token=outstanding_token)
 
-        return Response({"detail": "Password reset successfully."})
+		return Response({"detail": "Password reset successfully."})
 
 
 class MeView(generics.RetrieveAPIView):
-    serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated,)
+	serializer_class = UserSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_object(self):
-        return self.request.user
+	def get_object(self):
+		return self.request.user
 
 
 class AccountView(generics.RetrieveUpdateAPIView):
-    permission_classes = (IsAuthenticated,)
+	permission_classes = (IsAuthenticated,)
 
-    def get_object(self):
-        return self.request.user
+	def get_object(self):
+		return self.request.user
 
-    def retrieve(self, request, *args, **kwargs):
-        user = self.get_object()
-        return Response(
-            {
-                "username": user.username,
-                "email": user.email,
-                "last_login": user.last_login,
-            }
-        )
+	def retrieve(self, request, *args, **kwargs):
+		user = self.get_object()
+		return Response(
+			{
+				"username": user.username,
+				"email": user.email,
+				"last_login": user.last_login,
+			}
+		)
 
-    @method_decorator(csrf_protect)
-    def patch(self, request, *args, **kwargs):
-        user = self.get_object()
-        current_password = str(request.data.get("current_password", ""))
-        username = str(request.data.get("username", "")).strip()
+	@method_decorator(csrf_protect)
+	def patch(self, request, *args, **kwargs):
+		user = self.get_object()
+		current_password = str(request.data.get("current_password", ""))
+		username = str(request.data.get("username", "")).strip()
 
-        if not user.check_password(current_password):
-            return Response({"detail": "Current password is incorrect."}, status=400)
-        if not username:
-            return Response({"detail": "Username is required."}, status=400)
-        if User.objects.filter(username__iexact=username).exclude(pk=user.pk).exists():
-            return Response({"detail": "Username is already in use."}, status=400)
+		if not user.check_password(current_password):
+			return Response({"detail": "Current password is incorrect."}, status=400)
+		if not username:
+			return Response({"detail": "Username is required."}, status=400)
+		if User.objects.filter(username__iexact=username).exclude(pk=user.pk).exists():
+			return Response({"detail": "Username is already in use."}, status=400)
 
-        user.username = username
-        user.save(update_fields=["username"])
-        return self.retrieve(request)
+		user.username = username
+		user.save(update_fields=["username"])
+		return self.retrieve(request)
 
 
 @method_decorator(csrf_protect, name="dispatch")
 class PasswordChangeView(generics.GenericAPIView):
-    permission_classes = (IsAuthenticated,)
+	permission_classes = (IsAuthenticated,)
 
-    def post(self, request):
-        user = request.user
-        current_password = str(request.data.get("current_password", ""))
-        new_password = str(request.data.get("new_password", ""))
-        confirm_password = str(request.data.get("confirm_password", ""))
+	def post(self, request):
+		user = request.user
+		current_password = str(request.data.get("current_password", ""))
+		new_password = str(request.data.get("new_password", ""))
+		confirm_password = str(request.data.get("confirm_password", ""))
 
-        if not user.check_password(current_password):
-            return Response({"detail": "Current password is incorrect."}, status=400)
-        if new_password != confirm_password:
-            return Response({"detail": "Passwords do not match."}, status=400)
-        try:
-            validate_password(new_password, user)
-        except ValidationError as error:
-            return Response({"password": error.messages}, status=400)
+		if not user.check_password(current_password):
+			return Response({"detail": "Current password is incorrect."}, status=400)
+		if new_password != confirm_password:
+			return Response({"detail": "Passwords do not match."}, status=400)
+		try:
+			validate_password(new_password, user)
+		except ValidationError as error:
+			return Response({"password": error.messages}, status=400)
 
-        user.set_password(new_password)
-        user.save(update_fields=["password"])
-        for token in OutstandingToken.objects.filter(user=user):
-            BlacklistedToken.objects.get_or_create(token=token)
+		user.set_password(new_password)
+		user.save(update_fields=["password"])
+		for token in OutstandingToken.objects.filter(user=user):
+			BlacklistedToken.objects.get_or_create(token=token)
 
-        response = Response({"detail": "Password changed successfully."})
-        response.delete_cookie("refresh_token", path="/api/auth/")
-        return response
+		response = Response({"detail": "Password changed successfully."})
+		response.delete_cookie("refresh_token", path="/api/auth/")
+		return response
 
 
 @method_decorator(csrf_protect, name="dispatch")
 class EmailChangeRequestView(generics.GenericAPIView):
-    permission_classes = (IsAuthenticated,)
+	permission_classes = (IsAuthenticated,)
 
-    def post(self, request):
-        user = request.user
-        current_password = str(request.data.get("current_password", ""))
-        new_email = str(request.data.get("new_email", "")).strip().lower()
+	def post(self, request):
+		user = request.user
+		current_password = str(request.data.get("current_password", ""))
+		new_email = str(request.data.get("new_email", "")).strip().lower()
 
-        if not user.check_password(current_password):
-            return Response({"detail": "Current password is incorrect."}, status=400)
-        if User.objects.filter(email__iexact=new_email).exclude(pk=user.pk).exists():
-            return Response({"detail": "Email is already in use."}, status=400)
+		if not user.check_password(current_password):
+			return Response({"detail": "Current password is incorrect."}, status=400)
+		if User.objects.filter(email__iexact=new_email).exclude(pk=user.pk).exists():
+			return Response({"detail": "Email is already in use."}, status=400)
 
-        raw_token = secrets.token_urlsafe(32)
-        change = EmailChangeRequest.objects.create(
-            user=user,
-            new_email=new_email,
-            token_hash=make_password(raw_token),
-            expires_at=timezone.now() + timedelta(hours=1),
-        )
-        confirmation_url = (
-            f"{settings.FRONTEND_URL}/confirm-email-change/{change.id}/{raw_token}"
-        )
-        send_mail(
-            subject="Confirm your new email address",
-            message=f"Confirm your new email address by opening this link:\n\n{confirmation_url}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[new_email],
-            fail_silently=False,
-        )
-        return Response({"detail": "Confirmation email sent."})
+		raw_token = secrets.token_urlsafe(32)
+		change = EmailChangeRequest.objects.create(
+			user=user,
+			new_email=new_email,
+			token_hash=make_password(raw_token),
+			expires_at=timezone.now() + timedelta(hours=1),
+		)
+		confirmation_url = (
+			f"{settings.FRONTEND_URL}/confirm-email-change/{change.id}/{raw_token}"
+		)
+		send_mail(
+			subject="Confirm your new email address",
+			message=f"Confirm your new email address by opening this link:\n\n{confirmation_url}",
+			from_email=settings.DEFAULT_FROM_EMAIL,
+			recipient_list=[new_email],
+			fail_silently=False,
+		)
+		return Response({"detail": "Confirmation email sent."})
 
 
 class EmailChangeConfirmView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
+	permission_classes = (AllowAny,)
 
-    def post(self, request, uid, token):
-        try:
-            change = EmailChangeRequest.objects.select_related("user").get(pk=uid)
-        except (EmailChangeRequest.DoesNotExist, ValueError, TypeError):
-            return Response({"detail": "Invalid or expired link."}, status=400)
+	def post(self, request, uid, token):
+		try:
+			change = EmailChangeRequest.objects.select_related("user").get(pk=uid)
+		except (EmailChangeRequest.DoesNotExist, ValueError, TypeError):
+			return Response({"detail": "Invalid or expired link."}, status=400)
 
-        if change.used or change.expires_at <= timezone.now() or not check_password(token, change.token_hash):
-            return Response({"detail": "Invalid or expired link."}, status=400)
-        if User.objects.filter(email__iexact=change.new_email).exclude(pk=change.user_id).exists():
-            return Response({"detail": "Email is already in use."}, status=400)
+		if (
+			change.used
+			or change.expires_at <= timezone.now()
+			or not check_password(token, change.token_hash)
+		):
+			return Response({"detail": "Invalid or expired link."}, status=400)
+		if (
+			User.objects.filter(email__iexact=change.new_email)
+			.exclude(pk=change.user_id)
+			.exists()
+		):
+			return Response({"detail": "Email is already in use."}, status=400)
 
-        change.user.email = change.new_email
-        change.user.save(update_fields=["email"])
-        change.used = True
-        change.save(update_fields=["used"])
-        return Response({"detail": "Email changed successfully."})
+		change.user.email = change.new_email
+		change.user.save(update_fields=["email"])
+		change.used = True
+		change.save(update_fields=["used"])
+		return Response({"detail": "Email changed successfully."})
 
 
 @method_decorator(csrf_protect, name="dispatch")
 class LogoutAllView(generics.GenericAPIView):
-    permission_classes = (IsAuthenticated,)
+	permission_classes = (IsAuthenticated,)
 
-    def post(self, request):
-        for token in OutstandingToken.objects.filter(user=request.user):
-            BlacklistedToken.objects.get_or_create(token=token)
-        response = Response({"detail": "All sessions ended."})
-        response.delete_cookie("refresh_token", path="/api/auth/")
-        return response
+	def post(self, request):
+		for token in OutstandingToken.objects.filter(user=request.user):
+			BlacklistedToken.objects.get_or_create(token=token)
+		response = Response({"detail": "All sessions ended."})
+		response.delete_cookie("refresh_token", path="/api/auth/")
+		return response
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class CsrfTokenView(generics.GenericAPIView):
-    permission_classes = (AllowAny,)
+	permission_classes = (AllowAny,)
 
-    def get(self, request):
-        get_token(request)
-        return Response({"detail": "CSRF cookie set."})
+	def get(self, request):
+		token = get_token(request)
+		response = Response({"detail": "CSRF cookie set.", "csrfToken": token})
+		response["Cache-Control"] = "no-store"
+		return response

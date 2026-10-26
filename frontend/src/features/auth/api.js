@@ -1,15 +1,16 @@
 // Authentication API requests.
 
-import api, { setAccessToken } from '@/api/client';
+import api, { setAccessToken, setCsrfToken } from "@/api/client";
 
 export const ensureCsrfToken = async () => {
-	await api.get('/auth/csrf/');
+	const response = await api.get("/auth/csrf/");
+	setCsrfToken(response.data.csrfToken ?? null);
 };
 
 export const login = async (username, password, rememberMe) => {
 	await ensureCsrfToken();
 
-	const response = await api.post('/auth/login/', {
+	const response = await api.post("/auth/login/", {
 		username,
 		password,
 		remember_me: rememberMe,
@@ -23,7 +24,7 @@ export const login = async (username, password, rememberMe) => {
 export const verifyLogin = async (challengeId, code) => {
 	await ensureCsrfToken();
 
-	const response = await api.post('/auth/login/verify/', {
+	const response = await api.post("/auth/login/verify/", {
 		challenge_id: challengeId,
 		code,
 	});
@@ -37,10 +38,10 @@ export const register = async (
 	username,
 	email,
 	password,
-	theme = 'system',
-	language = 'pt',
+	theme = "system",
+	language = "pt",
 ) => {
-	const response = await api.post('/auth/register/', {
+	const response = await api.post("/auth/register/", {
 		username,
 		email,
 		password,
@@ -58,7 +59,7 @@ export const verifyEmail = async (uid, token) => {
 
 export const requestPasswordReset = async (email) => {
 	await ensureCsrfToken();
-	const response = await api.post('/auth/password-reset/', { email });
+	const response = await api.post("/auth/password-reset/", { email });
 	return response.data;
 };
 
@@ -74,7 +75,7 @@ export const confirmPasswordReset = async (uid, token, password) => {
 export const refreshAccessToken = async () => {
 	await ensureCsrfToken();
 
-	const response = await api.post('/auth/refresh/');
+	const response = await api.post("/auth/refresh/");
 
 	setAccessToken(response.data.access);
 
@@ -82,14 +83,14 @@ export const refreshAccessToken = async () => {
 };
 
 export const getUser = async () => {
-	const response = await api.get('/auth/me/');
+	const response = await api.get("/auth/me/");
 	return response.data;
 };
 
 export const logout = async () => {
 	try {
 		await ensureCsrfToken();
-		await api.post('/auth/logout/');
+		await api.post("/auth/logout/");
 	} finally {
 		setAccessToken(null);
 	}
