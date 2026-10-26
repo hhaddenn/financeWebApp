@@ -1,0 +1,29 @@
+services:
+  worker:
+    image: ghcr.io/hhaddenn/financewebapp-backend:${DEPLOY_SHA:?required}
+    pull_policy: missing
+    restart: unless-stopped
+    stop_grace_period: 10m
+    entrypoint: []
+    working_dir: /app/backend
+    command: celery -A backend worker --loglevel=INFO
+    env_file:
+      - /home/pi/Desktop/financeWebApp/backend/.env
+    environment:
+      DB_HOST: db
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+    volumes:
+      - production_media:/app/backend/media
+    networks:
+      - production
+
+networks:
+  production:
+    external: true
+    name: financewebapp_default
+
+volumes:
+  production_media:
+    external: true
+    name: financewebapp_media_data

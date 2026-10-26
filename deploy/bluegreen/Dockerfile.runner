@@ -1,0 +1,11 @@
+FROM docker:29-cli
+
+RUN apk add --no-cache \
+    bash \
+    python3 \
+    git \
+    curl \
+    util-linux \
+    ca-certificates
+
+WORKDIR /home/pi/financewebapp-bluegreen

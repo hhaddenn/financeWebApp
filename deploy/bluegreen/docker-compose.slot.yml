@@ -1,0 +1,54 @@
+services:
+  slot_backend:
+    image: ghcr.io/hhaddenn/financewebapp-backend:${DEPLOY_SHA:?DEPLOY_SHA obrigatorio}
+    pull_policy: always
+    restart: unless-stopped
+
+    env_file:
+      - /home/pi/Desktop/financeWebApp/backend/.env
+
+    environment:
+      DB_HOST: db
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+
+    networks:
+      - slot_internal
+      - production
+
+    volumes:
+      - production_media:/app/backend/media
+      - production_static:/app/backend/staticfiles
+
+    ports:
+      - "127.0.0.1:${BG_API_PORT:?BG_API_PORT obrigatoria}:8000"
+
+    entrypoint: []
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60
+
+  slot_frontend:
+    image: ghcr.io/hhaddenn/financewebapp-frontend:${DEPLOY_SHA:?DEPLOY_SHA obrigatorio}
+    pull_policy: always
+    restart: unless-stopped
+
+    networks:
+      - slot_internal
+
+    ports:
+      - "127.0.0.1:${BG_WEB_PORT:?BG_WEB_PORT obrigatoria}:8080"
+
+networks:
+  slot_internal:
+
+  production:
+    external: true
+    name: financewebapp_default
+
+volumes:
+  production_media:
+    external: true
+    name: financewebapp_media_data
+
+  production_static:
+    external: true
+    name: financewebapp_static_data

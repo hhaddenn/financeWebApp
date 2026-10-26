@@ -60,3 +60,15 @@ docker-compose.override.yml
 celerybeat-schedule*
 
 /.local/
+
+# Blue-Green: dados exclusivos do servidor
+deploy/bluegreen/.env
+deploy/bluegreen/.env.*
+deploy/bluegreen/backups/
+deploy/bluegreen/state/
+deploy/bluegreen/*.log
+deploy/bluegreen/*-pending
+deploy/bluegreen/*.dump
+deploy/bluegreen/*.sql
+deploy/bluegreen/*.pem
+deploy/bluegreen/*.key
