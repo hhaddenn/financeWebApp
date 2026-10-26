@@ -54,9 +54,14 @@ PY
 # The slot must be running the precise version published on main.
 sha="${DEPLOY_SHA:-}"
 [[ "$sha" =~ ^[a-f0-9]{40}$ ]] || { echo "ERRO: SHA de main invalido." >&2; exit 1; }
+[[ "${BACKEND_SHA:-}" =~ ^[a-f0-9]{40}$ && "${FRONTEND_SHA:-}" =~ ^[a-f0-9]{40}$ ]] || {
+  echo "ERRO: SHAs dos componentes invalidos." >&2
+  exit 1
+}
 for svc in backend frontend; do
+  if [[ "$svc" == backend ]]; then component_sha="$BACKEND_SHA"; else component_sha="$FRONTEND_SHA"; fi
   container="financewebapp-bg-${next}-slot_${svc}-1"
-  expected="ghcr.io/hhaddenn/financewebapp-${svc}:${sha}"
+  expected="ghcr.io/hhaddenn/financewebapp-${svc}:${component_sha}"
   actual=$(docker inspect --format '{{.Config.Image}}' "$container") || exit 1
   [[ "$actual" == "$expected" ]] || {
     echo "ERRO: imagem ${svc} nao corresponde a main; preparar slot primeiro." >&2
@@ -131,7 +136,7 @@ docker exec "$proxy" caddy validate \
 
 echo "Slot atual: $active"
 echo "Slot preparado: $next"
-echo "Commit confirmado: $sha"
+echo "Release confirmada: $sha; backend: $BACKEND_SHA; frontend: $FRONTEND_SHA"
 echo "Configuracao do proxy: valida"
 if [[ "$mode" == "--check" ]]; then
   echo "DRY RUN: trafego nao alterado."
