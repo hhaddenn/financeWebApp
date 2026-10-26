@@ -1,0 +1,125 @@
+name: financewebapp-green
+
+services:
+    db:
+        image: postgres:17-alpine
+        restart: "no"
+        env_file:
+            - ./staging/green/.env
+        volumes:
+            - green_postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test:
+                ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    redis:
+        image: redis:7-alpine
+        restart: "no"
+        volumes:
+            - green_redis_data:/data
+        healthcheck:
+            test: ["CMD-SHELL", "redis-cli ping | grep -qx PONG"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    init:
+        image: ghcr.io/hhaddenn/financewebapp-backend:f498c1d8bd21239496b61d2e7d2aca135b7afd2e
+        profiles:
+            - tools
+        restart: "no"
+        env_file:
+            - ./staging/green/backend/.env
+        environment:
+            DB_HOST: db
+            REDIS_URL: redis://redis:6379/0
+            CELERY_BROKER_URL: redis://redis:6379/0
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        volumes:
+            - green_media_data:/app/backend/media
+            - green_static_data:/app/backend/staticfiles
+        command: ["true"]
+
+    celery:
+        image: ghcr.io/hhaddenn/financewebapp-backend:f498c1d8bd21239496b61d2e7d2aca135b7afd2e
+        profiles:
+            - worker
+        restart: "no"
+        stop_grace_period: 120s
+        env_file:
+            - ./staging/green/backend/.env
+        environment:
+            DB_HOST: db
+            REDIS_URL: redis://redis:6379/0
+            CELERY_BROKER_URL: redis://redis:6379/0
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        volumes:
+            - green_media_data:/app/backend/media
+        entrypoint: []
+        command:
+            - celery
+            - -A
+            - backend
+            - worker
+            - --loglevel=INFO
+            - --concurrency=1
+            - --pool=solo
+
+    backend:
+        image: ghcr.io/hhaddenn/financewebapp-backend:f498c1d8bd21239496b61d2e7d2aca135b7afd2e
+        restart: "no"
+        env_file:
+            - ./staging/green/backend/.env
+        environment:
+            DB_HOST: db
+            REDIS_URL: redis://redis:6379/0
+            CELERY_BROKER_URL: redis://redis:6379/0
+        depends_on:
+            db:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        volumes:
+            - green_media_data:/app/backend/media
+            - green_static_data:/app/backend/staticfiles
+        ports:
+            - "127.0.0.1:8001:8000"
+        entrypoint: []
+        command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60
+        healthcheck:
+            test:
+                - CMD
+                - python
+                - -c
+                - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/', timeout=3).close()"
+            interval: 10s
+            timeout: 5s
+            retries: 3
+            start_period: 30s
+
+    frontend:
+        image: financewebapp-frontend-green:staging
+        pull_policy: never
+        restart: "no"
+        depends_on:
+            backend:
+                condition: service_healthy
+        ports:
+            - "127.0.0.1:8081:8080"
+
+volumes:
+    green_postgres_data:
+    green_redis_data:
+    green_media_data:
+    green_static_data:
