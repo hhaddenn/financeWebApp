@@ -12,6 +12,9 @@ printf 'legacy-blue\n' > "$tmp/state/active-slot"
 # Substituir os comandos reais por simulacoes locais.
 cat > "$tmp/bin/docker" <<'MOCK'
 #!/usr/bin/env sh
+if [ "$1" = manifest ]; then
+  exit 0
+fi
 if [ "$1" = inspect ]; then
   echo true
   exit 0
@@ -22,6 +25,10 @@ MOCK
 
 cat > "$tmp/bin/git" <<'MOCK'
 #!/usr/bin/env sh
+if [ "$1" = -C ]; then
+  printf "%040d\n" 0
+  exit 0
+fi
 if [ "$1" = ls-remote ]; then
   printf '%040d\trefs/heads/main\n' 0
   exit 0
@@ -104,6 +111,10 @@ echo '=== CENARIO 5: falha na preparacao ==='
 cat > "$tmp/bin/bash" <<'MOCK'
 #!/bin/sh
 case "$1" in
+  */resolve-images.sh)
+    printf 'BACKEND_SHA=%040d\nFRONTEND_SHA=%040d\n' 0 0
+    exit 0
+    ;;
   */deploy-inactive.sh)
     echo 'SIMULACAO: falha na preparacao'
     exit 73
@@ -169,6 +180,10 @@ cat > "$tmp/bin/bash" <<'MOCK'
 set -eu
 
 case "$1" in
+  */resolve-images.sh)
+    printf 'BACKEND_SHA=%040d\nFRONTEND_SHA=%040d\n' 0 0
+    exit 0
+    ;;
   */deploy-inactive.sh)
     exit 0
     ;;

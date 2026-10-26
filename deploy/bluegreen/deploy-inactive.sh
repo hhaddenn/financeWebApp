@@ -59,7 +59,11 @@ echo "Slot ativo: $active"
 echo "A preparar: $slot"
 echo "Commit: $sha"
 
-export DEPLOY_SHA="$sha"
+[[ "${BACKEND_SHA:-}" =~ ^[a-f0-9]{40}$ && "${FRONTEND_SHA:-}" =~ ^[a-f0-9]{40}$ ]] || {
+    echo "ERRO: SHAs do backend e frontend em falta." >&2
+    exit 1
+}
+echo "Backend: $BACKEND_SHA | Frontend: $FRONTEND_SHA"
 export BG_API_PORT="$api_port"
 export BG_WEB_PORT="$web_port"
 

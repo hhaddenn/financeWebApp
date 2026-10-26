@@ -1,6 +1,6 @@
 services:
   worker:
-    image: ghcr.io/hhaddenn/financewebapp-backend:${DEPLOY_SHA:?required}
+    image: ghcr.io/hhaddenn/financewebapp-backend:${BACKEND_SHA:?required}
     pull_policy: missing
     restart: unless-stopped
     stop_grace_period: 10m

@@ -71,7 +71,17 @@ sha=$(git ls-remote \
   exit 1
 }
 
-export DEPLOY_SHA="$sha"
+# Resolve each image from the last relevant change in main, without rebuilding
+# unaffected components and without relying on the mutable latest tag.
+resolved=$(bash "$src/resolve-images.sh" "$sha")
+BACKEND_SHA=$(printf '%s\n' "$resolved" | sed -n 's/^BACKEND_SHA=//p')
+FRONTEND_SHA=$(printf '%s\n' "$resolved" | sed -n 's/^FRONTEND_SHA=//p')
+[[ "$BACKEND_SHA" =~ ^[a-f0-9]{40}$ && "$FRONTEND_SHA" =~ ^[a-f0-9]{40}$ ]] || {
+  echo 'ERRO: resolucao das imagens devolveu SHAs invalidos.' >&2
+  exit 1
+}
+export DEPLOY_SHA="$sha" BACKEND_SHA FRONTEND_SHA
+
 
 # Bloquear operacoes de producao antes de qualquer alteracao.
 if [[ "$mode" == --apply && "${BG_ENABLE_SWITCH:-}" != YES ]]; then
@@ -117,7 +127,7 @@ check_old_proxy || {
 # O modo check apenas valida os pre-requisitos existentes.
 # Nao descarrega imagens nem recria contentores.
 if [[ "$mode" == --check ]]; then
-  echo "PRECHECK OK: slot atual=$initial; release candidata=$sha"
+  echo "PRECHECK OK: slot atual=$initial; release candidata=$sha; backend=$BACKEND_SHA; frontend=$FRONTEND_SHA"
   echo 'Nenhum contentor ou rota de trafego foi alterado.'
   exit 0
 fi
@@ -158,7 +168,11 @@ if [[ "$initial" != legacy-blue ]]; then
 	exit 1
   }
 
-  if [[ "$current_image" == "ghcr.io/hhaddenn/financewebapp-backend:$sha" ]]; then
+  active_frontend_image=$(docker inspect -f '{{.Config.Image}}' \
+    "financewebapp-bg-${initial}-slot_frontend-1")
+
+  if [[ "$current_image" == "ghcr.io/hhaddenn/financewebapp-backend:$BACKEND_SHA" &&
+        "$active_frontend_image" == "ghcr.io/hhaddenn/financewebapp-frontend:$FRONTEND_SHA" ]]; then
 	echo 'A versao de main ja esta em producao.'
 	exit 0
   fi
@@ -171,8 +185,8 @@ proxy=financewebapp-switch-proxy-proxy-1
 backup=$(mktemp backups/Caddyfile.release.XXXXXX)
 cp -p proxy/Caddyfile "$backup"
 
-printf 'old=%s new=%s old_sha=%s new_sha=%s backup=%s\n' \
-  "$initial" "$next" "$old_sha" "$sha" "$backup" \
+printf 'old=%s new=%s old_sha=%s new_sha=%s backend_sha=%s frontend_sha=%s backup=%s\n' \
+  "$initial" "$next" "$old_sha" "$sha" "$BACKEND_SHA" "$FRONTEND_SHA" "$backup" \
   > state/release-pending
 
 stop_attempted=false
@@ -284,7 +298,7 @@ restore_worker() {
 		return 1
 	}
 
-	DEPLOY_SHA="$old_sha" "${worker[@]}" up -d \
+	BACKEND_SHA="$old_sha" "${worker[@]}" up -d \
 		--no-build --force-recreate worker >/dev/null ||
 		return 1
   fi
@@ -430,4 +444,4 @@ for spec in \
 done
 
 release_ok=true
-echo "SUCESSO: $next ativo, Celery atualizado, SHA $sha."
+echo "SUCESSO: $next ativo; release $sha; backend/Celery $BACKEND_SHA; frontend $FRONTEND_SHA."

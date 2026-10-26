@@ -17,9 +17,9 @@ case "$1" in
   inspect)
     case "$*" in
       *slot_backend*)
-        echo "ghcr.io/hhaddenn/financewebapp-backend:$DEPLOY_SHA" ;;
+        echo "ghcr.io/hhaddenn/financewebapp-backend:$BACKEND_SHA" ;;
       *slot_frontend*)
-        echo "ghcr.io/hhaddenn/financewebapp-frontend:$DEPLOY_SHA" ;;
+        echo "ghcr.io/hhaddenn/financewebapp-frontend:$FRONTEND_SHA" ;;
       *) exit 98 ;;
     esac ;;
 
@@ -109,6 +109,8 @@ chmod +x "$tmp/bin/"*
 export BG_ROOT="$tmp"
 export BG_RELEASE_INTERNAL=1
 export DEPLOY_SHA=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+export BACKEND_SHA=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+export FRONTEND_SHA=cccccccccccccccccccccccccccccccccccccccc
 export PATH="$tmp/bin:$PATH"
 
 reset_case() {
