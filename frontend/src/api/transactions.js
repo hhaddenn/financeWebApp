@@ -1,7 +1,7 @@
-import api from './client';
+import api from "./client";
 
 export const getTransactions = async (filters = {}) => {
-	const response = await api.get('/transactions/', {
+	const response = await api.get("/transactions/", {
 		params: filters,
 	});
 
@@ -9,7 +9,7 @@ export const getTransactions = async (filters = {}) => {
 };
 
 export const createTransaction = async (data) => {
-	const response = await api.post('/transactions/create', data);
+	const response = await api.post("/transactions/create", data);
 
 	return response.data;
 };

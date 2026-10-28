@@ -215,7 +215,8 @@ export default function Transactions() {
 										}
 										onClick={() =>
 											setPage((previous) => previous - 1)
-										}>
+										}
+									>
 										{t("transactions.previous")}
 									</Button>
 
@@ -225,7 +226,8 @@ export default function Transactions() {
 										disabled={loading || !pagination.next}
 										onClick={() =>
 											setPage((previous) => previous + 1)
-										}>
+										}
+									>
 										{t("transactions.next")}
 									</Button>
 								</div>
@@ -276,7 +278,8 @@ export default function Transactions() {
 								type="button"
 								className="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted"
 								onClick={() => setDeletingTransaction(null)}
-								disabled={deleting}>
+								disabled={deleting}
+							>
 								{t("common.cancel")}
 							</button>
 
@@ -284,7 +287,8 @@ export default function Transactions() {
 								type="button"
 								className="rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground hover:bg-destructive/90"
 								onClick={confirmDelete}
-								disabled={deleting}>
+								disabled={deleting}
+							>
 								{deleting
 									? t("transactions.deleting")
 									: t("common.delete")}

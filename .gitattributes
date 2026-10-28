@@ -1,5 +1,16 @@
+* text=auto eol=lf
+
 deploy/bluegreen/*.sh text eol=lf
 deploy/bluegreen/*.yml text eol=lf
 deploy/bluegreen/Dockerfile.runner text eol=lf
 deploy/bluegreen/tests/*.sh text eol=lf
 deploy/bluegreen/tests/Dockerfile text eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary

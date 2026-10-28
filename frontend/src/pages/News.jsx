@@ -103,7 +103,8 @@ export default function News() {
 											item.is_read
 												? "opacity-75"
 												: "ring-primary/30"
-										}>
+										}
+									>
 										{item.image_url && (
 											<img
 												src={item.image_url}
@@ -149,7 +150,8 @@ export default function News() {
 													className="h-auto px-0 hover:cursor-pointer"
 													onClick={() =>
 														openNews(item)
-													}>
+													}
+												>
 													{t("news.readMore")}
 												</Button>
 											</div>

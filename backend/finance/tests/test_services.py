@@ -107,11 +107,14 @@ class TransactionServiceTests(TestCase):
 			checked=True,
 		)
 
-		with patch.object(
-			Transaction,
-			"save",
-			side_effect=RuntimeError("Simulated database failure"),
-		), self.assertRaises(RuntimeError):
+		with (
+			patch.object(
+				Transaction,
+				"save",
+				side_effect=RuntimeError("Simulated database failure"),
+			),
+			self.assertRaises(RuntimeError),
+		):
 			process_due_transactions()
 
 		self.account.refresh_from_db()

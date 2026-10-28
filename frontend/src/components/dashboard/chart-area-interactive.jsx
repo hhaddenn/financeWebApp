@@ -158,7 +158,8 @@ export function ChartBarMultiple() {
 						<select
 							value={period}
 							onChange={(event) => setPeriod(event.target.value)}
-							className="shrink-0 rounded-md border bg-background px-3 py-2 text-sm">
+							className="shrink-0 rounded-md border bg-background px-3 py-2 text-sm"
+						>
 							<option value="year">{t("dashboard.year")}</option>
 							<option value="month">
 								{t("dashboard.month")}
@@ -194,7 +195,8 @@ export function ChartBarMultiple() {
 					<select
 						value={period}
 						onChange={(event) => setPeriod(event.target.value)}
-						className="shrink-0 rounded-md border bg-background px-3 py-2 text-sm">
+						className="shrink-0 rounded-md border bg-background px-3 py-2 text-sm"
+					>
 						<option value="year">{t("dashboard.year")}</option>
 						<option value="month">{t("dashboard.month")}</option>
 						<option value="week">{t("dashboard.week")}</option>

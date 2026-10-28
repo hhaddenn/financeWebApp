@@ -1,11 +1,11 @@
 /* oxlint-disable react/only-export-components */
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from "react";
 import {
 	login as loginRequest,
 	logout as logoutRequest,
 	refreshAccessToken,
 	verifyLogin,
-} from './api';
+} from "./api";
 
 const AuthContext = createContext(null);
 
@@ -56,7 +56,8 @@ export function AuthProvider({ children }) {
 				login,
 				completeLogin,
 				logout,
-			}}>
+			}}
+		>
 			{children}
 		</AuthContext.Provider>
 	);
@@ -66,7 +67,7 @@ export function useAuth() {
 	const context = useContext(AuthContext);
 
 	if (!context) {
-		throw new Error('useAuth must be used inside an AuthProvider');
+		throw new Error("useAuth must be used inside an AuthProvider");
 	}
 
 	return context;

@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0023_alter_recurringtransaction_name"),
+	]
 
-    dependencies = [
-        ('finance', '0023_alter_recurringtransaction_name'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='usersettings',
-            name='theme',
-            field=models.CharField(choices=[('light', 'Light'), ('dark', 'Dark'), ('system', 'System')], default='system', max_length=10),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name="usersettings",
+			name="theme",
+			field=models.CharField(
+				choices=[("light", "Light"), ("dark", "Dark"), ("system", "System")],
+				default="system",
+				max_length=10,
+			),
+		),
+	]

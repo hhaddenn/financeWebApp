@@ -43,7 +43,8 @@ export default function AccountCard({
 
 						<p
 							className="truncate text-sm text-muted-foreground"
-							title={account.name}>
+							title={account.name}
+						>
 							{account.name}
 						</p>
 					</div>
@@ -54,7 +55,8 @@ export default function AccountCard({
 								<Button
 									variant="ghost"
 									className="size-8 shrink-0 text-muted-foreground"
-									size="icon">
+									size="icon"
+								>
 									<EllipsisVerticalIcon aria-hidden="true" />
 
 									<span className="sr-only">
@@ -67,7 +69,8 @@ export default function AccountCard({
 						<DropdownMenuContent align="end" className="w-32">
 							<DropdownMenuItem
 								onClick={onEdit}
-								disabled={actionsDisabled}>
+								disabled={actionsDisabled}
+							>
 								{t("common.edit")}
 							</DropdownMenuItem>
 
@@ -76,7 +79,8 @@ export default function AccountCard({
 							<DropdownMenuItem
 								variant="destructive"
 								disabled={actionsDisabled}
-								onClick={onDelete}>
+								onClick={onDelete}
+							>
 								{t("common.delete")}
 							</DropdownMenuItem>
 						</DropdownMenuContent>
@@ -98,7 +102,8 @@ export default function AccountCard({
 							showBalance
 								? t("accounts.hideBalance")
 								: t("accounts.showBalance")
-						}>
+						}
+					>
 						{showBalance ? <EyeOff /> : <Eye />}
 					</Button>
 				</div>

@@ -9,31 +9,31 @@ import { usePreferences } from "@/context/PreferencesContext";
 import AuthLayout from "@/features/auth/components/AuthLayout";
 
 export default function ConfirmEmailChange() {
-    const { uid, token } = useParams();
-    const { t } = usePreferences();
-    const [status, setStatus] = useState("loading");
+	const { uid, token } = useParams();
+	const { t } = usePreferences();
+	const [status, setStatus] = useState("loading");
 
-    useEffect(() => {
-        confirmEmailChange(uid, token)
-            .then(() => setStatus("success"))
-            .catch(() => setStatus("error"));
-    }, [uid, token]);
+	useEffect(() => {
+		confirmEmailChange(uid, token)
+			.then(() => setStatus("success"))
+			.catch(() => setStatus("error"));
+	}, [uid, token]);
 
-    return (
-        <AuthLayout>
-            <Card className="w-full">
-                <CardHeader>
-                    <CardTitle>{t("settings.account")}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4 text-sm">
-                    <p>{t(`settings.emailConfirmation.${status}`)}</p>
-                    {status !== "loading" && (
-                        <Button render={<Link to="/login" />}>
-                            {t("auth.login")}
-                        </Button>
-                    )}
-                </CardContent>
-            </Card>
-        </AuthLayout>
-    );
+	return (
+		<AuthLayout>
+			<Card className="w-full">
+				<CardHeader>
+					<CardTitle>{t("settings.account")}</CardTitle>
+				</CardHeader>
+				<CardContent className="space-y-4 text-sm">
+					<p>{t(`settings.emailConfirmation.${status}`)}</p>
+					{status !== "loading" && (
+						<Button render={<Link to="/login" />}>
+							{t("auth.login")}
+						</Button>
+					)}
+				</CardContent>
+			</Card>
+		</AuthLayout>
+	);
 }

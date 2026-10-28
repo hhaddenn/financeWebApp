@@ -4,20 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0026_usersettings_dashboard_bar_period"),
+	]
 
-    dependencies = [
-        ('finance', '0026_usersettings_dashboard_bar_period'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='usersettings',
-            name='dashboard_donut_period',
-            field=models.CharField(choices=[('year', 'Year'), ('month', 'Month'), ('week', 'Week')], default='month', max_length=5),
-        ),
-        migrations.AddField(
-            model_name='usersettings',
-            name='dashboard_donut_type',
-            field=models.CharField(choices=[('expense', 'Expense'), ('income', 'Income')], default='expense', max_length=7),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name="usersettings",
+			name="dashboard_donut_period",
+			field=models.CharField(
+				choices=[("year", "Year"), ("month", "Month"), ("week", "Week")],
+				default="month",
+				max_length=5,
+			),
+		),
+		migrations.AddField(
+			model_name="usersettings",
+			name="dashboard_donut_type",
+			field=models.CharField(
+				choices=[("expense", "Expense"), ("income", "Income")],
+				default="expense",
+				max_length=7,
+			),
+		),
+	]

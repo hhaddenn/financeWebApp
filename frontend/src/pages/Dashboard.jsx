@@ -13,44 +13,44 @@ import { TransactionActionMenu } from "@/components/transactions/TransactionActi
 import { usePreferences } from "@/context/PreferencesContext";
 
 export default function Dashboard() {
-    const { t } = usePreferences();
+	const { t } = usePreferences();
 
-    const [accountsRevision, setAccountsRevision] = useState(0);
+	const [accountsRevision, setAccountsRevision] = useState(0);
 
-    return (
-        <SidebarProvider>
-            <AppSidebar />
+	return (
+		<SidebarProvider>
+			<AppSidebar />
 
-            <SidebarInset>
-                <SiteHeader
-                    title={t("navigation.dashboard")}
-                    description={t("dashboard.description")}
-                />
+			<SidebarInset>
+				<SiteHeader
+					title={t("navigation.dashboard")}
+					description={t("dashboard.description")}
+				/>
 
-                <main className="flex-1">
-                    <div className="mx-auto w-full max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
-                        <TransactionActionMenu variant="responsive" />
+				<main className="flex-1">
+					<div className="mx-auto w-full max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
+						<TransactionActionMenu variant="responsive" />
 
-                        <SectionCards
-                            onAccountDeleted={() =>
-                                setAccountsRevision((current) => current + 1)
-                            }
-                        />
+						<SectionCards
+							onAccountDeleted={() =>
+								setAccountsRevision((current) => current + 1)
+							}
+						/>
 
-                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                            <div className="lg:col-span-2">
-                                <ChartBarMultiple />
-                            </div>
+						<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+							<div className="lg:col-span-2">
+								<ChartBarMultiple />
+							</div>
 
-                            <div className="lg:col-span-1">
-                                <ChartPieDonutText />
-                            </div>
-                        </div>
+							<div className="lg:col-span-1">
+								<ChartPieDonutText />
+							</div>
+						</div>
 
-                        <DataTable refreshVersion={accountsRevision} />
-                    </div>
-                </main>
-            </SidebarInset>
-        </SidebarProvider>
-    );
+						<DataTable refreshVersion={accountsRevision} />
+					</div>
+				</main>
+			</SidebarInset>
+		</SidebarProvider>
+	);
 }

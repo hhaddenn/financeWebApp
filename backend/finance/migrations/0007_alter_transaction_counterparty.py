@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0006_alter_transaction_amount_to_receive"),
+	]
 
-    dependencies = [
-        ('finance', '0006_alter_transaction_amount_to_receive'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='transaction',
-            name='counterparty',
-            field=models.CharField(blank=True, max_length=255, null=True),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name="transaction",
+			name="counterparty",
+			field=models.CharField(blank=True, max_length=255, null=True),
+		),
+	]

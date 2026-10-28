@@ -26,12 +26,12 @@ load_dotenv(BASE_DIR / ENV_FILE)  # Load environment variables from .env file
 
 
 def env_bool(name, default=False):
-    value = os.getenv(name)
+	value = os.getenv(name)
 
-    if value is None:
-        return default
+	if value is None:
+		return default
 
-    return value.strip().lower() in ("true", "1", "yes", "on")
+	return value.strip().lower() in ("true", "1", "yes", "on")
 
 
 # Quick-start development settings - unsuitable for production
@@ -42,30 +42,30 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = env_bool("DEBUG", False)
 
 if not DEBUG and (SECRET_KEY.startswith("django-insecure-") or len(SECRET_KEY) < 50):
-    raise ImproperlyConfigured(
-        "Production SECRET_KEY must be long, random, and not use Django's insecure prefix."
-    )
+	raise ImproperlyConfigured(
+		"Production SECRET_KEY must be long, random, and not use Django's insecure prefix."
+	)
 
 AUTH_USER_MODEL = "finance.User"
 
 ALLOWED_HOSTS = [
-    host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()
+	host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()
 ]
 
 # Allow internal container health checks over the loopback interface.
 if "127.0.0.1" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append("127.0.0.1")
+	ALLOWED_HOSTS.append("127.0.0.1")
 
 CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
-    if origin.strip()
+	origin.strip()
+	for origin in os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+	if origin.strip()
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
-    if origin.strip()
+	origin.strip()
+	for origin in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+	if origin.strip()
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -76,7 +76,7 @@ SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", not DEBUG)
 # The container health check connects directly to Gunicorn over HTTP.
 SECURE_REDIRECT_EXEMPT = [r"^health/$"]
 SECURE_HSTS_SECONDS = int(
-    os.getenv("SECURE_HSTS_SECONDS", "0" if DEBUG else "31536000")
+	os.getenv("SECURE_HSTS_SECONDS", "0" if DEBUG else "31536000")
 )
 SECURE_HSTS_INCLUDE_SUBDOMAINS = SECURE_HSTS_SECONDS > 0
 SECURE_HSTS_PRELOAD = SECURE_HSTS_SECONDS > 0
@@ -88,50 +88,50 @@ X_FRAME_OPTIONS = "DENY"
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    "finance",
-    "rest_framework",
-    "rest_framework_simplejwt.token_blacklist",
-    "corsheaders",
+	"django.contrib.admin",
+	"django.contrib.auth",
+	"django.contrib.contenttypes",
+	"django.contrib.sessions",
+	"django.contrib.messages",
+	"django.contrib.staticfiles",
+	"finance",
+	"rest_framework",
+	"rest_framework_simplejwt.token_blacklist",
+	"corsheaders",
 ]
 
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+	"django.middleware.security.SecurityMiddleware",
+	"django.contrib.sessions.middleware.SessionMiddleware",
+	"corsheaders.middleware.CorsMiddleware",
+	"django.middleware.common.CommonMiddleware",
+	"django.middleware.csrf.CsrfViewMiddleware",
+	"django.contrib.auth.middleware.AuthenticationMiddleware",
+	"django.contrib.messages.middleware.MessageMiddleware",
+	"django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 if not DEBUG:
-    MIDDLEWARE.insert(
-        1,
-        "whitenoise.middleware.WhiteNoiseMiddleware",
-    )
+	MIDDLEWARE.insert(
+		1,
+		"whitenoise.middleware.WhiteNoiseMiddleware",
+	)
 
 ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
+	{
+		"BACKEND": "django.template.backends.django.DjangoTemplates",
+		"DIRS": [],
+		"APP_DIRS": True,
+		"OPTIONS": {
+			"context_processors": [
+				"django.template.context_processors.request",
+				"django.contrib.auth.context_processors.auth",
+				"django.contrib.messages.context_processors.messages",
+			],
+		},
+	},
 ]
 
 WSGI_APPLICATION = "backend.wsgi.application"
@@ -141,14 +141,14 @@ WSGI_APPLICATION = "backend.wsgi.application"
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
-    }
+	"default": {
+		"ENGINE": "django.db.backends.postgresql",
+		"NAME": os.getenv("DB_NAME"),
+		"USER": os.getenv("DB_USER"),
+		"PASSWORD": os.getenv("DB_PASSWORD"),
+		"HOST": os.getenv("DB_HOST"),
+		"PORT": os.getenv("DB_PORT"),
+	}
 }
 
 
@@ -156,18 +156,18 @@ DATABASES = {
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+	{
+		"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+	},
+	{
+		"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+	},
+	{
+		"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+	},
+	{
+		"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+	},
 ]
 
 
@@ -196,67 +196,67 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Email
 
 EMAIL_BACKEND = os.getenv(
-    "EMAIL_BACKEND",
-    "django.core.mail.backends.smtp.EmailBackend",
+	"EMAIL_BACKEND",
+	"django.core.mail.backends.smtp.EmailBackend",
 )
 
 if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
-    EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.resend.com")
-    EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
-    EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
-    EMAIL_USE_SSL = False
-    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "resend")
-    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+	EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.resend.com")
+	EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+	EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+	EMAIL_USE_SSL = False
+	EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "resend")
+	EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 
 DEFAULT_FROM_EMAIL = os.getenv(
-    "DEFAULT_FROM_EMAIL",
-    "test@example.com",
+	"DEFAULT_FROM_EMAIL",
+	"test@example.com",
 )
 
 FEEDBACK_FROM_EMAIL = os.getenv(
-    "FEEDBACK_FROM_EMAIL",
-    DEFAULT_FROM_EMAIL,
+	"FEEDBACK_FROM_EMAIL",
+	DEFAULT_FROM_EMAIL,
 )
 
 FEEDBACK_RECIPIENT = os.getenv(
-    "FEEDBACK_RECIPIENT",
-    "",
+	"FEEDBACK_RECIPIENT",
+	"",
 )
 FRONTEND_URL = os.getenv(
-    "FRONTEND_URL",
-    "http://localhost:5173",
+	"FRONTEND_URL",
+	"http://localhost:5173",
 ).rstrip("/")
 
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-    "DEFAULT_THROTTLE_RATES": {
-        "feedback": "5/hour",
-    },
+	"DEFAULT_PERMISSION_CLASSES": [
+		"rest_framework.permissions.IsAuthenticated",
+	],
+	"DEFAULT_AUTHENTICATION_CLASSES": [
+		"rest_framework_simplejwt.authentication.JWTAuthentication",
+	],
+	"DEFAULT_THROTTLE_RATES": {
+		"feedback": "5/hour",
+	},
 }
 
 DJANGO_SETTINGS_MODULE = "backend.settings"
 
 CELERY_BROKER_URL = os.getenv(
-    "CELERY_BROKER_URL",
-    os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0"),
+	"CELERY_BROKER_URL",
+	os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0"),
 )
 
 CELERY_TIMEZONE = "UTC"
 
 CELERY_BEAT_SCHEDULE = {
-    "process-recurring-transactions-daily": {
-        "task": "finance.tasks.process_recurring_transactions_task",
-        "schedule": crontab(hour=0, minute=5),
-    },
-    "process-due-transactions-daily": {
-        "task": "finance.tasks.process_due_transactions_task",
-        "schedule": crontab(hour=0, minute=10),
-    },
+	"process-recurring-transactions-daily": {
+		"task": "finance.tasks.process_recurring_transactions_task",
+		"schedule": crontab(hour=0, minute=5),
+	},
+	"process-due-transactions-daily": {
+		"task": "finance.tasks.process_due_transactions_task",
+		"schedule": crontab(hour=0, minute=10),
+	},
 }
 
 CSRF_COOKIE_NAME = "csrftoken"

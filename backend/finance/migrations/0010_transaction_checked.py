@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0009_transaction_applied"),
+	]
 
-    dependencies = [
-        ('finance', '0009_transaction_applied'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='transaction',
-            name='checked',
-            field=models.BooleanField(default=True),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name="transaction",
+			name="checked",
+			field=models.BooleanField(default=True),
+		),
+	]

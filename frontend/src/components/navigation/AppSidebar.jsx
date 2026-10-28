@@ -6,10 +6,10 @@ import {
 	LightbulbIcon,
 	NewspaperIcon,
 	Repeat2Icon,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { NavMain } from '@/components/navigation/NavMain';
-import { NavUser } from '@/components/navigation/NavUser';
+import { NavMain } from "@/components/navigation/NavMain";
+import { NavUser } from "@/components/navigation/NavUser";
 
 import {
 	Sidebar,
@@ -19,14 +19,14 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-} from '@/components/ui/sidebar';
+} from "@/components/ui/sidebar";
 
-import { getUser } from '@/features/auth/api';
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FeedbackDialog } from '@/components/FeedbackDialog';
-import { usePreferences } from '@/context/PreferencesContext';
-import { getNews } from '@/api/news';
+import { getUser } from "@/features/auth/api";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FeedbackDialog } from "@/components/FeedbackDialog";
+import { usePreferences } from "@/context/PreferencesContext";
+import { getNews } from "@/api/news";
 
 export function AppSidebar({ ...props }) {
 	const { t } = usePreferences();
@@ -38,18 +38,18 @@ export function AppSidebar({ ...props }) {
 	const data = {
 		navMain: [
 			{
-				title: t('navigation.dashboard'),
-				url: '/dashboard',
+				title: t("navigation.dashboard"),
+				url: "/dashboard",
 				icon: <LayoutDashboardIcon />,
 			},
 			{
-				title: t('navigation.transactions'),
-				url: '/transactions',
+				title: t("navigation.transactions"),
+				url: "/transactions",
 				icon: <ArrowLeftRightIcon />,
 			},
 			{
-				title: t('navigation.recurringTransactions'),
-				url: '/recurring-transactions',
+				title: t("navigation.recurringTransactions"),
+				url: "/recurring-transactions",
 				icon: <Repeat2Icon />,
 			},
 		],
@@ -60,32 +60,44 @@ export function AppSidebar({ ...props }) {
 			try {
 				setUser(await getUser());
 			} catch (error) {
-				console.error('Failed to load user:', error);
+				console.error("Failed to load user:", error);
 			}
 		};
 
 		loadUser();
 		getNews()
-			.then((news) => setUnreadNewsCount(news.filter((item) => !item.is_read).length))
-			.catch((error) => console.error('Failed to load news count:', error));
+			.then((news) =>
+				setUnreadNewsCount(news.filter((item) => !item.is_read).length),
+			)
+			.catch((error) =>
+				console.error("Failed to load news count:", error),
+			);
 
-		const handleNewsRead = () => setUnreadNewsCount((count) => Math.max(0, count - 1));
-		window.addEventListener('news-read', handleNewsRead);
+		const handleNewsRead = () =>
+			setUnreadNewsCount((count) => Math.max(0, count - 1));
+		window.addEventListener("news-read", handleNewsRead);
 
-		return () => window.removeEventListener('news-read', handleNewsRead);
+		return () => window.removeEventListener("news-read", handleNewsRead);
 	}, []);
 
 	return (
 		<>
-			<Sidebar collapsible="offcanvas" className="bg-background" {...props}>
+			<Sidebar
+				collapsible="offcanvas"
+				className="bg-background"
+				{...props}
+			>
 				<SidebarHeader className="bg-background p-4">
 					<SidebarMenu>
 						<SidebarMenuItem>
 							<SidebarMenuButton
 								className="h-10 px-2"
-								render={<a href="/dashboard" />}>
+								render={<a href="/dashboard" />}
+							>
 								<WalletIcon className="size-5" />
-								<span className="text-base font-semibold">FinanceApp</span>
+								<span className="text-base font-semibold">
+									FinanceApp
+								</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					</SidebarMenu>
@@ -99,19 +111,21 @@ export function AppSidebar({ ...props }) {
 					<SidebarMenu className="mb-2">
 						<SidebarMenuItem>
 							<SidebarMenuButton
-								tooltip={t('feedback.reportBug')}
-								onClick={() => setFeedbackType('bug')}>
+								tooltip={t("feedback.reportBug")}
+								onClick={() => setFeedbackType("bug")}
+							>
 								<BugIcon />
-								<span>{t('feedback.reportBug')}</span>
+								<span>{t("feedback.reportBug")}</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 
 						<SidebarMenuItem>
 							<SidebarMenuButton
-								tooltip={t('feedback.suggestions')}
-								onClick={() => setFeedbackType('suggestion')}>
+								tooltip={t("feedback.suggestions")}
+								onClick={() => setFeedbackType("suggestion")}
+							>
 								<LightbulbIcon />
-								<span>{t('feedback.suggestions')}</span>
+								<span>{t("feedback.suggestions")}</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					</SidebarMenu>
@@ -119,10 +133,11 @@ export function AppSidebar({ ...props }) {
 					<SidebarMenu className="mb-2">
 						<SidebarMenuItem>
 							<SidebarMenuButton
-								tooltip={t('navigation.news')}
-								onClick={() => navigate('/news')}>
+								tooltip={t("navigation.news")}
+								onClick={() => navigate("/news")}
+							>
 								<NewspaperIcon />
-								<span>{t('navigation.news')}</span>
+								<span>{t("navigation.news")}</span>
 								{unreadNewsCount > 0 && (
 									<span className="ml-auto flex size-5 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
 										{unreadNewsCount}
@@ -136,7 +151,7 @@ export function AppSidebar({ ...props }) {
 						user={{
 							name: user.username,
 							email: user.email,
-							avatar: '',
+							avatar: "",
 						}}
 					/>
 				</SidebarFooter>

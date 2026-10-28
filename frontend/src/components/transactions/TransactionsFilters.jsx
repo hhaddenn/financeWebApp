@@ -7,26 +7,26 @@ import { EntityIcon } from "@/components/transactions/EntityIcon";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Calendar } from "@/components/ui/calendar";
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
 } from "@/components/ui/popover";
 
 import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
 import { ChevronDown, Search, X } from "lucide-react";
@@ -36,652 +36,652 @@ import { enUS, pt } from "date-fns/locale";
 import { usePreferences } from "@/context/PreferencesContext";
 
 export function TransactionsFilters({
-    filters,
-    onFiltersChange,
-    accounts = [],
-    categories = [],
-    subcategories = [],
+	filters,
+	onFiltersChange,
+	accounts = [],
+	categories = [],
+	subcategories = [],
 }) {
-    const { language, t, translateCategory, translateSubcategory } =
-        usePreferences();
-
-    const dateLocale = language === "pt" ? pt : enUS;
-
-    const updateFilter = (key, value) => {
-        onFiltersChange((current) => {
-            const updated = {
-                ...current,
-                [key]: value,
-            };
-
-            if (key === "category") {
-                updated.subcategory = "";
-            }
-
-            if (
-                key === "type" &&
-                ["income", "expense", "transfer"].includes(value)
-            ) {
-                const selectedCategory = categories.find(
-                    (category) =>
-                        String(category.id) === String(current.category),
-                );
-
-                const selectedSubcategory = subcategories.find(
-                    (subcategory) =>
-                        String(subcategory.id) === String(current.subcategory),
-                );
-
-                const subcategoryParent = categories.find(
-                    (category) =>
-                        String(category.id) ===
-                        String(selectedSubcategory?.category?.id),
-                );
-
-                if (
-                    current.category &&
-                    !selectedCategory?.transactionTypes?.includes(value)
-                ) {
-                    updated.category = "";
-                    updated.subcategory = "";
-                } else if (
-                    current.subcategory &&
-                    !subcategoryParent?.transactionTypes?.includes(value)
-                ) {
-                    updated.subcategory = "";
-                }
-            }
-
-            return updated;
-        });
-    };
-
-    const clearFilters = () => {
-        onFiltersChange({
-            search: "",
-            type: "",
-            account: "",
-            category: "",
-            subcategory: "",
-            checked: "",
-            start_date: "",
-            end_date: "",
-        });
-    };
-
-    const [filtersOpen, setFiltersOpen] = useState(false);
-
-    const hasFilters = Object.values(filters).some(Boolean);
-
-    const activeFiltersCount = Object.values(filters).filter(Boolean).length;
-
-    const visibleSubcategories = subcategories.filter((subcategory) => {
-        const categoryId = subcategory.category?.id;
-
-        if (filters.category) {
-            return String(categoryId) === String(filters.category);
-        }
-
-        if (["income", "expense", "transfer"].includes(filters.type)) {
-            const parentCategory = categories.find(
-                (category) => String(category.id) === String(categoryId),
-            );
-
-            return (
-                parentCategory?.transactionTypes?.includes(filters.type) ??
-                false
-            );
-        }
-
-        return true;
-    });
-
-    const sortedVisibleSubcategories = [...visibleSubcategories].sort((a, b) =>
-        translateSubcategory(a.name).localeCompare(
-            translateSubcategory(b.name),
-            language === "pt" ? "pt-PT" : "en-US",
-            { sensitivity: "base" },
-        ),
-    );
-
-    const visibleCategories = ["income", "expense", "transfer"].includes(
-        filters.type,
-    )
-        ? categories.filter((category) =>
-              category.transactionTypes?.includes(filters.type),
-          )
-        : categories;
-
-    const sortedCategories = [...visibleCategories].sort((a, b) =>
-        translateCategory(a.name).localeCompare(
-            translateCategory(b.name),
-            language === "pt" ? "pt-PT" : "en-US",
-            { sensitivity: "base" },
-        ),
-    );
-
-    const sortedAccounts = [...accounts].sort((a, b) =>
-        a.name.localeCompare(b.name, language === "pt" ? "pt-PT" : "en-US", {
-            sensitivity: "base",
-        }),
-    );
-
-    const startDate = filters.start_date
-        ? new Date(`${filters.start_date}T00:00:00`)
-        : undefined;
-
-    const endDate = filters.end_date
-        ? new Date(`${filters.end_date}T00:00:00`)
-        : undefined;
-
-    // Texto apresentado no filtro de tipo.
-    // O valor interno continua a ser "income", "expense" ou "transfer".
-    const selectedTypeLabel =
-        filters.type === "income"
-            ? t("transactions.income")
-            : filters.type === "expense"
-              ? t("transactions.expense")
-              : filters.type === "transfer"
-                ? t("transactions.transfer")
-                : t("transactions.allTypes");
-
-    // Texto apresentado no filtro de estado.
-    // O valor interno continua a ser "true" ou "false".
-    const selectedStatusLabel =
-        filters.checked === "true"
-            ? t("transactions.paid")
-            : filters.checked === "false"
-              ? t("transactions.notPaid")
-              : t("transactions.allStatuses");
-
-    // Conta selecionada.
-    const selectedAccount = accounts.find(
-        (account) => String(account.id) === String(filters.account),
-    );
-
-    // Categoria selecionada.
-    const selectedCategory = categories.find(
-        (category) => String(category.id) === String(filters.category),
-    );
-
-    // Subcategoria selecionada.
-    const selectedSubcategory = subcategories.find(
-        (subcategory) => String(subcategory.id) === String(filters.subcategory),
-    );
-
-    return (
-        <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-            <Card>
-                <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between gap-4">
-                        <div>
-                            <CardTitle className="text-base">
-                                <CollapsibleTrigger asChild>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        className="group -ml-3 gap-2"
-                                    >
-                                        {t("transactions.filters")}
-
-                                        {hasFilters && (
-                                            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                                {activeFiltersCount}
-                                            </span>
-                                        )}
-
-                                        <ChevronDown
-                                            className={`h-4 w-4 transition-transform ${
-                                                filtersOpen ? "rotate-180" : ""
-                                            }`}
-                                        />
-                                    </Button>
-                                </CollapsibleTrigger>
-                            </CardTitle>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {t("transactions.filterDescription")}
-                            </p>
-                        </div>
-
-                        {hasFilters && (
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={clearFilters}
-                                className="gap-2"
-                            >
-                                <X className="h-4 w-4" />
-                                {t("transactions.clearFilters")}
-                            </Button>
-                        )}
-                    </div>
-                </CardHeader>
-
-                <CollapsibleContent>
-                    <CardContent className="space-y-6">
-                        {/* Search + main filters */}
-                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_180px_180px]">
-                            {/* Search */}
-                            <div className="space-y-2">
-                                <Label htmlFor="transaction-search">
-                                    {t("transactions.search")}
-                                </Label>
-
-                                <div className="relative">
-                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-                                    <Input
-                                        id="transaction-search"
-                                        value={filters.search}
-                                        onChange={(event) =>
-                                            updateFilter(
-                                                "search",
-                                                event.target.value,
-                                            )
-                                        }
-                                        placeholder={t(
-                                            "transactions.searchPlaceholder",
-                                        )}
-                                        className="pl-9"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Type */}
-                            <div className="space-y-2">
-                                <Label>{t("transactions.type")}</Label>
-
-                                <Select
-                                    value={filters.type || "all"}
-                                    onValueChange={(value) =>
-                                        updateFilter(
-                                            "type",
-                                            value === "all" ? "" : value,
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue>
-                                            {selectedTypeLabel}
-                                        </SelectValue>
-                                    </SelectTrigger>
-
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            {t("transactions.allTypes")}
-                                        </SelectItem>
-
-                                        <SelectItem value="income">
-                                            {t("transactions.income")}
-                                        </SelectItem>
-
-                                        <SelectItem value="expense">
-                                            {t("transactions.expense")}
-                                        </SelectItem>
-
-                                        <SelectItem value="transfer">
-                                            {t("transactions.transfer")}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Status */}
-                            <div className="space-y-2">
-                                <Label>{t("transactions.status")}</Label>
-
-                                <Select
-                                    value={filters.checked || "all"}
-                                    onValueChange={(value) =>
-                                        updateFilter(
-                                            "checked",
-                                            value === "all" ? "" : value,
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue>
-                                            {selectedStatusLabel}
-                                        </SelectValue>
-                                    </SelectTrigger>
-
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            {t("transactions.allStatuses")}
-                                        </SelectItem>
-
-                                        <SelectItem value="true">
-                                            {t("transactions.paid")}
-                                        </SelectItem>
-
-                                        <SelectItem value="false">
-                                            {t("transactions.notPaid")}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        {/* Account / category filters */}
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                            {/* Account */}
-                            <div className="space-y-2">
-                                <Label>{t("transactions.account")}</Label>
-
-                                <Select
-                                    value={filters.account || "all"}
-                                    onValueChange={(value) =>
-                                        updateFilter(
-                                            "account",
-                                            value === "all" ? "" : value,
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue>
-                                            {selectedAccount ? (
-                                                <span className="flex items-center gap-2">
-                                                    <EntityIcon
-                                                        name={
-                                                            selectedAccount.icon
-                                                        }
-                                                    />
-                                                    <span>
-                                                        {selectedAccount.name}
-                                                    </span>
-                                                </span>
-                                            ) : (
-                                                t("transactions.allAccounts")
-                                            )}
-                                        </SelectValue>
-                                    </SelectTrigger>
-
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            {t("transactions.allAccounts")}
-                                        </SelectItem>
-
-                                        {sortedAccounts.map((account) => (
-                                            <SelectItem
-                                                key={account.id}
-                                                value={String(account.id)}
-                                                textValue={account.name}
-                                            >
-                                                <span className="flex items-center gap-2">
-                                                    <EntityIcon
-                                                        name={account.icon}
-                                                    />
-                                                    <span>{account.name}</span>
-                                                </span>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Category */}
-                            <div className="space-y-2">
-                                <Label>{t("transactions.category")}</Label>
-
-                                <Select
-                                    value={filters.category || "all"}
-                                    onValueChange={(value) =>
-                                        updateFilter(
-                                            "category",
-                                            value === "all" ? "" : value,
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue>
-                                            {selectedCategory ? (
-                                                <span className="flex items-center gap-2">
-                                                    <EntityIcon
-                                                        name={
-                                                            selectedCategory.icon
-                                                        }
-                                                    />
-                                                    <span>
-                                                        {translateCategory(
-                                                            selectedCategory.name,
-                                                        )}
-                                                    </span>
-                                                </span>
-                                            ) : (
-                                                t("transactions.allCategories")
-                                            )}
-                                        </SelectValue>
-                                    </SelectTrigger>
-
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            {t("transactions.allCategories")}
-                                        </SelectItem>
-
-                                        {sortedCategories.map((category) => (
-                                            <SelectItem
-                                                key={category.id}
-                                                value={String(category.id)}
-                                                textValue={translateCategory(
-                                                    category.name,
-                                                )}
-                                            >
-                                                <span className="flex items-center gap-2">
-                                                    <EntityIcon
-                                                        name={category.icon}
-                                                    />
-                                                    <span>
-                                                        {translateCategory(
-                                                            category.name,
-                                                        )}
-                                                    </span>
-                                                </span>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            {/* Subcategory */}
-                            <div className="space-y-2">
-                                <Label>{t("transactions.subcategory")}</Label>
-
-                                <Select
-                                    value={filters.subcategory || "all"}
-                                    onValueChange={(value) =>
-                                        updateFilter(
-                                            "subcategory",
-                                            value === "all" ? "" : value,
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue>
-                                            {selectedSubcategory ? (
-                                                <span className="flex items-center gap-2">
-                                                    <EntityIcon
-                                                        name={
-                                                            selectedSubcategory.icon
-                                                        }
-                                                    />
-                                                    <span>
-                                                        {translateSubcategory(
-                                                            selectedSubcategory.name,
-                                                        )}
-                                                    </span>
-                                                </span>
-                                            ) : (
-                                                t(
-                                                    "transactions.allSubcategories",
-                                                )
-                                            )}
-                                        </SelectValue>
-                                    </SelectTrigger>
-
-                                    <SelectContent>
-                                        <SelectItem value="all">
-                                            {t("transactions.allSubcategories")}
-                                        </SelectItem>
-
-                                        {sortedVisibleSubcategories.map(
-                                            (subcategory) => (
-                                                <SelectItem
-                                                    key={subcategory.id}
-                                                    value={String(
-                                                        subcategory.id,
-                                                    )}
-                                                    textValue={translateSubcategory(
-                                                        subcategory.name,
-                                                    )}
-                                                >
-                                                    <span className="flex items-center gap-2">
-                                                        <EntityIcon
-                                                            name={
-                                                                subcategory.icon
-                                                            }
-                                                        />
-                                                        <span>
-                                                            {translateSubcategory(
-                                                                subcategory.name,
-                                                            )}
-                                                        </span>
-                                                    </span>
-                                                </SelectItem>
-                                            ),
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <Separator />
-
-                        {/* Date range */}
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            {/* Start date */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="transaction-start-date">
-                                    {t("transactions.startDate")}
-                                </Label>
-
-                                <Popover>
-                                    <PopoverTrigger
-                                        render={
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                id="transaction-start-date"
-                                                className="justify-start font-normal"
-                                            >
-                                                {startDate
-                                                    ? format(startDate, "PPP", {
-                                                          locale: dateLocale,
-                                                      })
-                                                    : t(
-                                                          "transactions.selectStartDate",
-                                                      )}
-                                            </Button>
-                                        }
-                                    />
-
-                                    <PopoverContent
-                                        className="w-auto p-0"
-                                        align="start"
-                                    >
-                                        <Calendar
-                                            mode="single"
-                                            selected={startDate}
-                                            onSelect={(date) => {
-                                                updateFilter(
-                                                    "start_date",
-                                                    date
-                                                        ? format(
-                                                              date,
-                                                              "yyyy-MM-dd",
-                                                          )
-                                                        : "",
-                                                );
-                                            }}
-                                            defaultMonth={startDate}
-                                            locale={dateLocale}
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-
-                            {/* End date */}
-                            <div className="grid gap-2">
-                                <Label htmlFor="transaction-end-date">
-                                    {t("transactions.endDate")}
-                                </Label>
-
-                                <Popover>
-                                    <PopoverTrigger
-                                        render={
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                id="transaction-end-date"
-                                                className="justify-start font-normal"
-                                            >
-                                                {endDate
-                                                    ? format(endDate, "PPP", {
-                                                          locale: dateLocale,
-                                                      })
-                                                    : t(
-                                                          "transactions.selectEndDate",
-                                                      )}
-                                            </Button>
-                                        }
-                                    />
-
-                                    <PopoverContent
-                                        className="w-auto p-0"
-                                        align="start"
-                                    >
-                                        <Calendar
-                                            mode="single"
-                                            selected={endDate}
-                                            onSelect={(date) => {
-                                                updateFilter(
-                                                    "end_date",
-                                                    date
-                                                        ? format(
-                                                              date,
-                                                              "yyyy-MM-dd",
-                                                          )
-                                                        : "",
-                                                );
-                                            }}
-                                            defaultMonth={endDate}
-                                            locale={dateLocale}
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-                        </div>
-
-                        {/* Mobile clear button */}
-                        {hasFilters && (
-                            <div className="flex justify-end md:hidden">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={clearFilters}
-                                    className="gap-2"
-                                >
-                                    <X className="h-4 w-4" />
-                                    {t("transactions.clearFilters")}
-                                </Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </CollapsibleContent>
-            </Card>
-        </Collapsible>
-    );
+	const { language, t, translateCategory, translateSubcategory } =
+		usePreferences();
+
+	const dateLocale = language === "pt" ? pt : enUS;
+
+	const updateFilter = (key, value) => {
+		onFiltersChange((current) => {
+			const updated = {
+				...current,
+				[key]: value,
+			};
+
+			if (key === "category") {
+				updated.subcategory = "";
+			}
+
+			if (
+				key === "type" &&
+				["income", "expense", "transfer"].includes(value)
+			) {
+				const selectedCategory = categories.find(
+					(category) =>
+						String(category.id) === String(current.category),
+				);
+
+				const selectedSubcategory = subcategories.find(
+					(subcategory) =>
+						String(subcategory.id) === String(current.subcategory),
+				);
+
+				const subcategoryParent = categories.find(
+					(category) =>
+						String(category.id) ===
+						String(selectedSubcategory?.category?.id),
+				);
+
+				if (
+					current.category &&
+					!selectedCategory?.transactionTypes?.includes(value)
+				) {
+					updated.category = "";
+					updated.subcategory = "";
+				} else if (
+					current.subcategory &&
+					!subcategoryParent?.transactionTypes?.includes(value)
+				) {
+					updated.subcategory = "";
+				}
+			}
+
+			return updated;
+		});
+	};
+
+	const clearFilters = () => {
+		onFiltersChange({
+			search: "",
+			type: "",
+			account: "",
+			category: "",
+			subcategory: "",
+			checked: "",
+			start_date: "",
+			end_date: "",
+		});
+	};
+
+	const [filtersOpen, setFiltersOpen] = useState(false);
+
+	const hasFilters = Object.values(filters).some(Boolean);
+
+	const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+
+	const visibleSubcategories = subcategories.filter((subcategory) => {
+		const categoryId = subcategory.category?.id;
+
+		if (filters.category) {
+			return String(categoryId) === String(filters.category);
+		}
+
+		if (["income", "expense", "transfer"].includes(filters.type)) {
+			const parentCategory = categories.find(
+				(category) => String(category.id) === String(categoryId),
+			);
+
+			return (
+				parentCategory?.transactionTypes?.includes(filters.type) ??
+				false
+			);
+		}
+
+		return true;
+	});
+
+	const sortedVisibleSubcategories = [...visibleSubcategories].sort((a, b) =>
+		translateSubcategory(a.name).localeCompare(
+			translateSubcategory(b.name),
+			language === "pt" ? "pt-PT" : "en-US",
+			{ sensitivity: "base" },
+		),
+	);
+
+	const visibleCategories = ["income", "expense", "transfer"].includes(
+		filters.type,
+	)
+		? categories.filter((category) =>
+				category.transactionTypes?.includes(filters.type),
+			)
+		: categories;
+
+	const sortedCategories = [...visibleCategories].sort((a, b) =>
+		translateCategory(a.name).localeCompare(
+			translateCategory(b.name),
+			language === "pt" ? "pt-PT" : "en-US",
+			{ sensitivity: "base" },
+		),
+	);
+
+	const sortedAccounts = [...accounts].sort((a, b) =>
+		a.name.localeCompare(b.name, language === "pt" ? "pt-PT" : "en-US", {
+			sensitivity: "base",
+		}),
+	);
+
+	const startDate = filters.start_date
+		? new Date(`${filters.start_date}T00:00:00`)
+		: undefined;
+
+	const endDate = filters.end_date
+		? new Date(`${filters.end_date}T00:00:00`)
+		: undefined;
+
+	// Texto apresentado no filtro de tipo.
+	// O valor interno continua a ser "income", "expense" ou "transfer".
+	const selectedTypeLabel =
+		filters.type === "income"
+			? t("transactions.income")
+			: filters.type === "expense"
+				? t("transactions.expense")
+				: filters.type === "transfer"
+					? t("transactions.transfer")
+					: t("transactions.allTypes");
+
+	// Texto apresentado no filtro de estado.
+	// O valor interno continua a ser "true" ou "false".
+	const selectedStatusLabel =
+		filters.checked === "true"
+			? t("transactions.paid")
+			: filters.checked === "false"
+				? t("transactions.notPaid")
+				: t("transactions.allStatuses");
+
+	// Conta selecionada.
+	const selectedAccount = accounts.find(
+		(account) => String(account.id) === String(filters.account),
+	);
+
+	// Categoria selecionada.
+	const selectedCategory = categories.find(
+		(category) => String(category.id) === String(filters.category),
+	);
+
+	// Subcategoria selecionada.
+	const selectedSubcategory = subcategories.find(
+		(subcategory) => String(subcategory.id) === String(filters.subcategory),
+	);
+
+	return (
+		<Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+			<Card>
+				<CardHeader className="pb-4">
+					<div className="flex items-center justify-between gap-4">
+						<div>
+							<CardTitle className="text-base">
+								<CollapsibleTrigger asChild>
+									<Button
+										type="button"
+										variant="ghost"
+										className="group -ml-3 gap-2"
+									>
+										{t("transactions.filters")}
+
+										{hasFilters && (
+											<span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+												{activeFiltersCount}
+											</span>
+										)}
+
+										<ChevronDown
+											className={`h-4 w-4 transition-transform ${
+												filtersOpen ? "rotate-180" : ""
+											}`}
+										/>
+									</Button>
+								</CollapsibleTrigger>
+							</CardTitle>
+
+							<p className="mt-1 text-sm text-muted-foreground">
+								{t("transactions.filterDescription")}
+							</p>
+						</div>
+
+						{hasFilters && (
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								onClick={clearFilters}
+								className="gap-2"
+							>
+								<X className="h-4 w-4" />
+								{t("transactions.clearFilters")}
+							</Button>
+						)}
+					</div>
+				</CardHeader>
+
+				<CollapsibleContent>
+					<CardContent className="space-y-6">
+						{/* Search + main filters */}
+						<div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_180px_180px]">
+							{/* Search */}
+							<div className="space-y-2">
+								<Label htmlFor="transaction-search">
+									{t("transactions.search")}
+								</Label>
+
+								<div className="relative">
+									<Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+									<Input
+										id="transaction-search"
+										value={filters.search}
+										onChange={(event) =>
+											updateFilter(
+												"search",
+												event.target.value,
+											)
+										}
+										placeholder={t(
+											"transactions.searchPlaceholder",
+										)}
+										className="pl-9"
+									/>
+								</div>
+							</div>
+
+							{/* Type */}
+							<div className="space-y-2">
+								<Label>{t("transactions.type")}</Label>
+
+								<Select
+									value={filters.type || "all"}
+									onValueChange={(value) =>
+										updateFilter(
+											"type",
+											value === "all" ? "" : value,
+										)
+									}
+								>
+									<SelectTrigger className="w-full">
+										<SelectValue>
+											{selectedTypeLabel}
+										</SelectValue>
+									</SelectTrigger>
+
+									<SelectContent>
+										<SelectItem value="all">
+											{t("transactions.allTypes")}
+										</SelectItem>
+
+										<SelectItem value="income">
+											{t("transactions.income")}
+										</SelectItem>
+
+										<SelectItem value="expense">
+											{t("transactions.expense")}
+										</SelectItem>
+
+										<SelectItem value="transfer">
+											{t("transactions.transfer")}
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
+							{/* Status */}
+							<div className="space-y-2">
+								<Label>{t("transactions.status")}</Label>
+
+								<Select
+									value={filters.checked || "all"}
+									onValueChange={(value) =>
+										updateFilter(
+											"checked",
+											value === "all" ? "" : value,
+										)
+									}
+								>
+									<SelectTrigger className="w-full">
+										<SelectValue>
+											{selectedStatusLabel}
+										</SelectValue>
+									</SelectTrigger>
+
+									<SelectContent>
+										<SelectItem value="all">
+											{t("transactions.allStatuses")}
+										</SelectItem>
+
+										<SelectItem value="true">
+											{t("transactions.paid")}
+										</SelectItem>
+
+										<SelectItem value="false">
+											{t("transactions.notPaid")}
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
+
+						<Separator />
+
+						{/* Account / category filters */}
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+							{/* Account */}
+							<div className="space-y-2">
+								<Label>{t("transactions.account")}</Label>
+
+								<Select
+									value={filters.account || "all"}
+									onValueChange={(value) =>
+										updateFilter(
+											"account",
+											value === "all" ? "" : value,
+										)
+									}
+								>
+									<SelectTrigger className="w-full">
+										<SelectValue>
+											{selectedAccount ? (
+												<span className="flex items-center gap-2">
+													<EntityIcon
+														name={
+															selectedAccount.icon
+														}
+													/>
+													<span>
+														{selectedAccount.name}
+													</span>
+												</span>
+											) : (
+												t("transactions.allAccounts")
+											)}
+										</SelectValue>
+									</SelectTrigger>
+
+									<SelectContent>
+										<SelectItem value="all">
+											{t("transactions.allAccounts")}
+										</SelectItem>
+
+										{sortedAccounts.map((account) => (
+											<SelectItem
+												key={account.id}
+												value={String(account.id)}
+												textValue={account.name}
+											>
+												<span className="flex items-center gap-2">
+													<EntityIcon
+														name={account.icon}
+													/>
+													<span>{account.name}</span>
+												</span>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							{/* Category */}
+							<div className="space-y-2">
+								<Label>{t("transactions.category")}</Label>
+
+								<Select
+									value={filters.category || "all"}
+									onValueChange={(value) =>
+										updateFilter(
+											"category",
+											value === "all" ? "" : value,
+										)
+									}
+								>
+									<SelectTrigger className="w-full">
+										<SelectValue>
+											{selectedCategory ? (
+												<span className="flex items-center gap-2">
+													<EntityIcon
+														name={
+															selectedCategory.icon
+														}
+													/>
+													<span>
+														{translateCategory(
+															selectedCategory.name,
+														)}
+													</span>
+												</span>
+											) : (
+												t("transactions.allCategories")
+											)}
+										</SelectValue>
+									</SelectTrigger>
+
+									<SelectContent>
+										<SelectItem value="all">
+											{t("transactions.allCategories")}
+										</SelectItem>
+
+										{sortedCategories.map((category) => (
+											<SelectItem
+												key={category.id}
+												value={String(category.id)}
+												textValue={translateCategory(
+													category.name,
+												)}
+											>
+												<span className="flex items-center gap-2">
+													<EntityIcon
+														name={category.icon}
+													/>
+													<span>
+														{translateCategory(
+															category.name,
+														)}
+													</span>
+												</span>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							{/* Subcategory */}
+							<div className="space-y-2">
+								<Label>{t("transactions.subcategory")}</Label>
+
+								<Select
+									value={filters.subcategory || "all"}
+									onValueChange={(value) =>
+										updateFilter(
+											"subcategory",
+											value === "all" ? "" : value,
+										)
+									}
+								>
+									<SelectTrigger className="w-full">
+										<SelectValue>
+											{selectedSubcategory ? (
+												<span className="flex items-center gap-2">
+													<EntityIcon
+														name={
+															selectedSubcategory.icon
+														}
+													/>
+													<span>
+														{translateSubcategory(
+															selectedSubcategory.name,
+														)}
+													</span>
+												</span>
+											) : (
+												t(
+													"transactions.allSubcategories",
+												)
+											)}
+										</SelectValue>
+									</SelectTrigger>
+
+									<SelectContent>
+										<SelectItem value="all">
+											{t("transactions.allSubcategories")}
+										</SelectItem>
+
+										{sortedVisibleSubcategories.map(
+											(subcategory) => (
+												<SelectItem
+													key={subcategory.id}
+													value={String(
+														subcategory.id,
+													)}
+													textValue={translateSubcategory(
+														subcategory.name,
+													)}
+												>
+													<span className="flex items-center gap-2">
+														<EntityIcon
+															name={
+																subcategory.icon
+															}
+														/>
+														<span>
+															{translateSubcategory(
+																subcategory.name,
+															)}
+														</span>
+													</span>
+												</SelectItem>
+											),
+										)}
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
+
+						<Separator />
+
+						{/* Date range */}
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+							{/* Start date */}
+							<div className="grid gap-2">
+								<Label htmlFor="transaction-start-date">
+									{t("transactions.startDate")}
+								</Label>
+
+								<Popover>
+									<PopoverTrigger
+										render={
+											<Button
+												type="button"
+												variant="outline"
+												id="transaction-start-date"
+												className="justify-start font-normal"
+											>
+												{startDate
+													? format(startDate, "PPP", {
+															locale: dateLocale,
+														})
+													: t(
+															"transactions.selectStartDate",
+														)}
+											</Button>
+										}
+									/>
+
+									<PopoverContent
+										className="w-auto p-0"
+										align="start"
+									>
+										<Calendar
+											mode="single"
+											selected={startDate}
+											onSelect={(date) => {
+												updateFilter(
+													"start_date",
+													date
+														? format(
+																date,
+																"yyyy-MM-dd",
+															)
+														: "",
+												);
+											}}
+											defaultMonth={startDate}
+											locale={dateLocale}
+										/>
+									</PopoverContent>
+								</Popover>
+							</div>
+
+							{/* End date */}
+							<div className="grid gap-2">
+								<Label htmlFor="transaction-end-date">
+									{t("transactions.endDate")}
+								</Label>
+
+								<Popover>
+									<PopoverTrigger
+										render={
+											<Button
+												type="button"
+												variant="outline"
+												id="transaction-end-date"
+												className="justify-start font-normal"
+											>
+												{endDate
+													? format(endDate, "PPP", {
+															locale: dateLocale,
+														})
+													: t(
+															"transactions.selectEndDate",
+														)}
+											</Button>
+										}
+									/>
+
+									<PopoverContent
+										className="w-auto p-0"
+										align="start"
+									>
+										<Calendar
+											mode="single"
+											selected={endDate}
+											onSelect={(date) => {
+												updateFilter(
+													"end_date",
+													date
+														? format(
+																date,
+																"yyyy-MM-dd",
+															)
+														: "",
+												);
+											}}
+											defaultMonth={endDate}
+											locale={dateLocale}
+										/>
+									</PopoverContent>
+								</Popover>
+							</div>
+						</div>
+
+						{/* Mobile clear button */}
+						{hasFilters && (
+							<div className="flex justify-end md:hidden">
+								<Button
+									type="button"
+									variant="outline"
+									onClick={clearFilters}
+									className="gap-2"
+								>
+									<X className="h-4 w-4" />
+									{t("transactions.clearFilters")}
+								</Button>
+							</div>
+						)}
+					</CardContent>
+				</CollapsibleContent>
+			</Card>
+		</Collapsible>
+	);
 }

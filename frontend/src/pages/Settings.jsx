@@ -413,7 +413,8 @@ export default function Settings() {
 													);
 													setSuccess(false);
 												}}
-												className="w-full rounded-md border bg-background px-3 py-2 text-sm">
+												className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+											>
 												<option value="year">
 													{t("dashboard.year")}
 												</option>
@@ -440,7 +441,8 @@ export default function Settings() {
 													);
 													setSuccess(false);
 												}}
-												className="w-full rounded-md border bg-background px-3 py-2 text-sm">
+												className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+											>
 												<option value="expense">
 													{t("dashboard.expenses")}
 												</option>
@@ -464,7 +466,8 @@ export default function Settings() {
 													);
 													setSuccess(false);
 												}}
-												className="w-full rounded-md border bg-background px-3 py-2 text-sm">
+												className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+											>
 												<option value="year">
 													{t("dashboard.year")}
 												</option>
@@ -488,7 +491,8 @@ export default function Settings() {
 
 							<TabsContent
 								value="categories"
-								className="space-y-6">
+								className="space-y-6"
+							>
 								<Card>
 									<CardHeader>
 										<CardTitle>
@@ -506,7 +510,8 @@ export default function Settings() {
 												(category) => (
 													<div
 														key={category.id}
-														className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+														className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+													>
 														{/* Category information */}
 
 														<div className="flex items-center gap-3">
@@ -515,7 +520,8 @@ export default function Settings() {
 																style={{
 																	backgroundColor: `${category.color}15`,
 																	color: category.color,
-																}}>
+																}}
+															>
 																<CategoryIcon
 																	name={
 																		category
@@ -607,7 +613,8 @@ export default function Settings() {
 
 							<TabsContent
 								value="subcategories"
-								className="space-y-6">
+								className="space-y-6"
+							>
 								<Card>
 									<CardHeader>
 										<CardTitle>
@@ -624,7 +631,8 @@ export default function Settings() {
 									<CardContent>
 										<Accordion
 											type="multiple"
-											className="w-full">
+											className="w-full"
+										>
 											{sortedCategories.map(
 												(category) => {
 													const categorySubcategories =
@@ -671,7 +679,8 @@ export default function Settings() {
 													return (
 														<AccordionItem
 															key={category.id}
-															value={`category-${category.id}`}>
+															value={`category-${category.id}`}
+														>
 															<AccordionTrigger className="hover:no-underline">
 																<div className="flex items-center gap-3">
 																	<div
@@ -679,7 +688,8 @@ export default function Settings() {
 																		style={{
 																			backgroundColor: `${category.color}15`,
 																			color: category.color,
-																		}}>
+																		}}
+																	>
 																		<CategoryIcon
 																			name={
 																				category
@@ -723,7 +733,8 @@ export default function Settings() {
 																				<div
 																					key={
 																						subcategory.id
-																					}>
+																					}
+																				>
 																					<div className="flex items-center justify-between gap-4 py-3 pl-6">
 																						{/* Subcategory information */}
 

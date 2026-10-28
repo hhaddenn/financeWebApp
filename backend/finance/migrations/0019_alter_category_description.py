@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0018_emailchangerequest"),
+	]
 
-    dependencies = [
-        ('finance', '0018_emailchangerequest'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='category',
-            name='description',
-            field=models.CharField(blank=True, max_length=100),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name="category",
+			name="description",
+			field=models.CharField(blank=True, max_length=100),
+		),
+	]

@@ -1,7 +1,7 @@
-import api from './client';
+import api from "./client";
 
 export const getNews = async () => {
-	const response = await api.get('/news/');
+	const response = await api.get("/news/");
 	return response.data;
 };
 

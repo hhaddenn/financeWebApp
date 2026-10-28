@@ -4,20 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0011_usersettings_usercategorypreference_and_more"),
+	]
 
-    dependencies = [
-        ('finance', '0011_usersettings_usercategorypreference_and_more'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='usersettings',
-            name='language',
-            field=models.CharField(choices=[('pt', 'Português'), ('en', 'English')], default='pt', max_length=2),
-        ),
-        migrations.AddField(
-            model_name='usersettings',
-            name='theme',
-            field=models.CharField(choices=[('light', 'Light'), ('dark', 'Dark'), ('system', 'System')], default='light', max_length=10),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name="usersettings",
+			name="language",
+			field=models.CharField(
+				choices=[("pt", "Português"), ("en", "English")],
+				default="pt",
+				max_length=2,
+			),
+		),
+		migrations.AddField(
+			model_name="usersettings",
+			name="theme",
+			field=models.CharField(
+				choices=[("light", "Light"), ("dark", "Dark"), ("system", "System")],
+				default="light",
+				max_length=10,
+			),
+		),
+	]

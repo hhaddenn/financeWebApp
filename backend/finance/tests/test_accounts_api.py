@@ -10,75 +10,75 @@ User = get_user_model()
 
 
 class AccountAPITests(APITestCase):
-   def setUp(self):
-      self.user = User.objects.create_user(
-         username="active",
-         email="active@example.com",
-         password="StrongPassword1!",
-      )
+	def setUp(self):
+		self.user = User.objects.create_user(
+			username="active",
+			email="active@example.com",
+			password="StrongPassword1!",
+		)
 
-      self.account = Account.objects.create(
-         name="Main Account",
-         user=self.user,
-         initial_balance=Decimal("100.00"),
-         balance=Decimal("344.20"),
-         icon="landmark",
-      )
+		self.account = Account.objects.create(
+			name="Main Account",
+			user=self.user,
+			initial_balance=Decimal("100.00"),
+			balance=Decimal("344.20"),
+			icon="landmark",
+		)
 
-      self.client.force_authenticate(user=self.user)
-   
-   def test_user_can_manually_correct_current_balance(self):
-      url = reverse(
-         "account-retrieve-update-destroy-view",
-         args=[self.account.id],
-      )
+		self.client.force_authenticate(user=self.user)
 
-      response = self.client.patch(
-         url,
-         {"balance": "343.23"},
-         format="json",
-      )
+	def test_user_can_manually_correct_current_balance(self):
+		url = reverse(
+			"account-retrieve-update-destroy-view",
+			args=[self.account.id],
+		)
 
-      self.account.refresh_from_db()
+		response = self.client.patch(
+			url,
+			{"balance": "343.23"},
+			format="json",
+		)
 
-      self.assertEqual(response.status_code, 200)
-      self.assertEqual(self.account.balance, Decimal("343.23"))
-      self.assertEqual(self.account.initial_balance, Decimal("100.00"))
-      
-   def test_user_cannot_change_initial_balance_after_creation(self):
-      url = reverse(
-         "account-retrieve-update-destroy-view",
-         args=[self.account.id],
-      )
+		self.account.refresh_from_db()
 
-      response = self.client.patch(
-         url,
-         {"initial_balance": "120.00"},
-         format="json",
-      )
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(self.account.balance, Decimal("343.23"))
+		self.assertEqual(self.account.initial_balance, Decimal("100.00"))
 
-      self.account.refresh_from_db()
+	def test_user_cannot_change_initial_balance_after_creation(self):
+		url = reverse(
+			"account-retrieve-update-destroy-view",
+			args=[self.account.id],
+		)
 
-      self.assertEqual(response.status_code, 400)
-      self.assertEqual(self.account.initial_balance, Decimal("100.00"))
-      self.assertEqual(self.account.balance, Decimal("344.20"))
+		response = self.client.patch(
+			url,
+			{"initial_balance": "120.00"},
+			format="json",
+		)
 
-   def test_create_account_sets_initial_balance_from_balance(self):
-      url = reverse("account-create-view")
+		self.account.refresh_from_db()
 
-      response = self.client.post(
-         url,
-         {
-            "name": "Savings",
-            "balance": "250.00",
-            "icon": "landmark",
-         },
-         format="json",
-      )
+		self.assertEqual(response.status_code, 400)
+		self.assertEqual(self.account.initial_balance, Decimal("100.00"))
+		self.assertEqual(self.account.balance, Decimal("344.20"))
 
-      self.assertEqual(response.status_code, 201)
+	def test_create_account_sets_initial_balance_from_balance(self):
+		url = reverse("account-create-view")
 
-      account = Account.objects.get(name="Savings")
+		response = self.client.post(
+			url,
+			{
+				"name": "Savings",
+				"balance": "250.00",
+				"icon": "landmark",
+			},
+			format="json",
+		)
 
-      self.assertEqual(account.balance, Decimal("250.00"))
-      self.assertEqual(account.initial_balance, Decimal("250.00"))
+		self.assertEqual(response.status_code, 201)
+
+		account = Account.objects.get(name="Savings")
+
+		self.assertEqual(account.balance, Decimal("250.00"))
+		self.assertEqual(account.initial_balance, Decimal("250.00"))

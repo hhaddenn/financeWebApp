@@ -670,7 +670,8 @@ export function TransactionDialog({
 		<Dialog
 			open={open}
 			onOpenChange={handleDialogChange}
-			disablePointerDismissal>
+			disablePointerDismissal
+		>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<form onSubmit={handleSubmit} noValidate>
 					<DialogHeader>
@@ -694,14 +695,16 @@ export function TransactionDialog({
 
 							<Popover
 								open={accountOpen}
-								onOpenChange={setAccountOpen}>
+								onOpenChange={setAccountOpen}
+							>
 								<PopoverTrigger
 									render={
 										<Button
 											type="button"
 											variant="outline"
 											className="justify-start font-normal"
-											disabled={saving}>
+											disabled={saving}
+										>
 											{selectedAccount ? (
 												<>
 													<EntityIcon
@@ -728,7 +731,8 @@ export function TransactionDialog({
 
 								<PopoverContent
 									className="w-64 p-2"
-									align="start">
+									align="start"
+								>
 									<div className="grid max-h-60 gap-1 overflow-y-auto">
 										{accounts.map((account) => (
 											<Button
@@ -738,7 +742,8 @@ export function TransactionDialog({
 												className="w-full justify-start"
 												onClick={() =>
 													handleAccountSelect(account)
-												}>
+												}
+											>
 												<EntityIcon
 													name={account.icon}
 													className="mr-3 size-5"
@@ -763,14 +768,16 @@ export function TransactionDialog({
 
 								<Popover
 									open={transferAccountOpen}
-									onOpenChange={setTransferAccountOpen}>
+									onOpenChange={setTransferAccountOpen}
+								>
 									<PopoverTrigger
 										render={
 											<Button
 												type="button"
 												variant="outline"
 												className="justify-start font-normal"
-												disabled={saving}>
+												disabled={saving}
+											>
 												{selectedTransferAccount ? (
 													<>
 														<EntityIcon
@@ -799,7 +806,8 @@ export function TransactionDialog({
 
 									<PopoverContent
 										className="w-64 p-2"
-										align="start">
+										align="start"
+									>
 										<div className="grid max-h-60 gap-1 overflow-y-auto">
 											{availableTransferAccounts.map(
 												(account) => (
@@ -812,7 +820,8 @@ export function TransactionDialog({
 															handleTransferAccountSelect(
 																account,
 															)
-														}>
+														}
+													>
 														<EntityIcon
 															name={account.icon}
 															className="mr-3 size-5"
@@ -939,7 +948,8 @@ export function TransactionDialog({
 											variant="outline"
 											id="transaction-date"
 											className="justify-start font-normal"
-											disabled={saving}>
+											disabled={saving}
+										>
 											{selectedDate
 												? format(selectedDate, "PPP", {
 														locale: dateLocale,
@@ -951,7 +961,8 @@ export function TransactionDialog({
 
 								<PopoverContent
 									className="w-auto p-0"
-									align="start">
+									align="start"
+								>
 									<Calendar
 										mode="single"
 										selected={selectedDate}
@@ -1006,14 +1017,16 @@ export function TransactionDialog({
 
 								<Popover
 									open={categoryOpen}
-									onOpenChange={setCategoryOpen}>
+									onOpenChange={setCategoryOpen}
+								>
 									<PopoverTrigger
 										render={
 											<Button
 												type="button"
 												variant="outline"
 												className="justify-start font-normal"
-												disabled={saving}>
+												disabled={saving}
+											>
 												{selectedSubcategory ? (
 													<>
 														<EntityIcon
@@ -1061,7 +1074,8 @@ export function TransactionDialog({
 
 									<PopoverContent
 										className="w-64 p-2"
-										align="start">
+										align="start"
+									>
 										{selectedCategoryId === null ? (
 											<div className="grid max-h-60 gap-1 overflow-y-auto">
 												{sortedVisibleCategories.map(
@@ -1075,7 +1089,8 @@ export function TransactionDialog({
 																handleCategorySelect(
 																	category,
 																)
-															}>
+															}
+														>
 															<EntityIcon
 																name={
 																	category.icon
@@ -1098,7 +1113,8 @@ export function TransactionDialog({
 													type="button"
 													variant="ghost"
 													className="mb-1 justify-start rounded-none border-b"
-													onClick={resetCategoryMenu}>
+													onClick={resetCategoryMenu}
+												>
 													<EntityIcon
 														name={
 															selectedCategory?.icon
@@ -1124,7 +1140,8 @@ export function TransactionDialog({
 																handleSubcategorySelect(
 																	subcategory,
 																)
-															}>
+															}
+														>
 															<EntityIcon
 																name={
 																	subcategory.icon
@@ -1193,7 +1210,8 @@ export function TransactionDialog({
 							<div
 								className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
 								role="alert"
-								aria-live="polite">
+								aria-live="polite"
+							>
 								{error}
 							</div>
 						)}
@@ -1223,7 +1241,8 @@ export function TransactionDialog({
 							type="button"
 							variant="outline"
 							onClick={() => onOpenChange(false)}
-							disabled={saving}>
+							disabled={saving}
+						>
 							{t("common.cancel")}
 						</Button>
 
@@ -1234,7 +1253,8 @@ export function TransactionDialog({
 								!form.account_id ||
 								(type === "transfer" &&
 									!form.transfer_account_id)
-							}>
+							}
+						>
 							{saving
 								? t("transactions.saving")
 								: isEditing
@@ -1246,7 +1266,8 @@ export function TransactionDialog({
 			</DialogContent>
 			<AlertDialog
 				open={discardConfirmationOpen}
-				onOpenChange={setDiscardConfirmationOpen}>
+				onOpenChange={setDiscardConfirmationOpen}
+			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
@@ -1267,7 +1288,8 @@ export function TransactionDialog({
 							onClick={() => {
 								setDiscardConfirmationOpen(false);
 								onOpenChange(false);
-							}}>
+							}}
+						>
 							{t("common.unsavedChanges.discard")}
 						</AlertDialogAction>
 					</AlertDialogFooter>

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0027_usersettings_dashboard_donut_period_and_more"),
+	]
 
-    dependencies = [
-        ('finance', '0027_usersettings_dashboard_donut_period_and_more'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='usersettings',
-            name='show_balance_by_default',
-            field=models.BooleanField(default=False),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name="usersettings",
+			name="show_balance_by_default",
+			field=models.BooleanField(default=False),
+		),
+	]
