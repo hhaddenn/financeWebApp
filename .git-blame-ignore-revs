@@ -1,0 +1,6 @@
+# Formatting-only commits, skipped by `git blame`.
+# GitHub reads this file automatically; locally run:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: apply Ruff and Prettier formatting with tab indentation
+0bece00beb35d056e0ce2d20d79b4f760398744c
