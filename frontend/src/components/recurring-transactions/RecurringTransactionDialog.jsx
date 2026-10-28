@@ -506,7 +506,8 @@ export default function RecurringTransactionDialog({
 		<Dialog
 			open={open}
 			onOpenChange={handleDialogOpenChange}
-			disablePointerDismissal>
+			disablePointerDismissal
+		>
 			<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
 				<form onSubmit={handleSubmit} noValidate>
 					<DialogHeader>
@@ -526,14 +527,16 @@ export default function RecurringTransactionDialog({
 
 							<Popover
 								open={accountOpen}
-								onOpenChange={setAccountOpen}>
+								onOpenChange={setAccountOpen}
+							>
 								<PopoverTrigger
 									render={
 										<Button
 											type="button"
 											variant="outline"
 											className="justify-start font-normal"
-											disabled={saving}>
+											disabled={saving}
+										>
 											{selectedAccount ? (
 												<>
 													<CategoryIcon
@@ -560,7 +563,8 @@ export default function RecurringTransactionDialog({
 
 								<PopoverContent
 									className="w-64 p-2"
-									align="start">
+									align="start"
+								>
 									<div className="grid max-h-60 gap-1 overflow-y-auto">
 										{accounts.map((account) => (
 											<Button
@@ -570,7 +574,8 @@ export default function RecurringTransactionDialog({
 												className="w-full justify-start"
 												onClick={() =>
 													handleAccountSelect(account)
-												}>
+												}
+											>
 												<CategoryIcon
 													name={account.icon}
 													className="mr-3 size-5"
@@ -645,14 +650,16 @@ export default function RecurringTransactionDialog({
 
 							<Popover
 								open={categoryOpen}
-								onOpenChange={setCategoryOpen}>
+								onOpenChange={setCategoryOpen}
+							>
 								<PopoverTrigger
 									render={
 										<Button
 											type="button"
 											variant="outline"
 											className="justify-start font-normal"
-											disabled={saving}>
+											disabled={saving}
+										>
 											{selectedSubcategory ? (
 												<>
 													<CategoryIcon
@@ -700,7 +707,8 @@ export default function RecurringTransactionDialog({
 
 								<PopoverContent
 									className="w-64 p-2"
-									align="start">
+									align="start"
+								>
 									{selectedCategoryId === null ? (
 										<div className="grid max-h-60 gap-1 overflow-y-auto">
 											{sortedCategories.map(
@@ -714,7 +722,8 @@ export default function RecurringTransactionDialog({
 															handleCategorySelect(
 																category,
 															)
-														}>
+														}
+													>
 														<CategoryIcon
 															name={category.icon}
 															className="mr-3 size-5"
@@ -735,7 +744,8 @@ export default function RecurringTransactionDialog({
 												type="button"
 												variant="ghost"
 												className="mb-1 justify-start rounded-none border-b"
-												onClick={resetCategoryMenu}>
+												onClick={resetCategoryMenu}
+											>
 												<CategoryIcon
 													name={
 														selectedCategory?.icon
@@ -761,7 +771,8 @@ export default function RecurringTransactionDialog({
 															handleSubcategorySelect(
 																subcategory,
 															)
-														}>
+														}
+													>
 														<CategoryIcon
 															name={
 																subcategory.icon
@@ -827,7 +838,8 @@ export default function RecurringTransactionDialog({
 								disabled={saving}
 								onChange={(event) =>
 									updateField("frequency", event.target.value)
-								}>
+								}
+							>
 								<option value="weekly">
 									{t("recurringTransactions.weekly")}
 								</option>
@@ -859,7 +871,8 @@ export default function RecurringTransactionDialog({
 											"day_of_week",
 											event.target.value,
 										)
-									}>
+									}
+								>
 									<option value="">
 										{t(
 											"recurringTransactions.dialog.selectWeekday",
@@ -931,7 +944,8 @@ export default function RecurringTransactionDialog({
 									disabled={saving}
 									onChange={(event) =>
 										updateField("month", event.target.value)
-									}>
+									}
+								>
 									<option value="">
 										{t(
 											"recurringTransactions.dialog.selectMonth",
@@ -982,7 +996,8 @@ export default function RecurringTransactionDialog({
 						{error && (
 							<div
 								className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-								role="alert">
+								role="alert"
+							>
 								{error}
 							</div>
 						)}
@@ -993,13 +1008,15 @@ export default function RecurringTransactionDialog({
 							type="button"
 							variant="outline"
 							onClick={() => onOpenChange(false)}
-							disabled={saving}>
+							disabled={saving}
+						>
 							{t("common.cancel")}
 						</Button>
 
 						<Button
 							type="submit"
-							disabled={saving || !form.account_id}>
+							disabled={saving || !form.account_id}
+						>
 							{saving
 								? t("recurringTransactions.dialog.saving")
 								: isEditing
@@ -1013,7 +1030,8 @@ export default function RecurringTransactionDialog({
 			</DialogContent>
 			<AlertDialog
 				open={discardConfirmationOpen}
-				onOpenChange={setDiscardConfirmationOpen}>
+				onOpenChange={setDiscardConfirmationOpen}
+			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
@@ -1034,7 +1052,8 @@ export default function RecurringTransactionDialog({
 							onClick={() => {
 								setDiscardConfirmationOpen(false);
 								onOpenChange(false);
-							}}>
+							}}
+						>
 							{t("common.unsavedChanges.discard")}
 						</AlertDialogAction>
 					</AlertDialogFooter>

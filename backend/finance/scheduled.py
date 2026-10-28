@@ -6,29 +6,29 @@ from .services import apply_transaction
 
 
 def process_due_transactions():
-    due_transaction_ids = Transaction.objects.filter(
-        date__lte=timezone.localdate(),
-        applied=False,
-        checked=True,
-    ).values_list("pk", flat=True)
+	due_transaction_ids = Transaction.objects.filter(
+		date__lte=timezone.localdate(),
+		applied=False,
+		checked=True,
+	).values_list("pk", flat=True)
 
-    for transaction_id in due_transaction_ids:
-        with db_transaction.atomic():
-            transaction = (
-                Transaction.objects.select_for_update()
-                .filter(
-                    pk=transaction_id,
-                    date__lte=timezone.localdate(),
-                    applied=False,
-                    checked=True,
-                )
-                .first()
-            )
+	for transaction_id in due_transaction_ids:
+		with db_transaction.atomic():
+			transaction = (
+				Transaction.objects.select_for_update()
+				.filter(
+					pk=transaction_id,
+					date__lte=timezone.localdate(),
+					applied=False,
+					checked=True,
+				)
+				.first()
+			)
 
-            if transaction is None:
-                continue
+			if transaction is None:
+				continue
 
-            apply_transaction(transaction)
+			apply_transaction(transaction)
 
-            transaction.applied = True
-            transaction.save(update_fields=["applied"])
+			transaction.applied = True
+			transaction.save(update_fields=["applied"])

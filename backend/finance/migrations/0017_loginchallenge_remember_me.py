@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0016_news_action_label_news_action_url_news_image"),
+	]
 
-    dependencies = [
-        ('finance', '0016_news_action_label_news_action_url_news_image'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='loginchallenge',
-            name='remember_me',
-            field=models.BooleanField(default=False),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name="loginchallenge",
+			name="remember_me",
+			field=models.BooleanField(default=False),
+		),
+	]

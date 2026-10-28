@@ -4,25 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0024_alter_usersettings_theme"),
+	]
 
-    dependencies = [
-        ('finance', '0024_alter_usersettings_theme'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='news',
-            name='action_label_pt',
-            field=models.CharField(blank=True, max_length=80),
-        ),
-        migrations.AddField(
-            model_name='news',
-            name='description_pt',
-            field=models.TextField(blank=True),
-        ),
-        migrations.AddField(
-            model_name='news',
-            name='title_pt',
-            field=models.CharField(blank=True, max_length=120),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name="news",
+			name="action_label_pt",
+			field=models.CharField(blank=True, max_length=80),
+		),
+		migrations.AddField(
+			model_name="news",
+			name="description_pt",
+			field=models.TextField(blank=True),
+		),
+		migrations.AddField(
+			model_name="news",
+			name="title_pt",
+			field=models.CharField(blank=True, max_length=120),
+		),
+	]

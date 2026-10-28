@@ -2,53 +2,54 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .models import (
-    Account,
-    Budget,
-    Category,
-    News,
-    RecurringTransaction,
-    Subcategory,
-    Transaction,
-    User,
+	Account,
+	Budget,
+	Category,
+	News,
+	RecurringTransaction,
+	Subcategory,
+	Transaction,
+	User,
 )
 
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-    list_display = ("title", "action_label", "created_at")
-    search_fields = ("title", "description", "action_label", "action_url")
-    ordering = ("-created_at",)
-    fieldsets = (
-    (
-        "English",
-        {
-            "fields": (
-                "title",
-                "description",
-                "action_label",
-            ),
-        },
-    ),
-    (
-        "Português",
-        {
-            "fields": (
-                "title_pt",
-                "description_pt",
-                "action_label_pt",
-            ),
-        },
-    ),
-    (
-        "Imagem e ligação",
-        {
-            "fields": (
-                "image",
-                "action_url",
-            ),
-        },
-    ),
-)
+	list_display = ("title", "action_label", "created_at")
+	search_fields = ("title", "description", "action_label", "action_url")
+	ordering = ("-created_at",)
+	fieldsets = (
+		(
+			"English",
+			{
+				"fields": (
+					"title",
+					"description",
+					"action_label",
+				),
+			},
+		),
+		(
+			"Português",
+			{
+				"fields": (
+					"title_pt",
+					"description_pt",
+					"action_label_pt",
+				),
+			},
+		),
+		(
+			"Imagem e ligação",
+			{
+				"fields": (
+					"image",
+					"action_url",
+				),
+			},
+		),
+	)
+
 
 # ---------------------------------------------------------------------------
 # User
@@ -57,32 +58,32 @@ class NewsAdmin(admin.ModelAdmin):
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    list_display = (
-        "username",
-        "email",
-        "is_active",
-        "is_staff",
-        "date_joined",
-    )
+	list_display = (
+		"username",
+		"email",
+		"is_active",
+		"is_staff",
+		"date_joined",
+	)
 
-    list_filter = (
-        "is_active",
-        "is_staff",
-        "is_superuser",
-        "date_joined",
-    )
+	list_filter = (
+		"is_active",
+		"is_staff",
+		"is_superuser",
+		"date_joined",
+	)
 
-    search_fields = (
-        "username",
-        "email",
-    )
+	search_fields = (
+		"username",
+		"email",
+	)
 
-    ordering = ("username",)
+	ordering = ("username",)
 
-    readonly_fields = (
-        "last_login",
-        "date_joined",
-    )
+	readonly_fields = (
+		"last_login",
+		"date_joined",
+	)
 
 
 # ---------------------------------------------------------------------------
@@ -92,26 +93,26 @@ class CustomUserAdmin(UserAdmin):
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "user",
-        "balance",
-        "initial_balance",
-        "icon",
-    )
+	list_display = (
+		"name",
+		"user",
+		"balance",
+		"initial_balance",
+		"icon",
+	)
 
-    list_filter = ("user",)
+	list_filter = ("user",)
 
-    search_fields = (
-        "name",
-        "user__username",
-        "user__email",
-    )
+	search_fields = (
+		"name",
+		"user__username",
+		"user__email",
+	)
 
-    ordering = (
-        "user",
-        "name",
-    )
+	ordering = (
+		"user",
+		"name",
+	)
 
 
 # ---------------------------------------------------------------------------
@@ -121,24 +122,24 @@ class AccountAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "category_type",
-        "description",
-        "icon",
-    )
+	list_display = (
+		"name",
+		"category_type",
+		"description",
+		"icon",
+	)
 
-    list_filter = ("category_type",)
+	list_filter = ("category_type",)
 
-    search_fields = (
-        "name",
-        "description",
-    )
+	search_fields = (
+		"name",
+		"description",
+	)
 
-    ordering = (
-        "category_type",
-        "name",
-    )
+	ordering = (
+		"category_type",
+		"name",
+	)
 
 
 # ---------------------------------------------------------------------------
@@ -148,30 +149,30 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Subcategory)
 class SubcategoryAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "category",
-        "get_category_type",
-    )
+	list_display = (
+		"name",
+		"category",
+		"get_category_type",
+	)
 
-    list_filter = (
-        "category",
-        "category__category_type",
-    )
+	list_filter = (
+		"category",
+		"category__category_type",
+	)
 
-    search_fields = (
-        "name",
-        "category__name",
-    )
+	search_fields = (
+		"name",
+		"category__name",
+	)
 
-    ordering = (
-        "category",
-        "name",
-    )
+	ordering = (
+		"category",
+		"name",
+	)
 
-    @admin.display(description="Type")
-    def get_category_type(self, obj):
-        return obj.category.category_type
+	@admin.display(description="Type")
+	def get_category_type(self, obj):
+		return obj.category.category_type
 
 
 # ---------------------------------------------------------------------------
@@ -181,42 +182,42 @@ class SubcategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "transaction_type",
-        "amount",
-        "amount_to_receive",
-        "account",
-        "transfer_account",
-        "subcategory",
-        "date",
-    )
+	list_display = (
+		"name",
+		"transaction_type",
+		"amount",
+		"amount_to_receive",
+		"account",
+		"transfer_account",
+		"subcategory",
+		"date",
+	)
 
-    list_filter = (
-        "transaction_type",
-        "account",
-        "subcategory",
-        "date",
-    )
+	list_filter = (
+		"transaction_type",
+		"account",
+		"subcategory",
+		"date",
+	)
 
-    search_fields = (
-        "name",
-        "counterparty",
-        "description",
-        "account__name",
-        "account__user__username",
-        "account__user__email",
-    )
+	search_fields = (
+		"name",
+		"counterparty",
+		"description",
+		"account__name",
+		"account__user__username",
+		"account__user__email",
+	)
 
-    date_hierarchy = "date"
+	date_hierarchy = "date"
 
-    ordering = ("-date",)
+	ordering = ("-date",)
 
-    autocomplete_fields = (
-        "account",
-        "transfer_account",
-        "subcategory",
-    )
+	autocomplete_fields = (
+		"account",
+		"transfer_account",
+		"subcategory",
+	)
 
 
 # ---------------------------------------------------------------------------
@@ -226,38 +227,38 @@ class TransactionAdmin(admin.ModelAdmin):
 
 @admin.register(Budget)
 class BudgetAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "user",
-        "budget_type",
-        "amount",
-        "category",
-        "subcategory",
-        "start_date",
-        "end_date",
-    )
+	list_display = (
+		"name",
+		"user",
+		"budget_type",
+		"amount",
+		"category",
+		"subcategory",
+		"start_date",
+		"end_date",
+	)
 
-    list_filter = (
-        "budget_type",
-        "start_date",
-        "end_date",
-    )
+	list_filter = (
+		"budget_type",
+		"start_date",
+		"end_date",
+	)
 
-    search_fields = (
-        "name",
-        "user__username",
-        "user__email",
-        "category__name",
-        "subcategory__name",
-    )
+	search_fields = (
+		"name",
+		"user__username",
+		"user__email",
+		"category__name",
+		"subcategory__name",
+	)
 
-    ordering = ("-start_date",)
+	ordering = ("-start_date",)
 
-    autocomplete_fields = (
-        "user",
-        "category",
-        "subcategory",
-    )
+	autocomplete_fields = (
+		"user",
+		"category",
+		"subcategory",
+	)
 
 
 # ---------------------------------------------------------------------------
@@ -267,37 +268,37 @@ class BudgetAdmin(admin.ModelAdmin):
 
 @admin.register(RecurringTransaction)
 class RecurringTransactionAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "user",
-        "transaction_type",
-        "amount",
-        "account",
-        "frequency",
-        "next_run_at",
-        "active",
-    )
+	list_display = (
+		"name",
+		"user",
+		"transaction_type",
+		"amount",
+		"account",
+		"frequency",
+		"next_run_at",
+		"active",
+	)
 
-    list_filter = (
-        "transaction_type",
-        "frequency",
-        "active",
-        "account",
-    )
+	list_filter = (
+		"transaction_type",
+		"frequency",
+		"active",
+		"account",
+	)
 
-    search_fields = (
-        "name",
-        "counterparty",
-        "user__username",
-        "user__email",
-        "account__name",
-        "subcategory__name",
-    )
+	search_fields = (
+		"name",
+		"counterparty",
+		"user__username",
+		"user__email",
+		"account__name",
+		"subcategory__name",
+	)
 
-    ordering = ("next_run_at",)
+	ordering = ("next_run_at",)
 
-    autocomplete_fields = (
-        "user",
-        "account",
-        "subcategory",
-    )
+	autocomplete_fields = (
+		"user",
+		"account",
+		"subcategory",
+	)

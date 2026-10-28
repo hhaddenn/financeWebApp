@@ -3,7 +3,7 @@ export function cn(...inputs) {
 		.flatMap((input) => {
 			if (!input) return [];
 
-			if (typeof input === 'string' || typeof input === 'number') {
+			if (typeof input === "string" || typeof input === "number") {
 				return [String(input)];
 			}
 
@@ -11,7 +11,7 @@ export function cn(...inputs) {
 				return [cn(...input)];
 			}
 
-			if (typeof input === 'object') {
+			if (typeof input === "object") {
 				return Object.entries(input)
 					.filter(([, value]) => value)
 					.map(([key]) => key);
@@ -19,5 +19,5 @@ export function cn(...inputs) {
 
 			return [];
 		})
-		.join(' ');
+		.join(" ");
 }

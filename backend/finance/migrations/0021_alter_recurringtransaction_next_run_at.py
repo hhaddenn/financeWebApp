@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0020_remove_recurringtransaction_time"),
+	]
 
-    dependencies = [
-        ('finance', '0020_remove_recurringtransaction_time'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='recurringtransaction',
-            name='next_run_at',
-            field=models.DateField(blank=True, null=True),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name="recurringtransaction",
+			name="next_run_at",
+			field=models.DateField(blank=True, null=True),
+		),
+	]

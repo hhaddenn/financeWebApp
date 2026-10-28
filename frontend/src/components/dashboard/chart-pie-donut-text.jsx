@@ -165,7 +165,8 @@ export function ChartPieDonutText() {
 							onChange={(event) =>
 								setTransactionType(event.target.value)
 							}
-							className="rounded-md border bg-background px-3 py-2 text-sm">
+							className="rounded-md border bg-background px-3 py-2 text-sm"
+						>
 							<option value="expense">
 								{t("dashboard.expenses")}
 							</option>
@@ -176,7 +177,8 @@ export function ChartPieDonutText() {
 						<select
 							value={period}
 							onChange={(event) => setPeriod(event.target.value)}
-							className="rounded-md border bg-background px-3 py-2 text-sm">
+							className="rounded-md border bg-background px-3 py-2 text-sm"
+						>
 							<option value="year">{t("dashboard.year")}</option>
 							<option value="month">
 								{t("dashboard.month")}
@@ -215,7 +217,8 @@ export function ChartPieDonutText() {
 						onChange={(event) =>
 							setTransactionType(event.target.value)
 						}
-						className="rounded-md border bg-background px-3 py-2 text-sm">
+						className="rounded-md border bg-background px-3 py-2 text-sm"
+					>
 						<option value="expense">
 							{t("dashboard.expenses")}
 						</option>
@@ -224,7 +227,8 @@ export function ChartPieDonutText() {
 					<select
 						value={period}
 						onChange={(event) => setPeriod(event.target.value)}
-						className="rounded-md border bg-background px-3 py-2 text-sm">
+						className="rounded-md border bg-background px-3 py-2 text-sm"
+					>
 						<option value="year">{t("dashboard.year")}</option>
 						<option value="month">{t("dashboard.month")}</option>
 						<option value="week">{t("dashboard.week")}</option>
@@ -244,7 +248,8 @@ export function ChartPieDonutText() {
 				) : (
 					<ChartContainer
 						config={chartConfig}
-						className="mx-auto w-full max-w-70 aspect-square">
+						className="mx-auto w-full max-w-70 aspect-square"
+					>
 						<PieChart>
 							<ChartTooltip
 								cursor={false}
@@ -256,7 +261,8 @@ export function ChartPieDonutText() {
 								dataKey="total"
 								nameKey="category"
 								innerRadius={60}
-								strokeWidth={5}>
+								strokeWidth={5}
+							>
 								<Label
 									content={({ viewBox }) => {
 										if (
@@ -269,11 +275,13 @@ export function ChartPieDonutText() {
 													x={viewBox.cx}
 													y={viewBox.cy}
 													textAnchor="middle"
-													dominantBaseline="middle">
+													dominantBaseline="middle"
+												>
 													<tspan
 														x={viewBox.cx}
 														y={viewBox.cy - 4}
-														className="fill-foreground text-2xl font-bold">
+														className="fill-foreground text-2xl font-bold"
+													>
 														€{formattedTotal}
 													</tspan>
 
@@ -283,7 +291,8 @@ export function ChartPieDonutText() {
 															(viewBox.cy || 0) +
 															20
 														}
-														className="fill-muted-foreground text-[11px]">
+														className="fill-muted-foreground text-[11px]"
+													>
 														{transactionType ===
 														"expense"
 															? t(
@@ -321,7 +330,8 @@ export function ChartPieDonutText() {
 							return (
 								<div
 									key={item.categoryId}
-									className="flex items-center justify-between gap-2">
+									className="flex items-center justify-between gap-2"
+								>
 									<div className="flex min-w-0 items-center gap-2">
 										<div
 											className="h-3 w-3 shrink-0 rounded-sm"

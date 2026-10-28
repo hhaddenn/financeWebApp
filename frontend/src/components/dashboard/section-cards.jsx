@@ -369,7 +369,8 @@ export function SectionCards({ onAccountDeleted }) {
             items-center justify-center rounded-xl
             border border-dashed bg-transparent
             transition-colors hover:bg-muted/50
-          ">
+          "
+				>
 					<div className="mb-2 flex size-10 items-center justify-center rounded-full bg-muted">
 						<Plus
 							className="size-5 text-muted-foreground"
@@ -468,7 +469,8 @@ export function SectionCards({ onAccountDeleted }) {
 								<div
 									className="grid grid-cols-3 gap-2 sm:grid-cols-6"
 									role="radiogroup"
-									aria-label={t("accounts.icon")}>
+									aria-label={t("accounts.icon")}
+								>
 									{iconOptions.map((option) => {
 										const Icon = option.icon;
 										const selected =
@@ -502,7 +504,8 @@ export function SectionCards({ onAccountDeleted }) {
 									? "border-primary bg-primary text-primary-foreground"
 									: "hover:bg-muted"
 							}
-                        `}>
+                        `}
+											>
 												<Icon
 													className="size-5"
 													aria-hidden="true"
@@ -519,7 +522,8 @@ export function SectionCards({ onAccountDeleted }) {
 								type="button"
 								variant="outline"
 								onClick={() => handleDialogChange(false)}
-								disabled={saving}>
+								disabled={saving}
+							>
 								{t("common.cancel")}
 							</Button>
 
@@ -542,7 +546,8 @@ export function SectionCards({ onAccountDeleted }) {
 					if (!open && !deleting) {
 						setAccountToDelete(null);
 					}
-				}}>
+				}}
+			>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
@@ -569,7 +574,8 @@ export function SectionCards({ onAccountDeleted }) {
 						<AlertDialogAction
 							variant="destructive"
 							disabled={deleting}
-							onClick={handleDeleteConfirm}>
+							onClick={handleDeleteConfirm}
+						>
 							{deleting
 								? t("accounts.deleting")
 								: t("common.delete")}
@@ -586,7 +592,8 @@ export function SectionCards({ onAccountDeleted }) {
 
 						<DialogDescription
 							className="whitespace-pre-line"
-							role="alert">
+							role="alert"
+						>
 							{errorMessage}
 						</DialogDescription>
 					</DialogHeader>
@@ -594,7 +601,8 @@ export function SectionCards({ onAccountDeleted }) {
 					<DialogFooter>
 						<Button
 							type="button"
-							onClick={() => setErrorDialogOpen(false)}>
+							onClick={() => setErrorDialogOpen(false)}
+						>
 							OK
 						</Button>
 					</DialogFooter>

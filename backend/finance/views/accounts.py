@@ -6,24 +6,24 @@ from ..serializers import AccountSerializer
 
 
 class AccountsList(generics.ListAPIView):
-    serializer_class = AccountSerializer
-    permission_classes = (IsAuthenticated,)
+	serializer_class = AccountSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        return Account.objects.filter(user=self.request.user)
+	def get_queryset(self):
+		return Account.objects.filter(user=self.request.user)
 
 
 class AccountCreate(generics.CreateAPIView):
-    serializer_class = AccountSerializer
-    permission_classes = (IsAuthenticated,)
+	serializer_class = AccountSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+	def perform_create(self, serializer):
+		serializer.save(user=self.request.user)
 
 
 class AccountDetail(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = AccountSerializer
-    permission_classes = (IsAuthenticated,)
+	serializer_class = AccountSerializer
+	permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        return Account.objects.filter(user=self.request.user)
+	def get_queryset(self):
+		return Account.objects.filter(user=self.request.user)

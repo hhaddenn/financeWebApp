@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0008_alter_transaction_date"),
+	]
 
-    dependencies = [
-        ('finance', '0008_alter_transaction_date'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='transaction',
-            name='applied',
-            field=models.BooleanField(default=False),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name="transaction",
+			name="applied",
+			field=models.BooleanField(default=False),
+		),
+	]

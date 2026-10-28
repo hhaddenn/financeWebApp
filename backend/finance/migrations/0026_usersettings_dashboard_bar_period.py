@@ -4,15 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0025_news_action_label_pt_news_description_pt_and_more"),
+	]
 
-    dependencies = [
-        ('finance', '0025_news_action_label_pt_news_description_pt_and_more'),
-    ]
-
-    operations = [
-        migrations.AddField(
-            model_name='usersettings',
-            name='dashboard_bar_period',
-            field=models.CharField(choices=[('year', 'Year'), ('month', 'Month'), ('week', 'Week')], default='year', max_length=5),
-        ),
-    ]
+	operations = [
+		migrations.AddField(
+			model_name="usersettings",
+			name="dashboard_bar_period",
+			field=models.CharField(
+				choices=[("year", "Year"), ("month", "Month"), ("week", "Week")],
+				default="year",
+				max_length=5,
+			),
+		),
+	]

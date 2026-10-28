@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0019_alter_category_description"),
+	]
 
-    dependencies = [
-        ('finance', '0019_alter_category_description'),
-    ]
-
-    operations = [
-        migrations.RemoveField(
-            model_name='recurringtransaction',
-            name='time',
-        ),
-    ]
+	operations = [
+		migrations.RemoveField(
+			model_name="recurringtransaction",
+			name="time",
+		),
+	]

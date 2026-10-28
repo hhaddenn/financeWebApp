@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0022_alter_recurringtransaction_frequency"),
+	]
 
-    dependencies = [
-        ('finance', '0022_alter_recurringtransaction_frequency'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='recurringtransaction',
-            name='name',
-            field=models.CharField(blank=True, max_length=50),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name="recurringtransaction",
+			name="name",
+			field=models.CharField(blank=True, max_length=50),
+		),
+	]

@@ -70,7 +70,8 @@ export default function NewsDetail() {
 					<div className="mx-auto w-full max-w-[900px] space-y-6 p-4 md:p-6 lg:p-8">
 						<Button
 							variant="ghost"
-							onClick={() => navigate("/news")}>
+							onClick={() => navigate("/news")}
+						>
 							<ArrowLeftIcon />
 							{t("news.backToNews")}
 						</Button>
@@ -88,7 +89,8 @@ export default function NewsDetail() {
 										type="button"
 										className="block w-full cursor-zoom-in bg-muted"
 										aria-label={t("news.expandImage")}
-										onClick={() => setImageExpanded(true)}>
+										onClick={() => setImageExpanded(true)}
+									>
 										<img
 											src={news.image_url}
 											alt={localizedTitle}
@@ -120,7 +122,8 @@ export default function NewsDetail() {
 														navigate(
 															news.action_url,
 														)
-													}>
+													}
+												>
 													{localizedActionLabel}
 												</Button>
 											</div>

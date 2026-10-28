@@ -1,7 +1,7 @@
-import api from './client';
+import api from "./client";
 
 export const getCategories = async (categoryType) => {
-	const response = await api.get('/categories/', {
+	const response = await api.get("/categories/", {
 		params: { category_type: categoryType },
 	});
 
@@ -9,6 +9,6 @@ export const getCategories = async (categoryType) => {
 };
 
 export const getSubcategories = async () => {
-	const response = await api.get('/subcategories/');
+	const response = await api.get("/subcategories/");
 	return response.data;
 };

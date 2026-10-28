@@ -6,13 +6,13 @@ import {
 	useEffect,
 	useMemo,
 	useState,
-} from 'react';
+} from "react";
 
-import { getSettings, updateSettings } from '@/api/settings';
-import { useAuth } from '@/features/auth/AuthContext';
+import { getSettings, updateSettings } from "@/api/settings";
+import { useAuth } from "@/features/auth/AuthContext";
 
-import pt from '@/locales/pt';
-import en from '@/locales/en';
+import pt from "@/locales/pt";
+import en from "@/locales/en";
 
 const translations = {
 	pt,
@@ -22,30 +22,30 @@ const translations = {
 const PreferencesContext = createContext(null);
 
 const normalizeTranslationKey = (name) => {
-	if (!name || typeof name !== 'string') {
+	if (!name || typeof name !== "string") {
 		return name;
 	}
 
-	return name.replace(/\s+/g, '');
+	return name.replace(/\s+/g, "");
 };
 
 export function PreferencesProvider({ children }) {
 	const { isLoggedIn, isLoading: authLoading } = useAuth();
 
 	const [language, setLanguageState] = useState(() => {
-		const savedLanguage = localStorage.getItem('financeapp.language');
+		const savedLanguage = localStorage.getItem("financeapp.language");
 
-		return ['pt', 'en'].includes(savedLanguage) ? savedLanguage : 'pt';
+		return ["pt", "en"].includes(savedLanguage) ? savedLanguage : "pt";
 	});
 	const [theme, setThemeState] = useState(() => {
-		const savedTheme = localStorage.getItem('financeapp.theme');
+		const savedTheme = localStorage.getItem("financeapp.theme");
 
-		return ['light', 'dark', 'system'].includes(savedTheme)
+		return ["light", "dark", "system"].includes(savedTheme)
 			? savedTheme
-			: 'system';
+			: "system";
 	});
 	const [systemDark, setSystemDark] = useState(
-		() => window.matchMedia('(prefers-color-scheme: dark)').matches,
+		() => window.matchMedia("(prefers-color-scheme: dark)").matches,
 	);
 	const [loading, setLoading] = useState(true);
 
@@ -65,31 +65,38 @@ export function PreferencesProvider({ children }) {
 
 			try {
 				const settings = await getSettings();
-				const savedTheme = localStorage.getItem('financeapp.theme');
-				const localTheme = ['light', 'dark', 'system'].includes(savedTheme)
+				const savedTheme = localStorage.getItem("financeapp.theme");
+				const localTheme = ["light", "dark", "system"].includes(
+					savedTheme,
+				)
 					? savedTheme
-					: 'system';
+					: "system";
 
-				const savedLanguage = localStorage.getItem('financeapp.language');
-				const localLanguage = ['pt', 'en'].includes(savedLanguage)
+				const savedLanguage = localStorage.getItem(
+					"financeapp.language",
+				);
+				const localLanguage = ["pt", "en"].includes(savedLanguage)
 					? savedLanguage
-					: 'pt';
-				const backendTheme = ['light', 'dark', 'system'].includes(
+					: "pt";
+				const backendTheme = ["light", "dark", "system"].includes(
 					settings.theme,
 				)
 					? settings.theme
-					: 'system';
-				const backendLanguage = ['pt', 'en'].includes(settings.language)
+					: "system";
+				const backendLanguage = ["pt", "en"].includes(settings.language)
 					? settings.language
-					: 'pt';
-				if (localTheme !== backendTheme || localLanguage !== backendLanguage) {
+					: "pt";
+				if (
+					localTheme !== backendTheme ||
+					localLanguage !== backendLanguage
+				) {
 					await updateSettings({
 						theme: localTheme,
 						language: localLanguage,
 					});
 				}
 			} catch (error) {
-				console.error('Failed to load preferences:', error);
+				console.error("Failed to load preferences:", error);
 			} finally {
 				setLoading(false);
 			}
@@ -102,23 +109,25 @@ export function PreferencesProvider({ children }) {
 	useEffect(() => {
 		const root = document.documentElement;
 
-		root.classList.remove('light', 'dark');
+		root.classList.remove("light", "dark");
 
-		if (theme === 'system') {
-			const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+		if (theme === "system") {
+			const mediaQuery = window.matchMedia(
+				"(prefers-color-scheme: dark)",
+			);
 
 			const handleChange = (event) => {
-				root.classList.remove('light', 'dark');
-				root.classList.add(event.matches ? 'dark' : 'light');
+				root.classList.remove("light", "dark");
+				root.classList.add(event.matches ? "dark" : "light");
 				setSystemDark(event.matches);
 			};
 
-			root.classList.add(mediaQuery.matches ? 'dark' : 'light');
+			root.classList.add(mediaQuery.matches ? "dark" : "light");
 
-			mediaQuery.addEventListener('change', handleChange);
+			mediaQuery.addEventListener("change", handleChange);
 
 			return () => {
-				mediaQuery.removeEventListener('change', handleChange);
+				mediaQuery.removeEventListener("change", handleChange);
 			};
 		}
 
@@ -126,12 +135,12 @@ export function PreferencesProvider({ children }) {
 	}, [theme]);
 
 	const resolvedTheme =
-		theme === 'system' ? (systemDark ? 'dark' : 'light') : theme;
+		theme === "system" ? (systemDark ? "dark" : "light") : theme;
 
 	const setLanguage = useCallback(
 		async (newLanguage) => {
 			setLanguageState(newLanguage);
-			localStorage.setItem('financeapp.language', newLanguage);
+			localStorage.setItem("financeapp.language", newLanguage);
 
 			if (isLoggedIn) {
 				try {
@@ -139,7 +148,7 @@ export function PreferencesProvider({ children }) {
 						language: newLanguage,
 					});
 				} catch (error) {
-					console.error('Failed to update language:', error);
+					console.error("Failed to update language:", error);
 				}
 			}
 		},
@@ -149,7 +158,7 @@ export function PreferencesProvider({ children }) {
 	const setTheme = useCallback(
 		async (newTheme) => {
 			setThemeState(newTheme);
-			localStorage.setItem('financeapp.theme', newTheme);
+			localStorage.setItem("financeapp.theme", newTheme);
 
 			if (isLoggedIn) {
 				try {
@@ -157,7 +166,7 @@ export function PreferencesProvider({ children }) {
 						theme: newTheme,
 					});
 				} catch (error) {
-					console.error('Failed to update theme:', error);
+					console.error("Failed to update theme:", error);
 				}
 			}
 		},
@@ -167,8 +176,11 @@ export function PreferencesProvider({ children }) {
 	const t = useCallback(
 		(path) => {
 			const value = path
-				.split('.')
-				.reduce((current, key) => current?.[key], translations[language]);
+				.split(".")
+				.reduce(
+					(current, key) => current?.[key],
+					translations[language],
+				);
 
 			return value ?? path;
 		},
@@ -231,7 +243,9 @@ export function usePreferences() {
 	const context = useContext(PreferencesContext);
 
 	if (!context) {
-		throw new Error('usePreferences must be used inside PreferencesProvider');
+		throw new Error(
+			"usePreferences must be used inside PreferencesProvider",
+		);
 	}
 
 	return context;

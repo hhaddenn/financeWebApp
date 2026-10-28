@@ -5,15 +5,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+	dependencies = [
+		("finance", "0005_alter_category_name"),
+	]
 
-    dependencies = [
-        ('finance', '0005_alter_category_name'),
-    ]
-
-    operations = [
-        migrations.AlterField(
-            model_name='transaction',
-            name='amount_to_receive',
-            field=models.DecimalField(decimal_places=2, default=0, max_digits=10, validators=[django.core.validators.MinValueValidator(0, 'Value must positive')]),
-        ),
-    ]
+	operations = [
+		migrations.AlterField(
+			model_name="transaction",
+			name="amount_to_receive",
+			field=models.DecimalField(
+				decimal_places=2,
+				default=0,
+				max_digits=10,
+				validators=[
+					django.core.validators.MinValueValidator(0, "Value must positive")
+				],
+			),
+		),
+	]

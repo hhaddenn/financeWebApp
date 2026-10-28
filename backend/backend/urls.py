@@ -23,7 +23,7 @@ from django.views.static import serve
 from .health import health_check
 
 urlpatterns = [
-	path('health/', health_check, name='health-check'),
+	path("health/", health_check, name="health-check"),
 	path("admin/", admin.site.urls),
 	path("api/", include("finance.urls")),
 ]

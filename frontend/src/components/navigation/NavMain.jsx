@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
 import {
 	SidebarGroup,
@@ -6,7 +6,7 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-} from '@/components/ui/sidebar';
+} from "@/components/ui/sidebar";
 
 export function NavMain({ items }) {
 	const navigate = useNavigate();
@@ -19,7 +19,8 @@ export function NavMain({ items }) {
 						<SidebarMenuItem key={item.title}>
 							<SidebarMenuButton
 								tooltip={item.title}
-								onClick={() => navigate(item.url)}>
+								onClick={() => navigate(item.url)}
+							>
 								{item.icon}
 
 								<span>{item.title}</span>

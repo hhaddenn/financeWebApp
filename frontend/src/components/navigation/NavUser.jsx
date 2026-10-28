@@ -1,9 +1,9 @@
-import { useAuth } from '@/features/auth/AuthContext';
-import { usePreferences } from '@/context/PreferencesContext';
+import { useAuth } from "@/features/auth/AuthContext";
+import { usePreferences } from "@/context/PreferencesContext";
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import {
 	DropdownMenu,
@@ -13,20 +13,16 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
-import {
-	EllipsisVerticalIcon,
-	LogOutIcon,
-	Settings2Icon,
-} from 'lucide-react';
+import { EllipsisVerticalIcon, LogOutIcon, Settings2Icon } from "lucide-react";
 
 import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
 	useSidebar,
-} from '@/components/ui/sidebar';
+} from "@/components/ui/sidebar";
 
 export function NavUser({ user }) {
 	const navigate = useNavigate();
@@ -40,8 +36,12 @@ export function NavUser({ user }) {
 				<DropdownMenu>
 					<DropdownMenuTrigger
 						render={
-							<SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
-						}>
+							<SidebarMenuButton
+								size="lg"
+								className="aria-expanded:bg-muted"
+							/>
+						}
+					>
 						<Avatar className="size-8 rounded-lg">
 							<AvatarImage src={user.avatar} alt={user.name} />
 
@@ -51,7 +51,9 @@ export function NavUser({ user }) {
 						</Avatar>
 
 						<div className="grid flex-1 text-left text-sm leading-tight">
-							<span className="truncate font-medium">{user.name}</span>
+							<span className="truncate font-medium">
+								{user.name}
+							</span>
 
 							<span className="truncate text-xs text-foreground/70">
 								{user.email}
@@ -63,14 +65,18 @@ export function NavUser({ user }) {
 
 					<DropdownMenuContent
 						className="min-w-56"
-						side={isMobile ? 'bottom' : 'right'}
+						side={isMobile ? "bottom" : "right"}
 						align="end"
-						sideOffset={4}>
+						sideOffset={4}
+					>
 						<DropdownMenuGroup>
 							<DropdownMenuLabel className="p-0 font-normal">
 								<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 									<Avatar className="size-8">
-										<AvatarImage src={user.avatar} alt={user.name} />
+										<AvatarImage
+											src={user.avatar}
+											alt={user.name}
+										/>
 
 										<AvatarFallback className="rounded-lg">
 											{user.name?.charAt(0).toUpperCase()}
@@ -78,7 +84,9 @@ export function NavUser({ user }) {
 									</Avatar>
 
 									<div className="grid flex-1 text-left text-sm leading-tight">
-										<span className="truncate font-medium">{user.name}</span>
+										<span className="truncate font-medium">
+											{user.name}
+										</span>
 
 										<span className="truncate text-xs text-muted-foreground">
 											{user.email}
@@ -91,10 +99,12 @@ export function NavUser({ user }) {
 						<DropdownMenuSeparator />
 
 						<DropdownMenuGroup>
-							<DropdownMenuItem onClick={() => navigate('/settings')}>
+							<DropdownMenuItem
+								onClick={() => navigate("/settings")}
+							>
 								<Settings2Icon />
 
-								{t('navigation.settings')}
+								{t("navigation.settings")}
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 
@@ -102,10 +112,11 @@ export function NavUser({ user }) {
 
 						<DropdownMenuItem
 							onClick={logout}
-							className="text-red-600 focus:text-red-600">
+							className="text-red-600 focus:text-red-600"
+						>
 							<LogOutIcon />
 
-							{t('common.logout')}
+							{t("common.logout")}
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

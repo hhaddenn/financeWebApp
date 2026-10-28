@@ -192,7 +192,8 @@ export default function RecurringTransactions() {
 										<Button
 											type="button"
 											variant="outline"
-											className="h-10 gap-2 rounded-lg border-border bg-card px-3 text-card-foreground hover:bg-accent hover:text-accent-foreground">
+											className="h-10 gap-2 rounded-lg border-border bg-card px-3 text-card-foreground hover:bg-accent hover:text-accent-foreground"
+										>
 											<Plus className="size-4" />
 
 											{t("recurringTransactions.add")}
@@ -204,10 +205,12 @@ export default function RecurringTransactions() {
 
 								<DropdownMenuContent
 									align="end"
-									className="w-64 p-1">
+									className="w-64 p-1"
+								>
 									<DropdownMenuItem
 										onClick={() => handleAdd("expense")}
-										className="flex items-center gap-3 px-3 py-2.5">
+										className="flex items-center gap-3 px-3 py-2.5"
+									>
 										<ArrowUpRight className="size-4 shrink-0 text-red-500" />
 
 										<div className="flex flex-col gap-0.5">
@@ -226,7 +229,8 @@ export default function RecurringTransactions() {
 
 									<DropdownMenuItem
 										onClick={() => handleAdd("income")}
-										className="flex items-center gap-3 px-3 py-2.5">
+										className="flex items-center gap-3 px-3 py-2.5"
+									>
 										<ArrowDownLeft className="size-4 shrink-0 text-green-500" />
 
 										<div className="flex flex-col gap-0.5">
@@ -281,7 +285,8 @@ export default function RecurringTransactions() {
 						if (!open && !deleting) {
 							setTransactionToDelete(null);
 						}
-					}}>
+					}}
+				>
 					<AlertDialogContent>
 						<AlertDialogHeader>
 							<AlertDialogTitle>
@@ -319,7 +324,8 @@ export default function RecurringTransactions() {
 
 							<AlertDialogAction
 								disabled={deleting}
-								onClick={handleConfirmDelete}>
+								onClick={handleConfirmDelete}
+							>
 								{deleting
 									? t("recurringTransactions.deleting")
 									: t("common.delete")}
