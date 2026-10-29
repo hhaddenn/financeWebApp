@@ -3,7 +3,7 @@ services:
         image: postgres:17-alpine
         restart: unless-stopped
         env_file:
-            - ./backend/.env
+            - ${FINANCEAPP_ENV_FILE:-./backend/.env}
         volumes:
             - postgres_data:/var/lib/postgresql/data
         healthcheck:
@@ -31,7 +31,7 @@ services:
             - tools
         restart: "no"
         env_file:
-            - ./backend/.env
+            - ${FINANCEAPP_ENV_FILE:-./backend/.env}
         environment:
             DB_HOST: db
             REDIS_URL: redis://redis:6379/0
@@ -51,7 +51,7 @@ services:
         restart: unless-stopped
         stop_grace_period: 45s
         env_file:
-            - ./backend/.env
+            - ${FINANCEAPP_ENV_FILE:-./backend/.env}
         environment:
             DB_HOST: db
             REDIS_URL: redis://redis:6379/0
@@ -84,7 +84,7 @@ services:
         restart: unless-stopped
         stop_grace_period: 120s
         env_file:
-            - ./backend/.env
+            - ${FINANCEAPP_ENV_FILE:-./backend/.env}
         environment:
             DB_HOST: db
             REDIS_URL: redis://redis:6379/0
@@ -104,7 +104,7 @@ services:
         restart: unless-stopped
         stop_grace_period: 30s
         env_file:
-            - ./backend/.env
+            - ${FINANCEAPP_ENV_FILE:-./backend/.env}
         environment:
             DB_HOST: db
             REDIS_URL: redis://redis:6379/0
@@ -131,7 +131,7 @@ services:
         profiles:
             - tools
         env_file:
-            - ./backend/.env
+            - ${FINANCEAPP_ENV_FILE:-./backend/.env}
         environment:
             PGHOST: db
             PGPORT: "5432"

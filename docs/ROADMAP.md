@@ -160,7 +160,7 @@ Improve the dashboard's financial analysis capabilities and strengthen applicati
 
 # PHASE 4 — Infrastructure, Deployment, and Backups
 
-**Status: COMPLETE — CLOSED BY PROJECT DECISION**
+**Status: REOPENED (limited scope, October 28, 2026) — see 4.5**
 
 ## Objective
 
@@ -272,6 +272,42 @@ A comprehensive alerting implementation was not independently verified.
 
 **Phase 4 is nevertheless accepted as complete.** Additional monitoring and alerting improvements require a separate decision if they become necessary.
 
+## 4.5 — Reopened items (October 28, 2026)
+
+Reopened by explicit decision after the first Blue-Green release of Phase 5 (`d82b79c`) failed before starting. Scope is limited to the items below; the rest of Phase 4 stays closed.
+
+- **P4-1 — Confirmed defect: the release runner image is not reproducible.** The Komodo Action runs `financewebapp-bg-runner:local`, an image built manually on the host from `deploy/bluegreen/Dockerfile.runner`. No script or document builds it. Because the Action runs it with `--rm`, no container keeps it in use, so an image prune removes it. The Action then fails with exit code 125 before any change is made. Fixed manually on October 28, 2026 by rebuilding the image.
+    - [x] Make the Action rebuild the runner image before every run (Komodo Action updated and verified on October 28, 2026).
+    - [ ] Document the runner image build.
+- **P4-2 — Significant risk: rollback documentation describes the legacy deployment.** `docs/deployment-rollback.md` documents the `docker-compose.prod.yml` flow. `switch-traffic.sh` rolls the proxy back automatically when a switch is not confirmed, but there is no documented procedure to return traffic to the previous slot after a successful switch when the new version misbehaves.
+    - [ ] Document and rehearse a manual Blue-Green rollback to the previous slot.
+- **P4-4 — Confirmed defect: a no-op release overwrites the rollback slot.** `release.sh` runs `deploy-inactive.sh` (pull and `up -d` of the inactive slot) before checking whether `main` is already in production. Running the Action without a new release therefore replaces the previous version in the inactive slot with the current one. Traffic is not affected. Observed on October 28, 2026: green went from `7641d16` to `d82b79c` while blue stayed active.
+    - [ ] Move the "already in production" check before `deploy-inactive.sh` (only if Blue-Green is kept, see P4-3).
+- **P4-5 — Confirmed defect (high priority): Celery Beat is not running in production.** Found October 29, 2026. No Beat container exists, and the workers run without `-B`, so the daily `process_recurring_transactions_task` and `process_due_transactions_task` are never sent. Both functions catch up on missed dates, so no data is lost once Beat runs again. Fix before the cutover, as a separate step.
+    - Root cause: the host clone used by the production stack is still at `abfb1b5` (PR #16, October 6, 2026). `celery-beat` was added to `docker-compose.prod.yml` the next day (`41eb154`), so Beat has never run in production. The same stale file also lacks the `init` and `backup` services. Lesson for P4-3: the Stack must take its Compose file from Git (`main`), not from a manually updated clone.
+    - [x] Measure the backlog (read-only): 4 recurring transactions and 1 scheduled transaction due on October 29, 2026.
+    - [x] Start `celery-beat` from the production stack, pinned to the image in production. Started on October 29, 2026 at 17:27 UTC with image `d82b79c`, temporarily outside Komodo: compose file from the deployment repo, project `financewebapp`. The single Stack takes it over at cutover.
+    - [ ] Verify the next scheduled run (00:05 and 00:10 UTC) in the worker logs.
+    - [x] Find out when and why Beat disappeared, so the cutover does not repeat it. Beat never ran in production. The Komodo Stack `financewebapp` uses "files on server" from the stale clone, with no pre-deploy. Blue-Green releases ran from a separate deployment repo, so nothing updated that clone after `abfb1b5`.
+- **P4-3 — Decided October 28, 2026: replace Blue-Green with a single Komodo Stack.** The app is used by the owner and a few friends, so a few seconds of downtime during a planned release is acceptable. Blue-Green (about 1,600 lines of shell and Compose files) produced two operational defects (P4-1, P4-4) on its first Phase 5 release. Target: `docker-compose.prod.yml` as the only application stack, deployed from Komodo with its Compose file taken from Git, with `latest` for normal releases, a SHA tag for rollback, pre-deploy backups and healthchecks. P4-4 will not be fixed; P4-2 is replaced by the new rollback procedure.
+    - [x] Confirm the current production topology on the host (read-only, October 29, 2026):
+        - Cloudflare Tunnel (ingress managed in the dashboard): `finance.hugo-hadden.com` → `localhost:9080` and `financeapi.hugo-hadden.com` → `localhost:9000`, both served by the Blue-Green Caddy proxy, with the blue slot active (`d82b79c`). The local `/etc/cloudflared/config.yml` is stale and not used for these hostnames.
+        - Shared `db` and `redis` from the `financewebapp` project; Celery worker in `financewebapp-live-worker` (`d82b79c`); Beat started manually (see P4-5).
+        - The legacy `backend` (8000) and `frontend` (8080) of the Komodo Stack still run on an old `latest`, but no hostname routes to them.
+        - Also running: the green staging project and `financewebapp-migration-db`, both outside the production path.
+        - Daily backup: systemd timer, using the up-to-date deployment repo.
+    - [x] Write and review the cutover plan, including its own rollback (October 29, 2026):
+        1. PR: `prepare-deploy.sh` accepts `latest` or a full SHA (rollback requires a SHA) and logs each image's revision label after the pull; `docker-build.yml` adds the `org.opencontainers.image.revision` label; `docker-compose.prod.yml` reads the secrets file from `${FINANCEAPP_ENV_FILE:-./backend/.env}`.
+        2. Komodo: switch the Stack source to Git (`main`), keep the project name `financewebapp` (otherwise Compose creates new, empty volumes), set `sh scripts/prepare-deploy.sh` as pre-deploy, and set the tags and `FINANCEAPP_ENV_FILE` (secrets file outside the repository).
+        3. Deploy the Stack: it replaces the unused legacy `backend` (8000) and `frontend` (8080) and adds `celery` and `celery-beat`. Check `127.0.0.1:8000/health/` and `127.0.0.1:8080` on the host.
+        4. Cloudflare dashboard: point `finance` to `localhost:8080` and `financeapi` to `localhost:8000`. Rollback: point them back to 9080/9000 while the blue slot still runs.
+        5. Stop (not remove) `live-worker`, the slots and the Caddy proxy; observe for a few days.
+        6. Cleanup PR and new `docs/deployment-rollback.md`.
+    - [ ] Step 1 merged (PR with `prepare-deploy.sh`, `docker-build.yml` and `docker-compose.prod.yml`).
+    - [ ] Execute the cutover in a planned window.
+    - [ ] Keep the Blue-Green slots stopped (not removed) for a few days as a fallback, then remove them.
+    - [ ] Remove `deploy/bluegreen/`, the Komodo Action and related files in a separate PR; update `docs/deployment-rollback.md`.
+
 ---
 
 # PHASE 5 — Code Quality, Refactoring, and Optimization
@@ -306,38 +342,38 @@ Avoid speculative refactoring and large rewrites without evidence.
 
 ### Audit baseline (October 28, 2026, local development machine, `test` at `4a53e1f`)
 
-| Check | Result |
-| --- | --- |
-| Frontend lint (`npm run lint`, oxlint) | Pass, no diagnostics |
-| Frontend tests (`npm test`, Vitest) | 3 files, 8 tests, all passing |
-| Frontend build (`npm run build`) | Pass; one JS chunk of 1,239.09 kB (380.74 kB gzip), CSS 137.20 kB (21.92 kB gzip). After syncing the local `node_modules` with the lockfile and formatting: 1,237.14 kB (379.99 kB gzip); formatting itself adds about 0.02 kB |
-| Backend lint (`ruff check backend`) | Not run locally: Ruff is not installed in the local virtualenv (CI pins 0.16.10) |
-| Backend tests (`python manage.py test`, dev container) | 82 tests across 8 modules, all passing (27.0 s); Django system check: no issues; no missing migrations |
-| Line endings | All tracked text files are LF (index and working tree); 0 CRLF files |
+| Check                                                  | Result                                                                                                                                                                                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend lint (`npm run lint`, oxlint)                 | Pass, no diagnostics                                                                                                                                                                                                           |
+| Frontend tests (`npm test`, Vitest)                    | 3 files, 8 tests, all passing                                                                                                                                                                                                  |
+| Frontend build (`npm run build`)                       | Pass; one JS chunk of 1,239.09 kB (380.74 kB gzip), CSS 137.20 kB (21.92 kB gzip). After syncing the local `node_modules` with the lockfile and formatting: 1,237.14 kB (379.99 kB gzip); formatting itself adds about 0.02 kB |
+| Backend lint (`ruff check backend`)                    | Not run locally: Ruff is not installed in the local virtualenv (CI pins 0.16.10)                                                                                                                                               |
+| Backend tests (`python manage.py test`, dev container) | 82 tests across 8 modules, all passing (27.0 s); Django system check: no issues; no missing migrations                                                                                                                         |
+| Line endings                                           | All tracked text files are LF (index and working tree); 0 CRLF files                                                                                                                                                           |
 
 Largest hand-written source files (lines, excluding migrations):
 
-| File | Lines |
-| --- | --- |
-| `frontend/src/components/transactions/TransactionDialog.jsx` | 1,278 |
+| File                                                                            | Lines |
+| ------------------------------------------------------------------------------- | ----- |
+| `frontend/src/components/transactions/TransactionDialog.jsx`                    | 1,278 |
 | `frontend/src/components/recurring-transactions/RecurringTransactionDialog.jsx` | 1,045 |
-| `frontend/src/pages/Settings.jsx` | 830 |
-| `backend/finance/serializers.py` | 808 |
-| `frontend/src/components/transactions/TransactionsFilters.jsx` | 687 |
-| `frontend/src/components/dashboard/section-cards.jsx` | 605 |
-| `frontend/src/components/dashboard/data-table.jsx` | 518 |
-| `backend/finance/views/auth.py` | 478 |
-| `backend/finance/models.py` | 452 |
+| `frontend/src/pages/Settings.jsx`                                               | 830   |
+| `backend/finance/serializers.py`                                                | 808   |
+| `frontend/src/components/transactions/TransactionsFilters.jsx`                  | 687   |
+| `frontend/src/components/dashboard/section-cards.jsx`                           | 605   |
+| `frontend/src/components/dashboard/data-table.jsx`                              | 518   |
+| `backend/finance/views/auth.py`                                                 | 478   |
+| `backend/finance/models.py`                                                     | 452   |
 
 Indentation of tracked files (files indented with tabs only / spaces only / mixed):
 
-| Type | Tabs | Spaces | Mixed |
-| --- | --- | --- | --- |
-| Python (`.py`, includes 28 migrations) | 12 | 47 | 2 |
-| JavaScript/JSX (`.js`, `.jsx`, `.mjs`) | 35 | 60 | 3 |
-| JSON | 2 | 5 | 0 |
-| Shell scripts (includes `deploy/bluegreen/`) | 0 | 9 | 3 |
-| YAML (must stay spaces) | 0 | 7 | 0 |
+| Type                                         | Tabs | Spaces | Mixed |
+| -------------------------------------------- | ---- | ------ | ----- |
+| Python (`.py`, includes 28 migrations)       | 12   | 47     | 2     |
+| JavaScript/JSX (`.js`, `.jsx`, `.mjs`)       | 35   | 60     | 3     |
+| JSON                                         | 2    | 5      | 0     |
+| Shell scripts (includes `deploy/bluegreen/`) | 0    | 9      | 3     |
+| YAML (must stay spaces)                      | 0    | 7      | 0     |
 
 ### Findings
 
@@ -710,11 +746,16 @@ The Senior Developer should:
 
 # DECISIONS LOG
 
-| Date | Decision |
-| --- | --- |
-| 2026-10-28 | Phase 5 started with the 5.A audit; baseline and findings recorded above. |
-| 2026-10-28 | Indentation uses tabs across the project. YAML and Markdown keep spaces; LF line endings everywhere; generated files and lockfiles are not hand-formatted. |
-| 2026-10-28 | The formatting rollout is one dedicated formatting-only commit (no behavior changes), recorded in `.git-blame-ignore-revs`, before any refactoring. Because the formatters also normalize quotes, wrapping and trailing commas, `git diff -w` will not be empty; the commit is validated with lint, tests and the build before and after instead. |
-| 2026-10-28 | Dormant Budget code (T5) stays untouched until Phase 6 (#27). |
-| 2026-10-28 | Formatters: Prettier for JavaScript/JSX, JSON, CSS and HTML; Ruff for Python. Both use tabs with a display width of 4. Prettier keeps its defaults otherwise (double quotes and semicolons already dominate the frontend). |
-| Pending | Align the local Ruff version with CI before the rollout (CI pins 0.16.10; the VS Code extension bundles 0.17.3). |
+| Date       | Decision                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-28 | Phase 5 started with the 5.A audit; baseline and findings recorded above.                                                                                                                                                                                                                                                                                                                                      |
+| 2026-10-28 | Indentation uses tabs across the project. YAML and Markdown keep spaces; LF line endings everywhere; generated files and lockfiles are not hand-formatted.                                                                                                                                                                                                                                                     |
+| 2026-10-28 | The formatting rollout is one dedicated formatting-only commit (no behavior changes), recorded in `.git-blame-ignore-revs`, before any refactoring. Because the formatters also normalize quotes, wrapping and trailing commas, `git diff -w` will not be empty; the commit is validated with lint, tests and the build before and after instead.                                                              |
+| 2026-10-28 | Dormant Budget code (T5) stays untouched until Phase 6 (#27).                                                                                                                                                                                                                                                                                                                                                  |
+| 2026-10-28 | Released `d82b79c` (PR #32, formatting only) through Blue-Green: green (`7641d16`) to blue. The first attempt failed because the runner image was missing (P4-1).                                                                                                                                                                                                                                              |
+| 2026-10-28 | Phase 4 reopened with limited scope (4.5: P4-1 to P4-4).                                                                                                                                                                                                                                                                                                                                                       |
+| 2026-10-28 | Blue-Green will be replaced by a single Komodo Stack (P4-3). Until the cutover, run the Komodo Action only when `main` has a new release.                                                                                                                                                                                                                                                                      |
+| 2026-10-29 | Image tags for the single Stack follow a hybrid model. Normal releases use `:latest` (Komodo Check and Update). Rollback sets `BACKEND_IMAGE_TAG` and `FRONTEND_IMAGE_TAG` to a previous commit SHA. Images carry an `org.opencontainers.image.revision` label for traceability. `scripts/prepare-deploy.sh` is the mandatory pre-deploy of the Stack, because migrations only run through the `init` service. |
+| 2026-10-29 | YAML, Markdown and `package-lock.json` use 4 spaces instead of 2, matching the display width of tabs (`.editorconfig`, `.prettierrc.json`). Existing 2-space YAML files (CI workflows) are reformatted in a separate mechanical commit; production files are never reformatted inside a functional change. |
+| 2026-10-28 | Formatters: Prettier for JavaScript/JSX, JSON, CSS and HTML; Ruff for Python. Both use tabs with a display width of 4. Prettier keeps its defaults otherwise (double quotes and semicolons already dominate the frontend).                                                                                                                                                                                     |
+| Pending    | Align the local Ruff version with CI before the rollout (CI pins 0.16.10; the VS Code extension bundles 0.17.3).                                                                                                                                                                                                                                                                                               |

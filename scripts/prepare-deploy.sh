@@ -1,4 +1,3 @@
-
 #!/bin/sh
 set -eu
 
@@ -21,40 +20,58 @@ case "${1:-}" in
         ;;
 esac
 
-# Read the effective image reference resolved by Docker Compose.
-BACKEND_IMAGE="$(
+resolve_image() {
+    NAME="$1"
+
+    # Read the effective image reference resolved by Docker Compose.
     docker compose -f docker-compose.prod.yml config --images |
-        grep '^ghcr.io/hhaddenn/financewebapp-backend:' |
+        grep "^ghcr.io/hhaddenn/financewebapp-${NAME}:" |
         head -n 1
-)"
+}
 
-BACKEND_TAG="${BACKEND_IMAGE##*:}"
+check_version() {
+    NAME="$1"
+    VAR="$2"
 
-# Production deploys must use a full Git commit SHA.
-if ! printf '%s\n' "$BACKEND_TAG" | grep -Eq '^[0-9a-f]{40}$'; then
-    echo "ERROR: BACKEND_IMAGE_TAG must be a full 40-character Git SHA." >&2
-    echo "Resolved image: $BACKEND_IMAGE" >&2
-    exit 1
-fi
+    IMAGE="$(resolve_image "$NAME")"
 
-echo "Preparing backend version: $BACKEND_TAG"
+    TAG="${IMAGE##*:}"
 
-# Validate the frontend image version as well.
-FRONTEND_IMAGE="$(
-    docker compose -f docker-compose.prod.yml config --images |
-        grep '^ghcr.io/hhaddenn/financewebapp-frontend:' |
-        head -n 1
-)"
+    # Accept latest or a full Git SHA; rollback requires a SHA.
+    case "$TAG" in
+        latest)
+            if [ "$ROLLBACK" = "true" ]; then
+                echo "ERROR: ${VAR} must be a full 40-character Git SHA, not latest." >&2
+                echo "Resolved image: $IMAGE" >&2
+                exit 1
+            fi
+            ;;
+        *)
+            if ! printf '%s\n' "$TAG" | grep -Eq '^[0-9a-f]{40}$'; then
+                echo "ERROR: ${VAR} must be latest or a full 40-character Git SHA." >&2
+                echo "Resolved image: $IMAGE" >&2
+                exit 1
+            fi
+            ;;
+    esac
 
-FRONTEND_TAG="${FRONTEND_IMAGE##*:}"
+    echo "Preparing ${NAME} version: $TAG"
+}
 
-if ! printf '%s\n' "$FRONTEND_TAG" | grep -Eq '^[0-9a-f]{40}$'; then
-    echo "ERROR: FRONTEND_IMAGE_TAG must be a full 40-character Git SHA." >&2
-    echo "Resolved image: $FRONTEND_IMAGE" >&2
-    exit 1
-fi
+show_revision() {
+    NAME="$1"
+    IMAGE="$(resolve_image "$NAME")"
+    LABEL="$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE")"
 
-echo "Preparing frontend version: $FRONTEND_TAG"
+    if [ -z "$LABEL" ]; then
+        echo "WARNING: ${NAME} image has no revision label; version unknown." >&2
+    else
+        echo "${NAME} image revision: ${LABEL}"
+    fi
+}
+
+check_version backend BACKEND_IMAGE_TAG
+check_version frontend FRONTEND_IMAGE_TAG
 
 echo "Creating pre-deploy backup..."
 
@@ -67,6 +84,9 @@ echo "Pre-deploy backup completed."
 
 echo "Pulling application images..."
 docker compose -f docker-compose.prod.yml pull backend frontend
+
+show_revision backend
+show_revision frontend
 
 if [ "$ROLLBACK" = "true" ]; then
     echo "Rollback mode: skipping Django initialization."

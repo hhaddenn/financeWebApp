@@ -75,6 +75,7 @@ jobs:
           tags: |
             ghcr.io/hhaddenn/financewebapp-backend:latest
             ghcr.io/hhaddenn/financewebapp-backend:${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
 
   frontend:
     needs: changes
@@ -105,5 +106,6 @@ jobs:
           tags: |
             ghcr.io/hhaddenn/financewebapp-frontend:latest
             ghcr.io/hhaddenn/financewebapp-frontend:${{ github.sha }}
+          labels: org.opencontainers.image.revision=${{ github.sha }}
           build-args: |
             VITE_API_URL=${{ vars.VITE_API_URL }}
